@@ -71,6 +71,7 @@ def proper_split(X, y):
 
 def entropy(y):
     """
+    => The higher the entropy, the more disorder (impurity).
     Instead of the binary entropy function, I'm using the more genral one as
     it's more flexible, handling multiclasses as well.
     --------------------------------------------------------
@@ -99,9 +100,7 @@ def entropy(y):
 def importance(y, X, attribute):
     """
     CHOOSING THE MOST IMPORTANT ATTRIBUTE TO TEST FIRST.
-    --------------------------------
-    INFORMATION GAIN of one attribute: Entropy of dataset - entropy of
-    attributes.
+    => We want HIGH info gain for splitting.
     --------------------------------
     IG(D_i, f) = Entropy(D_i)  - ∑_(l∈f) (|D_i,l|/|D_i|) * (Entropy(D_i,l)),
      where D_i is the set of instances in the parent node, where 
@@ -128,9 +127,11 @@ def importance(y, X, attribute):
     for value in attr_values:
         # Creating child dataframe where D_i,l, where attr-value l
         child_y = y[X[attribute] == value] # classification
+        print(f"child classification: {type(child_y)}")
         weight = len(child_y) / len(y)
         # Child entropy
         child_entropy = entropy(child_y)
+        print(f"child entropy: {type(child_entropy)}")
         # Add weighted child entropy to the sum weighted_child_entropy += weight * child_entropy # Calculate information gain
     info_gain = parent_entropy - weighted_child_entropy
 
@@ -209,12 +210,12 @@ def cross_validation():
     """
     pass
 
-#df_entropy = entropy(y_encoded)
-#print(f"\nEntropy for dataset: {df_entropy}\n")
-#
-#ig_list = []
-#for i in X.columns:
-#    print(f"Information gain: {importance(y_encoded, X, i)}")
-#    ig_list.append(importance(y_encoded, X, i))
-#
-breakpoint()
+df_entropy = entropy(y_encoded)
+print(f"\nEntropy for dataset: {df_entropy}\n")
+
+ig_list = []
+for i in X.columns:
+    print(f"Information gain: {importance(y_encoded, X, i)}")
+    ig_list.append(importance(y_encoded, X, i))
+
+#breakpoint()

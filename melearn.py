@@ -51,21 +51,72 @@ def probs(y):
     if len(y) == 0:
         return 0.0
 
-    result = np.bincount(y) / len(y)
-    return result
-
+    probability = np.bincount(y) / len(y)
+    return probability
 
 def entropy(y):
-    # 1e-9 added incase probability is zero
-    return -np.sum(probs(y) * np.log2(probs(y + 1e-9)))
+    """
+    The higher the entropy, the more impurities
+    ---------------------------------------------
+    INPUT:
+        y: (pd.Series) Classifications
+
+    OUTPUT:
+        entropy: (np.float64)
+    """
+    # In case empty Series
+    if len(y) == 0:
+        return 0.0
+
+    return -np.sum(probs(y) * np.log2(probs(y)))
+
+def weighted_entropy(X, y, attribute):
+    """
+    Proportion of samples with particular value
+    ----------------------------------------
+    INPUT:
+        y: (pd.Series) target values (classes)
+        X: (pd.DataFrame) Attributes and values
+        attribute: (str) Attribute
+
+    OUTPUT:
+
+    """
+    unique_values = X[attribute].unique()
+
+    weighted_entropy = 0
+    total_samples = len(y)
+
+    for value in unique_values:
+        # Creating mask for samples with this value
+        # "mask" is a boolean array for specific rows meeting criteia
+        mask = X[attribute] == value
+        y_subset = y[mask]
+        weight = len(y_subset) / total_samples
+        subset_entropy = entropy(y_subset)
+
+        weighted_entropy += weight * subset_entropy
+
+    return weighted_entropy
 
 def info_gain(X, y, attribute):
     """
-    Choosing best split
-    """
-    parent = entropy(y)
-    # Continue
+    We want higher information gain ~ highest reduction in entropy,
+    substracting weighed entropy of child nodes from entropy of parent node.
+    ------------------------------------------
+    INPUT:
+        y: (pd.Series) target values (classes)
+        X: (pd.DataFrame) Attributes and values
+        attribute: (str) Attribute
 
+    OUTPUT:
+
+    """
+    parent_entropy = entropy(y)
+    ig = parent_entropy - weighted_entropy(X, y, attribute)
+
+    return ig
+        
 # 2)
 def gini_index(y):
     """
@@ -83,17 +134,10 @@ def gini_index(y):
     return 1 - sum(probs(y)**2)
 
 # 3)
-def proper_split(X, y):
-    """
-    Selects highest info gain for the split
-    """
-    pass
-
-
 def build_tree(X, y, func=entropy):
     """
     Recursively builds the decision tree.
-    ------------------------------------
+    -------------------------------------------
     1. Start w/ entire dataset at root node.
     2. Find best split from all attributes, using information gain or gini index.
     3. Once attribute found, create branches (split data into subsets based on attribute's values).
@@ -102,11 +146,20 @@ def build_tree(X, y, func=entropy):
         - Else, treat subset as new "root" and recursively apply steps 2-4.
     5. Create recursive calls to create subtrees for each branch.
     6. Subtrees combined forming complete decision tree.
+    -------------------------------------------
+    INPUT:
+        y: (pd.Series) target values (classes)
+        X: (pd.DataFrame) Attributes and values
+
+    OUTPUT:
+
     """
-    # 1) Root node: Lowest entropy or gini index; highest information gain
-    
+    # Most important attribute for spltting first
+    pass
  
-
-
 def testing_pruning():
     pass
+
+breakpoint()
+info_gain(X, y_encoded, 'radius1')
+
