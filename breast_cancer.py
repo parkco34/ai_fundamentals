@@ -213,9 +213,9 @@ def cross_validation():
 df_entropy = entropy(y_encoded)
 print(f"\nEntropy for dataset: {df_entropy}\n")
 
-ig_list = []
-for i in X.columns:
-    print(f"Information gain: {importance(y_encoded, X, i)}")
-    ig_list.append(importance(y_encoded, X, i))
+#ig_list = []
+#for i in X.columns:
+#    print(f"Information gain: {importance(y_encoded, X, i)}")
+#    ig_list.append(importance(y_encoded, X, i))
 
-#breakpoint()
+breakpoint()

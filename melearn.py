@@ -82,6 +82,7 @@ def weighted_entropy(X, y, attribute):
     OUTPUT:
 
     """
+    # We need unique values ???
     unique_values = X[attribute].unique()
 
     weighted_entropy = 0
@@ -105,8 +106,8 @@ def info_gain(X, y, attribute):
     substracting weighed entropy of child nodes from entropy of parent node.
     ------------------------------------------
     INPUT:
-        y: (pd.Series) target values (classes)
         X: (pd.DataFrame) Attributes and values
+        y: (pd.Series) target values (classes)
         attribute: (str) Attribute
 
     OUTPUT:
