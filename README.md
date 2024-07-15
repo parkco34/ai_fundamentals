@@ -9,22 +9,24 @@
     
     - Probabilities of each class
     - Binary entropy function
-    - Inputs: attribute (feature)
+    - Inputs: attribute data
     - Output: number (float)
     
 2. Info Gain:
-    > Reduction in entropy for attribute.
+    > Reduction in entropy for attribute. \
+    We want the highest information gain for splitting.
 
     - Calculate difference between entropy of parent node and weighted sum of
     child nodes.
-    - Higher information gain indicates better attribute for spltting.
     Inputs: 
-        X: (array-like) Attributes
-        y: (array-like) Target values
-        attribute: (int) Index for attribute
+        X: (pd.DataFrame) Data
+        X: (pd.DataFrame) Attribute data
+        attribute: (str) Columns
 
-    Output: 
-        float: information gain value
+    Output: (float) Information gain
+
+3. Best Split:
+    -
 
 ## **Build Tree**:
 1. Extract unique values of the best attribute via highest information
