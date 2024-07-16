@@ -6,7 +6,7 @@ AI Fundamentals graduate course at RIT
 
 The Help:
     - https://medium.com/@cristianleo120/master-decision-trees-and-building-them-from-scratch-in-python-af173dafb836
-    - 
+    - Claude 3.5
 """
 import pandas as pd
 import numpy as np

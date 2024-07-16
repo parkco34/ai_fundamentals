@@ -15,6 +15,8 @@ y_class = y["Diagnosis"].map({"M": 1, "B": 0}).astype(float)
 # 1)
 def entropy(y):
     """
+
+    ---------------------------------------
     INPUT:
         y: (pd.Series of floats)
 
@@ -28,10 +30,10 @@ def entropy(y):
     return -sum(probability * np.log2(probability))
 
 # 2)
-def child_entropy(X, y, attribute):
+
+def weighted_child_entropy(X, y, attribute):
     """
-    Because child nodes often have different # of of samples, and so this
-    ensures we account for the relative importance of each child node based on
+    Because child nodes often have different # of of samples, this ensures we account for the relative importance of each child node based on
     its size.
     --------------------------------
     INPUT:
@@ -46,17 +48,17 @@ def child_entropy(X, y, attribute):
     unique_values = X[attribute].unique()
     
     weighted_entropy = 0
-    total = len(y)
+    total_samples = len(y)
     counter=0
 
     for value in unique_values:
         # Mask to use in obtaining subset of corrsponding target values
         mask = X[attribute] == value
         y_subset = y[mask]
-        # The # of elements in the subset divided by the total #
-        weight = len(y_subset) / total
-        # Get subset entropy inorder to multiply it by the weights for the
-        # weighted average
+        # The # of elements in the subset divided by the # of total samples
+        weight = len(y_subset) / total_samples
+        # Get subset entropy in order to multiply it by the weights for the
+        # WEIGHTED AVERAGE
         subset_entropy = entropy(y_subset)
         # Finally
         weighted_entropy += weight * subset_entropy
@@ -77,7 +79,7 @@ def information_gain(X, y, attribute):
     OUTPUT:
         (float)
     """
-    return entropy(y) - child_entropy(X, y, attribute)
+    return entropy(y) - weighted_child_entropy(X, y, attribute)
 
 def find_best_attribute(X, y):
     """
@@ -113,36 +115,40 @@ def grow_tree(X, y, max_depth=None, min_samples_split=2, current_depth=0):
         min_samples_split: (int, default: 2) Min # of attributes to split
 
     OUTPUT: """
-    # All samples in current node belong to same class (pure node)
+    # == BASE CASES ==
+    # 1) All samples in current node belong to same class (pure node)
     if len(y.unique()) == 1:
         return y.unique()[0]
 
-    # max_depth reached: return most common class
+    # 2) max_depth reached: return MOST COMMON CLASS
     if max_depth is not None and current_depth >= max_depth:
         return max(np.bincount(y))
 
-    # # of samples < minimum # of samples required to split, returning the most
-    # common class
+    # 3) # of samples < minimum # of samples required to split, returning the MOST
+    # COMMON CLASS
     if len(y) < min_samples_split:
         return max(np.bincount(y))
 
-    # Out of attributes to split on
+    # 4) No attributes to split on
     if len(X.columns) == 0:
         return max(np.bincount(y))
 
     # find best attribute to split
     best_attribute = find_best_attribute(X, y)
 
-    # Creating tree structure
+    # Creating tree structure ??
     tree = {best_attribute: {}}
-
+    
     # Splitting on best attribute
     for value in X[best_attribute].unique():
-        # Create mask for current value
-        mask = X[best_attribute] == value
+        # Create mask for current value, where the item() part converts
+        # np.float64 to float
+        mask = X[best_attribute] == value.item()
+        # Create new dataframe subset, removing best_attribute
+        X_subset = X.drop(columns=[best_attribute])
         # Recursively grow tree for subset
         subtree = grow_tree(
-            X[mask].drop(columns=[best_attribute]),
+            X_subset,
             y[mask],
             max_depth,
             min_samples_split,
@@ -151,42 +157,8 @@ def grow_tree(X, y, max_depth=None, min_samples_split=2, current_depth=0):
         
         tree[best_attribute][value] = subtree
 
-    return tree
-
-def predict(tree, sample):
-    """
-    Predict cancer ???
-    ---------------------------------
-    INPUT:
-        tree: The decision tree
-        sample: A single sample to predict
-
-    OUTPUT:
-        The predicted class (0 or 1)
-    """
-    if not isinstance(tree, dict):
-        return tree
-
-    attribute = list(tree.keys())[0]
-    value = sample[attribute]
-
-    if value in tree[attribute]:
-        return predict(tree[attribute][value], sample)
-    else:
-        # If exact value isn't in tree, find closest one
-        closest_value = min(tree[attribute].keys(), key=lambda x: abs(x - value))
-        return predict(tree[attribute][closest_value], sample)
 
 
+grow_tree(X, y_class, max_depth=5, min_samples_split=5, current_depth=0)
 
-# Create the decision tree
-decision_tree = grow_tree(X, y_class, max_depth=5, min_samples_split=5)
-
-# Example: predict for a single sample
-sample = X.iloc[0]  # Just using the first sample as an example
-prediction = predict(decision_tree, sample)
-print(f"Prediction for sample: {prediction}")
-
-# Predict for all samples
-all_predictions = [predict(decision_tree, sample) for _, sample in X.iterrows()]
-#breakpoint()
+breakpoint()
