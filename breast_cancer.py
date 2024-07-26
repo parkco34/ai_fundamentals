@@ -6,46 +6,30 @@ AI Fundamentals graduate course at RIT
 
 The Help:
     - https://medium.com/@cristianleo120/master-decision-trees-and-building-them-from-scratch-in-python-af173dafb836
-    - Claude 3.5
 """
 import pandas as pd
 import numpy as np
-from ucimlrepo import fetch_ucirepo 
   
-# fetch dataset 
-breast_cancer_wisconsin_diagnostic = fetch_ucirepo(id=17) 
-  
-# data (as pandas dataframes) 
-X = breast_cancer_wisconsin_diagnostic.data.features 
-y = breast_cancer_wisconsin_diagnostic.data.targets 
-# Encode target variables
-y_encoded = y["Diagnosis"].map({"M": 1, "B": 0})
+def read_data(filename):
 
-# Data
-#print(breast_cancer_wisconsin_diagnostic.metadata) 
-# variable information 
-#print(breast_cancer_wisconsin_diagnostic.variables) 
-
-class Node:
     """
-    Since each node represents a node in the decision tree, this class is
-    useful for creating a heircarchical structure that mirrors the tree's
-    branching, while storing info such as: attribute, threshold, etc. It also
-    encapsulates the info needed at each decision point in the tree, and makes
-    it easier to traverse the tree by following the left or right references
-    based on the attriubte values of new data. Since it's a recursive process,
-    you can create and return Node objects to build up the tree structure. Also
-    makes it easier to add functionality (like adding Pruning).
+    Reads data from csv file.
+    ----------------------------------------
+    INPUT:
+        filename: (str) Filename including path.
+
+    OUTPUT:
+        (tuple)
+    ----------------------------------------
+    TEST CASE
+        best_attribute = "concavity1"
+        best_ig = 0.36082517699473016
     """
+    X = pd.read_csv(filename)
+    y = X["Diagnosis"].map({"M": 1, "B": 0}).astype(float)
+    X.drop("Diagnosis", axis=1, inplace=True)
 
-    def __init__(self, attribute=None, threshold=None, left=None, right=None,
-                 value=None):
-        self.attribute = attribute
-        self.threshold = threshold
-        self.left = left
-        self.right = right
-        self.value = value
-
+    return X, y
 
 def proper_split(X, y):
     """

@@ -152,7 +152,7 @@ def find_best_attribute(X, y):
             if info_gain > best_ig:
                 best_ig = info_gain
                 best_attribute = attribute
-
+    print(f"Best info gain: {best_ig}")
     return best_attribute
     
 def grow_tree(X, y, max_depth=None, min_samples_split=2, current_depth=0):
