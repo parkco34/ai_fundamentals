@@ -1,0 +1,218 @@
+Problem Set 2: Genetic Algorithm-based
+Optimization and the Knapsack Problem
+Objective: In this assignment, you will design and implement a Genetic Algorithm to solve 0-1 knap-
+sack problem and analyse the results.
+Submission instruction:s Submit your report and notebook(s) as ps2-[LastName] as in this example:
+ps2-alm.[zip|tar.gz], in the assignment dropbox on our myCourses website. Remember to include
+your written report, prepared in Overleaf, your code, and a succinct readme explaining how to run your
+code. Clearly indicate which question you are responding to, using the format Qn.
+The 0-1 Knapsack Problem
+Figure 1: A hypothetical, visual illustration of the knapsack problem: In this case, which is not what
+you are implementing specifically, of the 7 boxes, the problem asks which boxes are to be chosen to be
+kept in the knapsack so that the total weight of the chosen boxes W ≤ 15 kg and their combined value
+is as large as possible.
+Problem description: Given n items in a set S, each with a weight wi, and a value vi, the knapsack
+problem asks to determine the subset S′ of items to be added to the knapsack so that it maximizes the
+total summed value of the knapsack content (equation 1a), subject to a constraint (equation 1b) that
+the total weight is less than or equal to the knapsack’s capacity W . We call the problem 0 − 1 to capture
+that it is a binary allocation: either an item is included (1) or not (0) so Si ∈ 0, 1 in a given knapsack.
+max
+|S|
+X
+i=1
+viSi (1a)
+subject to
+|S|
+X
+i=1
+wiSi ≤ W (1b)
+The knapsack problem usually arises in resource allocation tasks in a real-world scenario where
+the allocator has to choose from a set of indivisible items subject to one or more constraints. In the
+1
+hypothetical example in Figure 1, the task is to add as many boxes as possible but their combined weight
+has to be less than 15 kg.
+In this assignment, you will implement a Genetic Algorithm that solves this search problem and
+selects boxes such that their combined value (or utility) is as large as possible, subject to the capacity
+constraint. In this assignment, the constraint is the maximum weight W of the knapsack.
+Problem 1: Genetic Algorithm Implementation (30 points)
+Implement a Genetic Algorithm for solving the 0-1 knapsack problem where the chromosome used to
+encode individuals in the population consists of a string of binary numbers where 0 means an item is
+inactive = not included and 1 means active = included. Consider the following for the implementation:
+1. Representation and Initialization:
+The example code initializes at random a population of individuals, each represented as a chro-
+mosome string. The initialization also considers specific constant variables. You may modify the
+starter code for the GA’s representation and initialization of individuals in your own code. Let n
+be the total number of items available in the initial set S (i.e., n = |S|) and pop size be the size
+of the population (number of individuals, which are also potential candidate solutions). Then Pg
+represents the population in a particular generation g that is a matrix of size pop size×n, where
+each row represents an individual. The individual’s representation is a chromosome that is a se-
+quence of genes, where each gene is one items in S. Thus, each column corresponds to an item
+that has a value v and a weight w stored in separate arrays or pairs of tuples. The elements of Pg
+are binary genes, and the allele 1 represents inclusion of the corresponding item in the knapsack
+and 0 represents not being included in the knapsack. Thus, the initialization returns Pg :
+Pg =
+
+
+
+
+
+x1,1 x1,2 . . . x1,n
+x2,1 x2,2 . . . x2,n
+... ... . . . ...
+xpop size,1 xpop size,2 . . . xpop size,n
+
+
+
+
+
+where xi,j is the binary value representing whether item j is included or not in knapsack individual
+i. Thus, each row in Pg forms a chromosome representation of a potential candidate solution to the
+knapsack problem. For example, an individual’s representation may be [1,0,1,0,. . . ,0], indicating
+that items (genes) 1 and 3 are chosen for a knapsack, while others are not.
+def get_initial_population ( config ) :
+"""
+Populates variables from config and initialize P at gen 0.
+Parameters :
+config ( str ) : path to config file
+Returns :
+g ( int ) : current generation
+P ( matrix or two D array ) : population of individuals
+W ( int ) : Knapsack capacity
+S ( list of tuples ) : Each tuple is an item ( w_i , v_i )
+stop ( int ) : final generation ( stop condition )
+"""
+np . random . seed (1470)
+# Populate the problem varibles
+with open ( config , ’r ’) as file :
+lines = file . readlines ()
+pop_size , n , stop , W = map ( int , [ lines [ i ]. strip () for i in
+range (4) ])
+S = [ tuple ( map ( int , line . strip () . split () ) ) for line in
+lines [4:]]
+# Initialize population at generation 0
+g = 0
+P = np . random . randint (2 , size = ( pop_size , n ) )
+return P , W , S , g , stop
+2
+Since you are using random initialization, ensure you log random seeds so that you
+can replicate results.
+Instead of hard-coding key parameters, you should make your code flexible enough to use variables
+specified in a configuration plain text file that your GA program reads in. This way, you can explore
+different configuration for the population size pop size, the capacity constraint W , the set S of n
+items available for placement in the knapsack, each having a value vi that is paired with its weight
+wi, and the stopping criterion at which point search ends at stop.
+We have provided two configuration files for this problem, varying n, pop size, W , stop,
+and S with its (w, v) tuples. You may explore other settings but should minimally
+report on a comparison of your results from running each problem configuration.
+2. Fitness Function:
+At any generation, the fitness function that determines the fitnesss for a chromosome of length n
+is given by:
+fitness =
+(Pn
+i=1 civi, if Pn
+i=1 ciwi ≤ W,
+0, otherwise.
+where ci is the ith gene of the chromosome and is represented by values 0 (not included) or 1
+(included). This fitness function ensures the objective of the knapsack problem, that is, selecting
+items to maximize the knapsack’s total value while meeting the weight capacity constraint.
+Extra credit (6 pts.): Implement your own fitness function and report formally on the func-
+tion, explain how it meets the knapsack problem objective, and discuss the difference in results,
+explaining or speculating for the reason.
+3. Selection:
+Implement both Roulette Wheel Selection and Tournament Selection. You will run computational
+experiments with each configuration file and compare results. Your code should ensure you
+keep the same population size throughout an experiment. You may wish to run it multiple
+times (e.g., k times) with different random initialization of P0.
+4. Crossover:
+For this assignment only use a single-point crossover with crossover possible at any chromosome
+index. Describe how you selected the crossover point. (Another possibility you could optionally
+explore is to use a cross-over rate Cx, which founctions as a cutoff – if a random number is above
+it you perform crossover, otherwise you don’t.)
+5. Mutation: Mutate the genes of the chromosome with a mutation rate Mr with values in the range
+of 0.05 to 0.2, with 0.05 increment. That is, change 0 to 1 or 1 to 0 if a randomly selected number
+in between 0 to 1 from a uniform distribution is less than Mr .
+6. Stop criterion:
+Ensure your code halts its search after generation stop, which is the maximum number of generations
+to evolve the population, and return Pstop as a population solution.
+Extra credit (4 pts.): Implement your own stop criterion and report formally on the func-
+tion, explain how it meets the knapsack problem objective, and discuss the difference in results,
+explaining or speculating for the reason.
+After implementing all the operators, perform the following activities, using each of two problem
+configurations in a congif file.
+Q1 Implementation Description (3 points): Describe your implementation in 1-3 paragraphs.
+Q2 Selection Alone (10 points): For each configuration, report performance with only the selection
+operator active (i.e. without cross-over and mutation). Do this for each selection method (Roulette
+Wheel Selection vs. Tournament Selection). Plot the fitness of the population at each generation
+in a fitness function graph both from the perspective of (a) average population fitness in Pstop, and
+(b) the fitness score and the number of active genes of the fittest individual in Pstop. In addition,
+provide (c) the number of active genes and fitness for the best solution overall throughout the
+experiment and say in what generation it occurred. Finally, (d) what did you learn about your
+3
+Pop Size Knapsack Total Value (x ± sd) Knapsack Max Weight # of items in Best Solution
+2 xx ± yy ww zz
+4 xx ± yy ww zz
+10 xx ± yy ww zz
+40 xx ± yy ww zz
+50 xx ± yy ww zz
+100 xx ± yy ww zz
+200 xx ± yy ww zz
+. . . . . . ± . . . . . .
+Table 1: Example table to include for Q4. Choose interesting population sizes to compare.
+knapsack problem and solution from inspecting Pstop and/or the fittest chromosomes in Pstop vs.
+overall? Discuss.
+If you completed the extra credit assignment by implementing your own fitness function, include
+the comparative results and description as outlined above at the end of your response to Q2,
+clearly marked as Q2 extra credit. (So, if you implemented you own fitness function, for (a)
+and (b) above, compare also with your fitness function for the population-average vs. top-scoring
+solutions.)
+Q3 Integrate Cross-over and Mutation (10 points): Run trials with each selection operator.
+This time, include your implemented crossover and mutation operators and report the results.
+Again, plot the average fitness across generations and provide the best solutions, as described in
+problem Q2. Discuss your observations, and compare them to the results in Q2.
+If you completed the extra credit assignment by implementing your own stop criterion function,
+include the comparative results and description as outlined above at the end of your response to
+Q3, clearly marked as Q3 extra credit
+Q4 Explore Population Sizes (10 points): Explore your GA implementation with different popu-
+lation sizes. When reporting the result, note the following:
+(a) Population size Explore at least 10 population sizes and report on them in terms of knapsack
+total value, and knapsack max weight and number of included items, at the point of stopping
+the search. (You may opt to use your own stopping criterion if you implemented the extra
+credit for Q3.)
+(b) Number of trials
+Make sure you run each experiment with a specific population size for 30 trials (30 times) and
+report mean weight and standard deviation as shown in the example Table 1 above. You may
+use and adapt the starter code below.
+num_trials = 30
+final_values = []
+final_weights = []
+final_no_items = []
+stop_criterion = stop # or your own
+for i in range ( num_trials ) :
+P_ { stop } = solve ( num_generations ,....)
+best_chromosome = get_best_chromosome ( P_ { stop })
+best_fitness = get_fitness ( best_chromosome )
+best_weight = get_weight ( best_chromosome )
+no_items = get_active_items ( best_chromosome )
+final_values . append ( best_fitness )
+final_weights . append ( best_weight )
+final_no_items . append ( no_items )
+print ( " Values : {} + - {} " . format ( np . mean ( final_values ) , np . std (
+final_values ) ) )
+print ( " Weight : {} " . format ( np . max ( final_weights ) ) )
+print ( " No of items : {} " . format ( np . mean ( final_no_items ) ) )
+4
+Problem 2: Compare GA with a Non-population-based Search Algorithm
+Use your favorite toolkit such as sk-learn, MatLab, R Studio, or your own code to implement another
+search algorithm for the 0-1 knapsack problem. Describe what you did and your results. Compare with
+the GA you implemented yourself.
+Q5 Empirical Comparison (10 points): Based on your comparison, were the advantages and disad-
+vantages for each search method? How would you compare their strengths?
+Problem 3: Genetic Algorithm Formulation
+In this problem, you will theoretically apply the GA concepts for search and optimization problems to a
+new task domain.
+Q6 Problem Description and GA Design (7 points): Describe what the search problem is and
+discuss in around 0.75-1 page and with illustrative visualizations or diagrams how you would formulate
+the chromosomal representation, initialization of the populations, and the stop criterion you would use
+for a given use-inspired optimization problem of interest to you. In addition, formally provide and explain
+at least one fitness function that you may explore for your selected problem.
+5

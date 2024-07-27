@@ -149,7 +149,7 @@ def find_best_split(X, y):
                 best_attribute = attribute
                 best_value = value
 
-        return best_attribute, best_ig, best_value
+    return best_attribute, best_ig, best_value
 
 def grow_tree(X, y, max_depth=None, min_samples_split=2, current_depth=0):
     """

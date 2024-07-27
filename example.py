@@ -78,7 +78,8 @@ def weighted_child_entropy(subset1, subset2):
     s1_values = subset1["Diagnosis"].value_counts()
     s2_values = subset2["Diagnosis"].value_counts()
     
-    # Probabilities for the Benign and Malignant
+    # Probabilities for the Benign and MalignantS
+    # Maybe turn this shit into a for loop ?
     P_B1 = float(s1_values.get(0, 0) / total1 if total1 != 0 else 0)
     P_M1 = float(s1_values.get(1, 0) / total1 if total1 != 0 else 0)
     P_B2 = float(s2_values.get(0, 0) / total2 if total2 != 0 else 0)
@@ -94,17 +95,47 @@ def weighted_child_entropy(subset1, subset2):
 
     return weighted_entropy
 
-def information_gain(X, y, attribute, value):
+def information_gain(subset1, subset2):
     """
     ig = Parent entropy - weighted_child_entropy
     ------------------------------------------------
     INPUT:
+        subset1: (pd.Series) Attribute values less than threshold.
+        subset2: (pd.Series) Attribute values equal to more than threshold.
 
     OUTPUT:
-
+        ig: (float) Information gain
     """
+    # Entropy of data
     parent_entropy = data_entropy(y)
-    # ???  Basically done.
+    
+    # Information gain
+    return parent_entropy - weighted_child_entropy(subset1, subset2)
+
+def find_best_split(X):
+    """
+    INPUT:
+        X: (pd.DataFrame) Attribute data
+
+    OUTPUT:
+        best_ig, best_attribute: (tuple: float, str)
+    """
+    # Initialize variables
+    best_ig = -1.0 # Since it must be positive, staying consistent with data type
+    best_attribute = None
+
+    # Looping thru attributes in dataframe to find highest information gain to
+    # split
+    for attribute in X.columns:
+        attribute_df, midpoints = get_threshold_values(data, attribute)
+        subset1, subset2 = split_data_into_two_subsets(attribute_df, midpoints)
+        ig = information_gain(subset1, subset2)
+
+        if ig > best_ig:
+            best_ig = ig
+            best_attribute = attribute
+
+    return best_ig, best_attribute
 
 def grow_tree():
     """
