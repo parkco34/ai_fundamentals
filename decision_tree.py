@@ -112,44 +112,41 @@ def information_gain(X, y, attribute, value):
         return 0
 
     # return the Weighted child entropy
-    return parent_entropy - weighted_child_entropy(left_y,
-                                                                   right_y)
+    child_entropy = weighted_child_entropy(left_y, right_y)
+    info_gain = parent_entropy - child_entropy
+
+    return info_gain, child_entropy
+
 def find_best_split(X, y):
     """
-    Uses the MIDPOINTS of values instead of the unique values, since it's
-    sightly faster.  It's also better for continuous variables.
+    Finds the best attribute and split value using information gain.
     ------------------------------------------
     INPUT:
         X: (pd.DataFrame) Attributes and their values
         y: (pd.Series) Classifications
 
     OUTPUT:
-        best_attribute, best_ig, best_value: (tuple)
+        best_attribute, best_ig, best_value, best_child_entropy: (tuple)
     """
     best_attribute = None
     best_ig = -1
     best_value = None
+    best_child_entropy = None
 
     for attribute in X.columns:
-        # Unique sorted values
         unique_values = sorted(X[attribute].unique())
-        # Midpoint values
-        mid_points = [(unique_values[i] + unique_values[i+1])/2 for i in
-                      range(len(unique_values) - 1)]
-
-        # Output the midpoints for debugging
-        print(f"Midpoints: {mid_points}") 
+        mid_points = [(unique_values[i] + unique_values[i+1]) / 2 for i in range(len(unique_values) - 1)]
 
         for value in mid_points:
-            # Calculate information gain for threshold value
-            ig = information_gain(X, y, attribute, value)
-            print(f"Value: {value} --> IG({attribute}) = {ig}")
+            ig, child_entropy = information_gain(X, y, attribute, value)
             if ig > best_ig:
                 best_ig = ig
                 best_attribute = attribute
                 best_value = value
+                best_child_entropy = child_entropy
 
-    return best_attribute, best_ig, best_value
+    return best_attribute, best_ig, best_value, best_child_entropy
+
 
 def grow_tree(X, y, max_depth=None, min_samples_split=2, current_depth=0):
     """
@@ -183,7 +180,7 @@ def grow_tree(X, y, max_depth=None, min_samples_split=2, current_depth=0):
         return y.mode().iloc[0]
 
     # Find best split (midpoints)
-    best_attribute, best_ig, best_value = find_best_split(X, y)
+    best_attribute, best_ig, best_value, best_child_entropy = find_best_split(X, y)
     # Debug
     print(f"""
 Best attribute: {best_attribute}\n
@@ -220,8 +217,52 @@ best value: {best_value}\n
 
 X, y = read_data("data/example.csv")
 tree = grow_tree(X, y)
-print(f"Tree: {tree}")
+best_attribute, best_ig, best_value, best_child_entropy = find_best_split(X, y)
+left, right = split_data(X, y, best_attribute, best_value)
+
+print(f"Best attribute: {best_attribute}")
+print(f"Best information gain: {best_ig}")
+print(f"Split value: {best_value}")
+print(f"Weighted child entropy: {best_child_entropy}")
+print(f"Left subset: \n{left[0]} \nTarget: \n{left[1]}")
+print(f"Right subset: \n{right[0]} \nTarget: \n{right[1]}")
 
 
+#def find_best_split(X, y):
+#    """
+#    Uses the MIDPOINTS of values instead of the unique values, since it's
+#    sightly faster.  It's also better for continuous variables.
+#    ------------------------------------------
+#    INPUT:
+#        X: (pd.DataFrame) Attributes and their values
+#        y: (pd.Series) Classifications
+#
+#    OUTPUT:
+#        best_attribute, best_ig, best_value: (tuple)
+#    """
+#    best_attribute = None
+#    best_ig = -1
+#    best_value = None
+#
+#    for attribute in X.columns:
+#        # Unique sorted values
+#        unique_values = sorted(X[attribute].unique())
+#        # Midpoint values
+#        mid_points = [(unique_values[i] + unique_values[i+1])/2 for i in
+#                      range(len(unique_values) - 1)]
+#
+#        # Output the midpoints for debugging
+#        print(f"Midpoints: {mid_points}") 
+#
+#        for value in mid_points:
+#            # Calculate information gain for threshold value
+#            ig = information_gain(X, y, attribute, value)
+#            print(f"Value: {value} --> IG({attribute}) = {ig}")
+#            if ig > best_ig:
+#                best_ig = ig
+#                best_attribute = attribute
+#                best_value = value
+#
+#    return best_attribute, best_ig, best_value
 
 breakpoint()
