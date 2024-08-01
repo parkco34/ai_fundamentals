@@ -107,7 +107,7 @@ def attribute_gini_index(X, y, attribute):
     for value in attribute_values:
         subset_y = y[X[attribute] == value]
         subset_total = len(subset_y)
-        weight = len(subset_y) / subset_total
+        weight = subset_total / total
         subset_gini = data_gini_index(subset_y)
         weighted_gini += weight * subset_gini
 
@@ -171,7 +171,7 @@ def find_best_split_gini(X, y):
             best_gini = gini
             best_attribute = attribute
 
-    return attribute
+    return best_attribute
 
 def grow_tree(X, y, max_depth=None, min_num_samples=2, current_depth=0,
               func=find_best_split_ig):
@@ -247,8 +247,59 @@ def grow_tree(X, y, max_depth=None, min_num_samples=2, current_depth=0,
         "Fail": count_fail
     }
 
+def trimmed_dict(tree):
+    """
+    Trims the input tree so the last two keys are not included in the output.
+    ----------------------------------------------------------------
+    INPUT:
+        tree: (dict)
 
-tree = grow_tree(X, y)
-print(f"Tree: {tree}")
+    OUTPUT:
+        tree: (dict)
+    """
+    pass
+
+# ChatGPT
+def predict(tree, sample):
+    """
+    Predict the class for a given sample using the decision tree.
+    ------------------------------------------------------------
+    INPUT:
+        tree: (dict) The decision tree
+        sample: (pd.Series or dict) A single sample to classify
+
+    OUTPUT:
+        (str or int): Predicted class label
+    """
+    # Base case: If we reach a leaf node, return the class label
+    if not isinstance(tree, dict):
+        return tree
+
+    # Traverse the tree
+    for attribute, subtree in tree.items():
+#        breakpoint()
+        attribute_value = sample[attribute]
+
+        # Check if the attribute value exists in the subtree
+        if attribute_value in subtree:
+            return predict(subtree[attribute_value], sample)
+        else:
+            # Handle unseen attribute values
+            # Option: Return the most common class or handle as needed
+            return "Unknown"  # or use y.mode() or another fallback method
+
+
+# Example of how to use the predict function
+sample_data = {"Other online courses": "Y", "Student background": "Maths", "Working Status": "NW"}
+tree = grow_tree(X, y, func=find_best_split_gini)  # Assuming your grow_tree function builds the tree
+prediction = predict(tree, sample_data)
+print(f"The predicted class is: {prediction}")
+
+# For Testing
+# ------------
+#tree = grow_tree(X, y)
+#print(f"Tree: {tree}")
+#gini_tree = grow_tree(X, y, func=find_best_split_gini)
+#print(f"Gini Tree: {gini_tree}")
 breakpoint()
 
