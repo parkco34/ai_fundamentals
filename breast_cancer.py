@@ -116,7 +116,9 @@ def importance(y, X, attribute):
         # Child entropy
         child_entropy = entropy(child_y)
         print(f"child entropy: {type(child_entropy)}")
-        # Add weighted child entropy to the sum weighted_child_entropy += weight * child_entropy # Calculate information gain
+        # Add weighted child entropy to the sum  
+        weighted_child_entropy += weight * child_entropy
+        # Calculate information gain
     info_gain = parent_entropy - weighted_child_entropy
 
     return info_gain

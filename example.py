@@ -13,6 +13,29 @@ data = pd.read_csv("data/example.csv")
 data["Diagnosis"] = data["Diagnosis"].map({"M": 1, "B": 0})
 X, y = data.iloc[:, :-1], data.iloc[:, -1]
 
+def check_for_unique_list_items(lst):
+    """
+    Checks for the number of unique items in a list, returning the item
+    and quantity.
+    ------------------------------------------
+    INPUT:
+        lst: (list) Duh
+
+    OUTPUT:
+        counts: (dict)
+    """
+    counts = {}
+
+    for item in lst:
+        
+        if item in counts:
+            counts[item] += 1
+
+        else:
+            counts[item] = 1
+
+    return counts
+
 def data_entropy(y):
     """
     INPUT:
@@ -40,27 +63,10 @@ def get_threshold_values(data, attribute):
     # Sort attribute values
     sorted_list = list(sorted(attribute_df[attribute]))
     # Get midpoint values
-    midpoints = [round((sorted_list[i] + sorted_list[i+1])/2, 2) for i in
+    midpoints = [round((sorted_list[i] + sorted_list[i+1])/2, 5) for i in
                  range(len(sorted_list) - 1)]
 
     return attribute_df, midpoints
-
-def split_data_into_two_subsets(attribute_df, midpoints):
-    """
-    INPUT:
-        attribute_df: (pd.DataFrame) 2D dataframe of attribute and target data
-        midpoints: (list)
-
-    OUTPUT:
-        subset1, subset2: (tuple)
-    """    
-    attribute = attribute_df.columns[0] # Get attribute name
-
-    for mid in midpoints:
-        subset1 = attribute_df[attribute_df[attribute] < mid]
-        subset2 = attribute_df[attribute_df[attribute] >= mid]
-
-    return subset1, subset2 # goes to weighted_child_entropy
 
 def weighted_child_entropy(subset1, subset2):
     """
@@ -112,30 +118,75 @@ def information_gain(subset1, subset2):
     # Information gain
     return parent_entropy - weighted_child_entropy(subset1, subset2)
 
-def find_best_split(X):
+def find_best_split(X, data):
     """
+    Finds the best attribute to split on for a decision tree, calculates its
+    information gain, and tracks information gain for all attributes.
+    --------------------------------------------------------------------
     INPUT:
         X: (pd.DataFrame) Attribute data
+        data: (pd.DataFrame) Full dataset including target variable
 
     OUTPUT:
-        best_ig, best_attribute: (tuple: float, str)
+        best_ig: (float) Best information gain
+        best_attribute: (str) Attribute with best information gain
+        attribute_value_counts: (dict) Dictionary with attribute names as keys
+                                and their value counts as values
+
+    NOTES:
+        - Prints a message if multiple attributes have the best information gain
+        - Assumes existence of helper functions: get_threshold_values,
+          split_data_into_two_subsets, and information_gain
+        - Recalculates information gain when checking for ties, which may be
+          computationally expensive for large datasets
     """
-    # Initialize variables
-    best_ig = -1.0 # Since it must be positive, staying consistent with data type
+    ig_values = {}
+    attribute_ig_info = {}
+    best_ig = -1.0
     best_attribute = None
 
-    # Looping thru attributes in dataframe to find highest information gain to
-    # split
     for attribute in X.columns:
         attribute_df, midpoints = get_threshold_values(data, attribute)
-        subset1, subset2 = split_data_into_two_subsets(attribute_df, midpoints)
-        ig = information_gain(subset1, subset2)
+        # Split data into two subsets
+        for mid in midpoints:
+            subset1 = attribute_df[attribute_df[attribute] < mid]
+            susbet2 = attribute_df[attribute_df[attribute] <= mid]
+            
+            # Information gain calculation
+            ig = information_gain(subset1, subset2)
 
-        if ig > best_ig:
-            best_ig = ig
-            best_attribute = attribute
+            # Rounding to avoid float precision complications
+            ig = round(ig, 5)
 
-    return best_ig, best_attribute
+            # Populates ig values
+            if ig not in ig_values:
+                ig_values[ig] = 1
+
+            else:
+                ig_values[ig] += 1
+
+            # Initialization
+            attribute_ig_info[attribute] = {"ig": ig, "count": None}
+            
+            # get best information gain
+            if ig > best_ig:
+                best_ig = ig
+                best_attribute = attribute
+
+    # Fill in counts for attributes
+    for attribute, info in attribute_ig_info.items():
+        info["count"] = ig_values[info["ig"]]
+    
+    # Filter ot include only duplicate ig values 
+    attribute_ig_info = {attr: info for attr, info in attribute_ig_info.items()
+                        if info["count"] > 1}
+
+    if ig_values[best_ig] > 1:
+        print(f"More than one attribute with best infongain {best_ig}")
+        print(f"""Attributes: {[attr for attr, info in attribute_ig_info.items()
+             if info['ig']]}""")
+
+    return best_ig, best_attribute, attribute_ig_info
 
 def grow_tree():
     """
@@ -143,10 +194,13 @@ def grow_tree():
     """
     pass
 
+def main():
+    best_ig, best_attribute, attribute_value_counts = find_best_split(X, data)
+    print(f"Best information gain: {best_ig}")
+    print(f"Best attribute: {best_attribute}")
+    print(f"Attribute value counts: {attribute_value_counts}")
 
-# Example:
-rad_df, midpoints = get_threshold_values(data, "radius1")
-subset1, subset2 = split_data_into_two_subsets(rad_df, midpoints)
-kid_entropy = weighted_child_entropy(subset1, subset2)
+    breakpoint()
 
-breakpoint()
+if __name__ == "__main__":
+    main()

@@ -147,7 +147,6 @@ def find_best_split(X, y):
 
     return best_attribute, best_ig, best_value, best_child_entropy
 
-
 def grow_tree(X, y, max_depth=None, min_samples_split=2, current_depth=0):
     """
     Builds tree recursively.
