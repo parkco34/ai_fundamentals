@@ -67,8 +67,10 @@ def information_gain(X, y, attribute):
 
     return parent_entropy - weighted_child_entropy
 
-def gini_index(X ,y):
+def data_gini_index(y):
     """
+    For determining the ROOT NODE.
+    ------------------------------------------------------
     Gini Index or Impurity measures the probability for a random instance being misclassified when chosen randomly. The lower the Gini Index, the better the lower the likelihood of misclassification.
     -------------------------------------------------------
     Gini Index = 1 - \sum_{i=1}^{j} p(j)^2, Where j represents the no. of classes in the target variable — Pass and Fail in our example
@@ -76,16 +78,45 @@ def gini_index(X ,y):
      It has a maximum value of .5. If Gini Index is .5, it indicates a random assignment of classes.
     -------------------------------------------------------
     INPUT:
-        X: (pd.DataFrame) Attribute data
         y: (pd.Series) Target attribute
 
     OUTPUT:
-
+        gini index for data: (float)
     """
-    pass
+    total = len(y)
+    probabilities = y.value_counts() / total
 
-def find_best_split(X, y):
+    return 1 - sum(probabilities**2)
+
+def attribute_gini_index(X, y, attribute):
     """
+    Calculates the weighted Gini index for a given attribute.
+    ------------------------------------------------------
+    INPUT:
+        X: (pd.DataFrame) Attribute data
+        y: (pd.Series) Target attribute
+        attribute: (str) Column
+
+    OUTPUT:
+        weighted_gini: (float)
+    """
+    total = len(y)
+    attribute_values = X[attribute].unique()
+    weighted_gini = 0
+
+    for value in attribute_values:
+        subset_y = y[X[attribute] == value]
+        subset_total = len(subset_y)
+        weight = len(subset_y) / subset_total
+        subset_gini = data_gini_index(subset_y)
+        weighted_gini += weight * subset_gini
+
+    return weighted_gini
+
+def find_best_split_ig(X, y):
+    """
+    Uses INFORMATION GAIN.
+    -------------------------------------------
     Find highest information gain of all attributes.
     Looping thru each attribute, calculating the weighted average entropy,
     subtracing each from the parent entropy, where the attribute with the
@@ -114,7 +145,36 @@ def find_best_split(X, y):
 
     return best_attribute
 
-def grow_tree(X, y, max_depth=None, min_num_samples=2, current_depth=0):
+def find_best_split_gini(X, y):
+    """
+    Uses GINI INDEX.
+    -----------------------------------------------
+    Finds lowest gini index for attributes.
+    Loops thru each attribute, calculating the weighted gini index, summing the
+    product of the weights and the attribute gini indices.
+    -----------------------------------------------
+    INPUT:
+        X: (pd.DataFrame) Attribute data
+        y: (pd.Series) Target attribute
+
+    OUTPUT:
+        node: (str) Attribute for split
+    """
+    # Initialize with large value since gini ~ 1/info_gain
+    best_attribute = None
+    best_gini = float("inf")
+
+    for attribute in X.columns:
+        gini = attribute_gini_index(X, y, attribute)
+
+        if gini < best_gini:
+            best_gini = gini
+            best_attribute = attribute
+
+    return attribute
+
+def grow_tree(X, y, max_depth=None, min_num_samples=2, current_depth=0,
+              func=find_best_split_ig):
     """
     Recursive function that grows the tree, returning the completed tree.
     ------------------------------------------------
@@ -124,6 +184,8 @@ def grow_tree(X, y, max_depth=None, min_num_samples=2, current_depth=0):
         max_depth: (int; default: None)
         min_num_samples: (int; default: 2)
         current_depth: (int; default: 0)
+        func: (function; default: find_best_split_ig) Function to find best
+            split with; Information gain or Gini Index.
         
     OUTPUT:
         (dict): (tree: (dict), pass/fail: (dict))
@@ -145,7 +207,7 @@ def grow_tree(X, y, max_depth=None, min_num_samples=2, current_depth=0):
     if max_depth is not None and current_depth >= max_depth:
         return y.mode().iloc[0]
 
-    best_feature = find_best_split(X, y)
+    best_feature = func(X, y)
 
     # No best information gain, return most common item
     if best_feature is None:
