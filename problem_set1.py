@@ -1,38 +1,92 @@
 #!/usr/bin/env python
 """
-Predicts whether student will pass class based on whether the student works, is
-taking other online coures, or has a background in Computer Science, Math, or
-Other.
 ------------------------------------------------------------------------------------------------------------------------------
-Source: https://towardsdatascience.com/decision-trees-explained-entropy-information-gain-gini-index-ccp-pruning-4d78070db36c
-------------------------------------------------------------------------------------------------------------------------------
-For BINARY CLASSIFICATION, but can easily be adjusted for MULTICLASS
-classification...
+Parker, Cory 
+AI Fundamentals graduate course at RIT
+7/10/24 -- Actual start of project
+
+The Help:
+    - https://medium.com/@cristianleo120/master-decision-trees-and-building-them-from-scratch-in-python-af173dafb836
 ------------------------------------------------------------------------------------------------------------------------------
 """
-from math import log2
 import pandas as pd
-import graphviz
-import time
+from math import log2
 
-dframe = pd.read_csv("data/exam_results.csv")
-df = dframe.drop(columns=["Resp srl no"])
-y = df["Exam Result"]
-X = df.drop(columns=["Exam Result"])
-df = df.reindex(columns=["Other online courses", "Student background", "Working Status", "Exam Result"])
+def user_attribute_adjustments(dataframe):
+    """
+    Asks user if they want to remove a column from the dataframe before
+    processing data.
+    ------------------------------------------------------
+    INPUT:
+        dataframe: (pd.DataFrame)
+
+    OUTPUT:
+        (pd.DataFrame) Without specified column
+    """
+    print("Current DataFrame")
+    print(dataframe)
+
+    remove = input("Do you want to remove a column? (yes/no)")
+
+    if remove == "yes":
+        print(f"Available columns: {list(dataframe.columns)}")
+
+        remove_column = input("Enter the column to be removed: ").strip()
+
+        if remove_column in dataframe.columns:
+            dataframe = dataframe.drop(columns=[remove_column])
+            print(f"Column: {remove_column} has been removed.")
+
+        else:
+            print(f"Column {remove_column} doesn't exist in dataframe.")
+
+    else:
+        print("\nNo column removed.")
+
+    return dataframe
+
+def read_data(filename, target_attribute):
+    """
+    Reads data from csv file. 
+    ----------------------------------------
+    INPUT:
+        filename: (str) Filename including path.
+        target_attribute: (str)
+
+    OUTPUT:
+        (tuple)
+    """
+    # Reads csv file
+    X = pd.read_csv(filename)
+
+    # Ask user if there's a column to be removed
+    X = user_attribute_adjustments(X)
+    
+    # Moves target attribute to end of dataframe if not there already
+    if X.columns[-1] != target_attribute:
+        target = X.pop(target_attribute)
+        X[target_attribute] = target
+
+    y = X[X.columns[-1]]
+    X = X.drop(columns=[target_attribute])
+    y_encoded = pd.Series(pd.factorize(y)[0], name=target_attribute)
+    
+    return X, y_encoded.astype(float)
 
 def data_entropy(y):
     """
+    Entropy based on class probabilities for the dataset.
+    ----------------------------------------------------
     INPUT:
-        y: (pd.Series)
+        y: (pd.Series or np.array) Classifications.
 
     OUTPUT:
-        entropy: (float)
+        (float) Entropy.
     """
     total = len(y)
-    probabilities = y.value_counts() / total # Outputs pd.Series of probs
+    probabilities = y.value_counts() / total # pd.Series
 
-    return -sum([p * log2(p) for p in probabilities if p > 0])
+    return -sum(p * log2(p) for p in probabilities if p > 0)
 
 def attribute_entropy(X, y, attribute):
     """
@@ -44,18 +98,19 @@ def attribute_entropy(X, y, attribute):
         attribute: (str)
 
     OUTPUT:
-        weighted_attribute_entropy: (float)
+        weighted_entropy: (float)
     """
     total = len(y)
     attribute_values = X[attribute].unique()
     weighted_entropy = 0
-
+    
+    # Get corresponding class labels for the attribute values (Subset) ? 
     for value in attribute_values:
         subset_y = y[X[attribute] == value]
         subset_total = len(subset_y)
         weight = subset_total / total
         subset_entropy = data_entropy(subset_y)
-
+        
         weighted_entropy += weight * subset_entropy
 
     return weighted_entropy
@@ -155,6 +210,39 @@ def find_best_split_ig(X, y):
 
     return best_attribute
 
+def find_best_split_ig_continuous(X, y):
+    """
+    Uses INFORMATION GAIN for CONTINUOUS feature values.
+    -------------------------------------------
+    Find highest information gain of all attributes.
+    Looping thru each attribute, calculating the weighted average entropy,
+    subtracing each from the parent entropy, where the attribute with the
+    hightest information gain is returned to find the ROOT NODE to split on.
+    --------------------------------------------
+    INPUT:
+        X: (pd.DataFrame) Attribute data
+        y: (pd.Series) Target attribute
+
+    OUTPUT:
+        node: (str) Attribute for split 
+    """ 
+    best_attribute = None
+    best_ig = -1.0
+    best_threshold = None
+
+    for attribute in X.columns:
+        sorted_values = X[attribute].sort_values().unique()
+
+        for i in range(len(sorted_values) - 1):
+            midpoint = (sorted_values[i] + sorted_values[i+1]) / 2
+            left_mask = X[attribute] <= midpoint
+            right_mask = X[attribute] > midpoint
+
+            left_y = y[left_mask]
+            right_y = y[right_mask]
+            # ?
+
+
 def find_best_split_gini(X, y):
     """
     Uses GINI INDEX.
@@ -226,139 +314,11 @@ def grow_tree(X, y, max_depth=None, min_num_samples=2, current_depth=0,
     # Initialize tree with ROOT NODE
     my_tree = {}
 
-    # Split dataset and grow subtrees for each split
-    for feature_value in X[best_feature].unique():
-        subset_X = X[X[best_feature] ==
-                     feature_value].drop(columns=[best_feature])
-        subset_y = y[X[best_feature] == feature_value]
-
-        # When leaf node reached, attach Pass/Fail values, otherwise continue
-        # branching
-        if len(subset_X.columns) == 0 or len(subset_y.unique()) == 1:
-            my_tree[feature_value] = {
-                "Pass": sum(subset_y == "Pass"),
-                "Fail": sum(subset_y == "Fail")
-
-            }
-
-        else:
-            subtree = grow_tree(subset_X,
-                subset_y,
-                max_depth,
-                current_depth+1)
-            my_tree[feature_value] = subtree
-
-        count_pass = sum(y == "Pass")
-        count_fail = sum(y == "Fail")
-
-    return {
-        best_feature: my_tree,
-        "Pass": count_pass,
-        "Fail": count_fail
-    }
-
-def clean_tree(tree):
-    """
-    Removes the unneccessary Pass/Fail summary labels for the tree in order to
-    correctly "process" the predictions.
-    ------------------------------------------
-    INPUT:
-        tree: (dict)
-
-    OUTPUT:
-        cleaned_tree: (dict)
-    """
-    # Esnures tree is a dict
-    if isinstance(tree, dict):
-        # Removes the keys Pass/Fail for making predictions
-        subtree = {k: v for k, v in tree.items() if k not in ["Pass", "Fail"]}
-        
-        # BAD case -- Do something different with this ... ?
-        if not subtree:
-            pass_count = tree.get("Pass", 0)
-            fail_count = tree.get("Fail", 0)
-            
-            return "Pass" if pass_count > fail_count else "Fail"
-
-        return {k: clean_tree(v) for k, v in subtree.items()}
     
-    else:
-        return tree
 
-def predict(tree, test):
-    """
-    Predictions!
-    --------------------------------
-    INPUT:
-        tree: (dict) Decision Tree model
-        test: (dict) Test data
-    """
-    if not isinstance(tree, dict):
-        return tree
-    
-    for attribute, subtree in tree.items():
-        next_attribute = test[attribute]
-        
-        if next_attribute in subtree:
-            return predict(subtree[next_attribute], test)
-        
-        else:
-            return "¯\_( ͡° ͜ʖ ͡°)_/¯ "
+# Usage
+X, y = read_data("data/example.csv", "Diagnosis")
+#X, y = read_data("data/exam_results.csv", "Exam Result")
 
-
-
-# --------------------------------
-# VISUALIZATION of Decision Tree
-# --------------------------------
-# ChatGPT -- Do yourself ?
-#def visualize_tree(tree, node_name='root', graph=None):
-#    """
-#    Visualize the decision tree using graphviz.
-#    ------------------------------------------------
-#    INPUT:
-#        tree: (dict) The decision tree
-#        node_name: (str) The name of the current node (default is 'root')
-#        graph: (graphviz.Digraph) The graphviz graph object (default is None)
-#
-#    OUTPUT:
-#        graph: (graphviz.Digraph) The graphviz graph object with the tree added
-#    """
-#    if graph is None:
-#        graph = graphviz.Digraph()
-#
-#    if not isinstance(tree, dict):
-#        graph.node(node_name, label=str(tree), shape='ellipse')
-#        return graph
-#
-#    for attribute, subtree in tree.items():
-#        if attribute not in ["Pass", "Fail"]:
-#            for value, subsubtree in subtree.items():
-#                child_node_name = f'{node_name}_{value}'
-#                graph.node(child_node_name, label=f'{value}')
-#                graph.edge(node_name, child_node_name, label=attribute)
-#                visualize_tree(subsubtree, node_name=child_node_name, graph=graph)
-#        else:
-#            graph.node(node_name, label=f'{tree["Pass"]}P, {tree["Fail"]}F', shape='box')
-#
-#    return graph
-
-# Usage:
-#graph = visualize_tree(cleaned_tree)
-#graph.render('decision_tree', format='png', cleanup=True)
-
-
-# -------------------------------------------------------------------------------------------------------------------------
-#+++++++++++++
-#EXAMPLE USAGE:
-#+++++++++++++
-#
-#tree = grow_tree(X, y, func=find_best_split_gini)
-tree = grow_tree(X, y)
-cleaned_tree = clean_tree(tree)
-#test_data = {"Other online courses": "Y", "Student background": "Maths", "Working Status": "NW"}
-test_data = {"Other online courses": "Y", "Student background": "Maths", "Working Status": "W"}
-prediction = predict(cleaned_tree, test_data)
-print(f"The predicted class is: {prediction}")
 
 breakpoint()
-# -------------------------------------------------------------------------------------------------------------------------

@@ -1,4 +1,14 @@
 #!/usr/bin/env python
+"""
+------------------------------------------------------------------------------------------------------------------------------
+Parker, Cory 
+AI Fundamentals graduate course at RIT
+7/10/24 -- Actual start of project
+
+The Help:
+    - https://medium.com/@cristianleo120/master-decision-trees-and-building-them-from-scratch-in-python-af173dafb836
+------------------------------------------------------------------------------------------------------------------------------
+"""
 import pandas as pd
 import numpy as np
 
@@ -226,42 +236,5 @@ print(f"Weighted child entropy: {best_child_entropy}")
 print(f"Left subset: \n{left[0]} \nTarget: \n{left[1]}")
 print(f"Right subset: \n{right[0]} \nTarget: \n{right[1]}")
 
-
-#def find_best_split(X, y):
-#    """
-#    Uses the MIDPOINTS of values instead of the unique values, since it's
-#    sightly faster.  It's also better for continuous variables.
-#    ------------------------------------------
-#    INPUT:
-#        X: (pd.DataFrame) Attributes and their values
-#        y: (pd.Series) Classifications
-#
-#    OUTPUT:
-#        best_attribute, best_ig, best_value: (tuple)
-#    """
-#    best_attribute = None
-#    best_ig = -1
-#    best_value = None
-#
-#    for attribute in X.columns:
-#        # Unique sorted values
-#        unique_values = sorted(X[attribute].unique())
-#        # Midpoint values
-#        mid_points = [(unique_values[i] + unique_values[i+1])/2 for i in
-#                      range(len(unique_values) - 1)]
-#
-#        # Output the midpoints for debugging
-#        print(f"Midpoints: {mid_points}") 
-#
-#        for value in mid_points:
-#            # Calculate information gain for threshold value
-#            ig = information_gain(X, y, attribute, value)
-#            print(f"Value: {value} --> IG({attribute}) = {ig}")
-#            if ig > best_ig:
-#                best_ig = ig
-#                best_attribute = attribute
-#                best_value = value
-#
-#    return best_attribute, best_ig, best_value
 
 breakpoint()
