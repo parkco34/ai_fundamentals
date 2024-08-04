@@ -196,19 +196,49 @@ def find_best_split_ig(X, y):
     """ 
     best_attribute = None
     best_ig = -1.0
+    best_threshold = None
 
-    for attribute in X.columns:
-        ig = information_gain(X, y, attribute)
-#        print(f"ig: {ig}\nattribute: {attribute}")
+    for attribute in X.columns: # ? 
+        # Continuous attribute values
+        if pd.api.types.is_numeric_dtype(X[attribute]):
+            sorted_values = X[attribute].sort_values().unique()
+            midpoints = [(sorted_values[i] + sorted_values[i+1]) / 2 for i in
+                         range(len(sorted_values) - 1)]
 
-        if ig > best_ig:
-            best_ig = ig
-            best_attribute = attribute
+            for threshold in midpoints:
+                left_mask = X[attribute] <= threshold
+                right_mask = ~left_mask
 
-#    print(f"Best attribute: {best_attribute}")
-#    print(f"Best information gain: {best_ig}")
+                left_y = y[left_mask]
+                right_y = y[right_mask]
 
-    return best_attribute
+                left_entropy = data_entropy(left_y)
+                right_entropy = data_entropy(right_y)
+
+                left_weight = len(left_y) / len(y)
+                right_weight = len(right_y) / len(y)
+
+                weighted_entropy = left_weight * (left_entropy + right_weight *
+                right_entropy)
+                # Information gain
+                ig = data_entropy(y) - weighted_entropy
+
+                # Compare current information gain to highest one so far
+                if ig > best_ig:
+                    best_ig = ig
+                    best_attribute = attribute
+                    best_threshold = threshold
+    
+        # Categorical attribute values
+        else:
+            ig = information_gain(X, y)
+
+            if ig > best_ig:
+                best_ig = ig
+                best_attribute = attribute
+                best_threshold = None
+
+    return best_attribute, best_threshold
 
 def find_best_split_ig_continuous(X, y):
     """
@@ -232,16 +262,36 @@ def find_best_split_ig_continuous(X, y):
 
     for attribute in X.columns:
         sorted_values = X[attribute].sort_values().unique()
+        # Thresholds
+        midpoints = [(sorted_values[i] + sorted_values[i+1])/2 for i in
+                     range(len(sorted_values) - 1)]
 
-        for i in range(len(sorted_values) - 1):
-            midpoint = (sorted_values[i] + sorted_values[i+1]) / 2
-            left_mask = X[attribute] <= midpoint
-            right_mask = X[attribute] > midpoint
-
+        # Split into subsets, above/below threshold values
+        for threshold in midpoints:
+            left_mask = X[attribute] <= threshold
+            right_mask = ~left_mask
+            
+            # Corresponding target labels
             left_y = y[left_mask]
             right_y = y[right_mask]
-            # ?
 
+            # Get entropy for each subset
+            left_entropy = data_entropy(left_y)
+            right_entropy = data_entropy(right_y)
+
+            left_weight = len(left_y) / len(y)
+            right_weight = len(right_y) / len(y)
+
+            weighted_entropy = left_weight * left_entropy + (right_weight *
+            right_entropy)
+            ig = data_entropy(y) - weighted_entropy
+
+            if ig > best_ig:
+                best_ig = ig
+                best_attribute = attribute
+                best_threshold = threshold
+
+    return best_attribute, best_threshold, best_ig
 
 def find_best_split_gini(X, y):
     """
@@ -307,18 +357,16 @@ def grow_tree(X, y, max_depth=None, min_num_samples=2, current_depth=0,
 
     best_feature = func(X, y)
 
-    # No best information gain, return most common item
-    if best_feature is None:
+    if best_feature in None:
         return y.mode().iloc[0]
 
     # Initialize tree with ROOT NODE
     my_tree = {}
-
-    
+    # ?
 
 # Usage
 X, y = read_data("data/example.csv", "Diagnosis")
 #X, y = read_data("data/exam_results.csv", "Exam Result")
-
-
 breakpoint()
+
+#breakpoint()

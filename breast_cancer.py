@@ -111,11 +111,11 @@ def importance(y, X, attribute):
     for value in attr_values:
         # Creating child dataframe where D_i,l, where attr-value l
         child_y = y[X[attribute] == value] # classification
-        print(f"child classification: {type(child_y)}")
+#        print(f"child classification: {type(child_y)}")
         weight = len(child_y) / len(y)
         # Child entropy
         child_entropy = entropy(child_y)
-        print(f"child entropy: {type(child_entropy)}")
+#        print(f"child entropy: {type(child_entropy)}")
         # Add weighted child entropy to the sum  
         weighted_child_entropy += weight * child_entropy
         # Calculate information gain
@@ -196,7 +196,8 @@ def cross_validation():
     """
     pass
 
-df_entropy = entropy(y_encoded)
+X, y = read_data("data/merged.csv")
+df_entropy = entropy(y)
 print(f"\nEntropy for dataset: {df_entropy}\n")
 
 #ig_list = []
