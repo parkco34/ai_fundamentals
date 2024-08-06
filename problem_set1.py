@@ -88,10 +88,11 @@ def data_entropy(y):
 
     return -sum(p * log2(p) for p in probabilities if p > 0)
 
-def attribute_entropy(X, y, attribute):
+def attribute_entropy(X, y, attribute, threshold=None):
     """
-    Weighted entropy for attribute.
-    --------------------------------
+    Weighted entropy for attribute, automatically adjusting for
+    continuous/categorical attribute values.
+    --------------------------------------------------
     INPUT:
         X: (pd.DataFrame) Attribute data
         y: (pd.Series) Target attribute
@@ -101,21 +102,46 @@ def attribute_entropy(X, y, attribute):
         weighted_entropy: (float)
     """
     total = len(y)
-    attribute_values = X[attribute].unique()
-    weighted_entropy = 0
-    
-    # Get corresponding class labels for the attribute values (Subset) ? 
-    for value in attribute_values:
-        subset_y = y[X[attribute] == value]
-        subset_total = len(subset_y)
-        weight = subset_total / total
-        subset_entropy = data_entropy(subset_y)
-        
-        weighted_entropy += weight * subset_entropy
 
-    return weighted_entropy
+    if pd.api.types.is_numeric_dtype(X[attribute]) and threshold is not None:
+        # continuous variables
+        for value in X[attribute].unique():
+            # Masks
+            left_mask = X[X[attribute] <= value]
+            right_mask = ~left_mask
+            
+            # Subsets; we only need the corresponding target values
+            left_y = y[left_mask]
+            right_y = y[right_mask]
 
-def information_gain(X, y, attribute):
+            # Weights
+            left_weight = len(left_y) / total
+            right_weight = len(right_y) / total
+
+            # Entropies
+            left_entropy = data_entropy(left_y)
+            right_entropy = data_entropy(right_y)
+
+            # Weighted entropy
+            weighted_entropy = left_entropy * left_weight + (right_entropy *
+            right_weight)
+
+        else:
+            # Inititalze weighted entropy
+            weighted_entropy = 0
+
+            # Categorical variables
+            for value in X[attribute].unique():
+                subset_y = y[X[attribute] == value]
+                subset_total = len(susbet_y)
+                weight = subset_y / subset_total
+
+                weighted_entropy += data_entropy(subset_y) * weight
+
+        return weighted_entropy
+
+
+def information_gain(X, y, attribute, threshold=None):
     """
     Entropy reduction
     --------------------------------------
@@ -128,7 +154,7 @@ def information_gain(X, y, attribute):
         info_gain: (float)
     """
     parent_entropy = data_entropy(y)
-    weighted_child_entropy = attribute_entropy(X, y, attribute)
+    weighted_child_entropy = attribute_entropy(X, y, attribute, threshold)
 
     return parent_entropy - weighted_child_entropy
 
@@ -155,6 +181,7 @@ def data_gini_index(y):
 
 def attribute_gini_index(X, y, attribute):
     """
+    CATEGORICAL ATTRIBUTE VALUES
     Calculates the weighted Gini index for a given attribute.
     ------------------------------------------------------
     INPUT:
@@ -180,9 +207,10 @@ def attribute_gini_index(X, y, attribute):
 
 def find_best_split_ig(X, y):
     """
-    Uses INFORMATION GAIN.
+    Uses INFORMATION GAIN to minimize Cost Function.
     -------------------------------------------
-    Find highest information gain of all attributes.
+    Find highest information gain of all attributes, automatically determining
+    whether attribute values are continuous or categorical.
     Looping thru each attribute, calculating the weighted average entropy,
     subtracing each from the parent entropy, where the attribute with the
     hightest information gain is returned to find the ROOT NODE to split on.
@@ -192,19 +220,20 @@ def find_best_split_ig(X, y):
         y: (pd.Series) Target attribute
 
     OUTPUT:
-        node: (str) Attribute for split 
+        best_attribute, best_threshold: (tuple: (str), (float))
     """ 
     best_attribute = None
     best_ig = -1.0
     best_threshold = None
 
-    for attribute in X.columns: # ? 
+    for attribute in X.columns:
         # Continuous attribute values
         if pd.api.types.is_numeric_dtype(X[attribute]):
             sorted_values = X[attribute].sort_values().unique()
             midpoints = [(sorted_values[i] + sorted_values[i+1]) / 2 for i in
                          range(len(sorted_values) - 1)]
 
+            # Partition ? 
             for threshold in midpoints:
                 left_mask = X[attribute] <= threshold
                 right_mask = ~left_mask
@@ -240,64 +269,12 @@ def find_best_split_ig(X, y):
 
     return best_attribute, best_threshold
 
-def find_best_split_ig_continuous(X, y):
-    """
-    Uses INFORMATION GAIN for CONTINUOUS feature values.
-    -------------------------------------------
-    Find highest information gain of all attributes.
-    Looping thru each attribute, calculating the weighted average entropy,
-    subtracing each from the parent entropy, where the attribute with the
-    hightest information gain is returned to find the ROOT NODE to split on.
-    --------------------------------------------
-    INPUT:
-        X: (pd.DataFrame) Attribute data
-        y: (pd.Series) Target attribute
-
-    OUTPUT:
-        node: (str) Attribute for split 
-    """ 
-    best_attribute = None
-    best_ig = -1.0
-    best_threshold = None
-
-    for attribute in X.columns:
-        sorted_values = X[attribute].sort_values().unique()
-        # Thresholds
-        midpoints = [(sorted_values[i] + sorted_values[i+1])/2 for i in
-                     range(len(sorted_values) - 1)]
-
-        # Split into subsets, above/below threshold values
-        for threshold in midpoints:
-            left_mask = X[attribute] <= threshold
-            right_mask = ~left_mask
-            
-            # Corresponding target labels
-            left_y = y[left_mask]
-            right_y = y[right_mask]
-
-            # Get entropy for each subset
-            left_entropy = data_entropy(left_y)
-            right_entropy = data_entropy(right_y)
-
-            left_weight = len(left_y) / len(y)
-            right_weight = len(right_y) / len(y)
-
-            weighted_entropy = left_weight * left_entropy + (right_weight *
-            right_entropy)
-            ig = data_entropy(y) - weighted_entropy
-
-            if ig > best_ig:
-                best_ig = ig
-                best_attribute = attribute
-                best_threshold = threshold
-
-    return best_attribute, best_threshold, best_ig
-
 def find_best_split_gini(X, y):
     """
-    Uses GINI INDEX.
+    Uses GINI INDEX to minimize the cost function.
     -----------------------------------------------
-    Finds lowest gini index for attributes.
+    Finds lowest gini index for attributes, automatically determining whether
+    attribute values are categorical or continuous.
     Loops thru each attribute, calculating the weighted gini index, summing the
     product of the weights and the attribute gini indices.
     -----------------------------------------------
@@ -306,20 +283,54 @@ def find_best_split_gini(X, y):
         y: (pd.Series) Target attribute
 
     OUTPUT:
-        node: (str) Attribute for split
+        best_attribute, best_threshold: (tuple: (str), (float))
     """
     # Initialize with large value since gini ~ 1/info_gain
     best_attribute = None
     best_gini = float("inf")
+    best_threshold = None
 
     for attribute in X.columns:
-        gini = attribute_gini_index(X, y, attribute)
+        # Check attribute data types
+        if pd.api.types.is_numeric_dtype(X[attribute]):
+            # Continuous attribute values
+            sorted_values = X[attribute].sort_values().unique()
+            midpoints = [(sorted_values[i] + sorted_values[i+1]) / 2 for i in
+                        range(len(sorted_values) - 1)]
+            
+            # Compare threshold values
+            for threshold in midpoints:
+                left_mask = X[attribute] <= threshold
+                right_mask =  ~left_mask
+                
+                # Partiion
+                left_y = y[left_mask]
+                right_y = y[right_mask]
+                
+                left_weight = len(left_y) / len(y)
+                right_weight = len(right_y) / len(y)
+                
+                left_gini = data_gini_index(left_y)
+                right_gini = data_gini_index(right_y)
+    
+                weighted_gini = left_weight * left_gini + (right_weight *
+                right_gini)
+                
+                # Determine the best gini, attribute, and threshold
+                if weighted_gini < best_gini:
+                    best_gini = weighted_gini
+                    best_attribute = attribute
+                    best_threshold = threshold   
+        
+        else:
+            # Categorical attribute values
+            gini = attribute_gini_index(X, y, attribute)
 
-        if gini < best_gini:
-            best_gini = gini
-            best_attribute = attribute
+            if gini < best_gini:
+                best_gini = gini
+                best_attribute = attribute
 
-    return best_attribute
+    return best_attribute, best_threshold
 
 def grow_tree(X, y, max_depth=None, min_num_samples=2, current_depth=0,
               func=find_best_split_ig):
@@ -336,7 +347,7 @@ def grow_tree(X, y, max_depth=None, min_num_samples=2, current_depth=0,
             split with; Information gain or Gini Index.
         
     OUTPUT:
-        (dict): (tree: (dict), pass/fail: (dict))
+        my_tree: (dict): (tree: (dict), pass/fail: (dict))
     """
     # ------------------
     # Stopping criteria
@@ -349,24 +360,58 @@ def grow_tree(X, y, max_depth=None, min_num_samples=2, current_depth=0,
     # Check for minimum number of samples, returning the mode (most common) if
     # so, where "samples" refers to the rows of X.
     if len(X) < min_num_samples:
+        print(f"X is less than minimum number of samples")
         return y.mode().iloc[0]
 
     # Exceeding the max depth, returning the mode if so
     if max_depth is not None and current_depth >= max_depth:
+        print(f"current_depth :{current_depth}")
         return y.mode().iloc[0]
 
-    best_feature = func(X, y)
+    best_feature, best_threshold = func(X, y)
 
-    if best_feature in None:
+    if best_feature is None:
+        print(f"best featture: {best_feature}")
         return y.mode().iloc[0]
 
-    # Initialize tree with ROOT NODE
-    my_tree = {}
-    # ?
+    # Root node
+    best_feature, best_threshold = func(X, y)
+
+    # Ensure no nonsense
+    if best_feature is None:
+        return y.mode().iloc[0]
+
+    # Initialize root node
+    my_tree = {
+        "feature": best_feature,
+        "threshold": best_threshold,
+        "left": None,
+        "right": None
+    }
+
+    # Split data depending on data types for features
+    if pd.api.types.is_numeric_dtype(X[best_feature]):
+        left_mask = X[best_feature] <= best_threshold
+
+    else:
+        left_mask = X[best_feature] == best_threshold
+
+    # Partitioning
+    X_left, y_left = X[left_mask], y[left_mask]
+    X_right, y_right = X[~left_mask], y[~left_mask]
+
+    # Recursively grow left and right subtrees
+    my_tree["left"] = grow_tree(X_left, y_left, max_depth, min_num_samples,
+                                current_depth+1, func)
+    my_tree["right"] = grow_tree(X_right, y_right, max_depth, min_num_samples,
+    current_depth+1, func)
+
+    return my_tree
+
+
 
 # Usage
-X, y = read_data("data/example.csv", "Diagnosis")
+X, y = read_data("data/merged.csv", "Diagnosis")
 #X, y = read_data("data/exam_results.csv", "Exam Result")
 breakpoint()
 
-#breakpoint()
