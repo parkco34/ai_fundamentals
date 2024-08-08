@@ -33,7 +33,7 @@ def get_initial_population(data):
         S: (lst of tuples) set of n items with weights and values.
         stop: (int) final generation (stopping condition).
     """
-    capacity = data["capacity"]
+    capacity = data["capacity"] # Max weight
     population = [data["chromosomes"][i]["bits"] for i in
                   range(len(data["chromosomes"]))]
     n = len(population[0]) # Number of items (genes)
@@ -46,6 +46,60 @@ def get_initial_population(data):
     stop = 10 # No reason
 
     return population, capacity, S, generation, stop
+
+def dot_product(V, U):
+    """
+    Calculates dot product for the two lists.
+    ----------------------------------------
+    INPUT:
+        V: (list)
+        U: (list)
+
+    OUTPUT:
+        dot: (int) Dot product
+    """
+    if len(V) != len(U):
+        return 0
+
+    return sum(i[0] * i[1] for i in zip(V, U))
+   
+def fitness(chromosome, weight_value_pair, capacity):
+    """
+    Fitness function via DOT PRODUCT.
+    ---------------------------------
+    INPUT:
+        chromosome: (list)
+        weight_value_pair: (tuple) Weight/value pairs.
+        capacity: (int) Max weight limit of knapsack.
+
+    OUTPUT:
+        profit: (float) Dot product of the two vectors: (chromosomes and
+        values).
+    """
+    # Split weights and values
+    weights = [pair[0] for pair in S]
+    values = [pair[1] for pair in S]
     
+    cumulative_weight = dot_product(chromosome, weights)
+    #  Ensure capacity isn't exceeded
+    if cumulative_weight <= capacity:
+        profit = dot_product(chromosome, values)
+
+    else:
+        profit = 0
+
+    return profit
+
+def selection():
+    """
+    Select children population for next generation.
+    ---------------------------------------
+    INPUT:
+
+    OUTPUT:
+
+    """
+    pass
+
 
 breakpoint()
