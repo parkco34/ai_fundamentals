@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from random import random
 
 # Data
 knapsack_data = {
@@ -43,7 +44,7 @@ def get_initial_population(data):
     # Set of items: (weights, values)
     S = [(item["weight"], item["value"]) for item in data["items"]]
     # Stopping criteria
-    stop = 10 # No reason
+    stop = 10 # No reason ? Dynamic programming to handle this automatically...
 
     return population, capacity, S, generation, stop
 
@@ -77,8 +78,8 @@ def fitness(chromosome, weight_value_pair, capacity):
         values).
     """
     # Split weights and values
-    weights = [pair[0] for pair in S]
-    values = [pair[1] for pair in S]
+    weights = [pair[0] for pair in weight_value_pair]
+    values = [pair[1] for pair in weight_value_pair]
     
     cumulative_weight = dot_product(chromosome, weights)
     #  Ensure capacity isn't exceeded
@@ -86,20 +87,105 @@ def fitness(chromosome, weight_value_pair, capacity):
         profit = dot_product(chromosome, values)
 
     else:
-        profit = 0
+        profit = 0 # ?
 
     return profit
 
-def selection():
+def roulette_selection(population, fitness_scores, num_selections=1):
     """
-    Select children population for next generation.
-    ---------------------------------------
+    Perform Roulette Wheel Selection for either one or multiple selections.
+    ---------------------------------------------
     INPUT:
+        population: (list of lists)
+        fitness_scores: (list)
+        num_selections: (int; default: 1) Number of individuals to select.
 
-    OUTPUT:
+    OUTPUT;
+        sub_population: (list) Selected chromosomes
+    """
+    sub_populations = []
 
+    total_fitness = sum(fitness_scores)
+    selection_probabilities = [fit / total_fitness for fit in fitness_scores]
+    # "Spinning wheela" via random number generation contained within
+    # probability distribution
+    cumulative_probs = []
+    cumulative_sum = 0
+
+    # Getting cumulative probabilites which allows the selection process to
+    # maintain exact probabilities assigned to individuals via their fitness
+    for prob in selection_probabilities:
+        cumulative_sum += prob
+        cumulative_probs.append(cumulative_sum)
+   
+    # Selecting individuals in proportion to their fitness
+    for peepz in range(num_selections):
+        r = random()
+        
+        # Get sub-population that contains uniform random #
+        for i, cumulative_prob in enumerate(cumulative_probs):
+            if r <= cumulative_prob:
+                sub_populations.append(population[i])
+                break
+
+    # Determine if single or multiple individuals to be returned
+    if num_selections == 1:
+        return sub_populations[0]
+
+    else:
+        return sub_populations
+
+def tournament_selection(population, fitness_scores, num_selections=1):
+    """
+    ?
     """
     pass
 
+
+def crossover(parent1, parent2, crossover_rate):
+    """
+    Single-point crossover between two abusive parents.
+    --------------------------------------------------
+    INPUT:
+        parent1: (np.array) Parent 1 chromosome.
+        parent2: (np.array) Parent 2 chromosome.
+        crossover_rate: (float) Probability of performing crossover.
+
+    OUTPUT:
+        offspring1, offspring2: (tuple) Two offspring chromosomes.
+    """
+    pass
+
+def mutation(chromosome):
+    """
+    Mutation on a chromosome.
+    ------------------------------------------------
+    INPUT:
+        chromosome: (np.array)
+        mutation_rate: (float) Probability of mutating each gene.
+
+    OUTPUT:
+        mutated_chromosome: (np.array)
+    """
+    pass
+
+def genetic_algorithm(config_file):
+    """
+    Implements genetic algorithm for 0-1 knapsack problem.
+    -------------------------------------------------
+    INPUT:
+        config_file: (str) File path
+
+    OUTPUT:
+        best_solution, best_fitness, generation: (tuple: (np.array, float, int))  
+    """
+    pass
+
+
+
+population, capacity, S, generation, stop = \
+get_initial_population(knapsack_data)
+
+fits = [fitness(population[i], S, capacity) for i in range(len(population))]
 
 breakpoint()
