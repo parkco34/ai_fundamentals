@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+"""
+Parker, Cory
+AI Fundamentals graduate course at RIT
+8/9/2024 - Start
+
+The Help:
+    - https://cratecode.com/info/tag/genetic-algorithm
+"""
 
 
 def get_initial_population(config):
