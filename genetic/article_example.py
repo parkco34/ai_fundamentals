@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from textwrap import dedent
 from random import random, sample, choice
 
 # Data
@@ -91,14 +92,14 @@ def fitness(chromosome, weight_value_pair, capacity):
 
     return profit
 
-def roulette_selection(population, fitness_scores, num_selections=1):
+def roulette_selection(population, fitness_scores, num_selections=2):
     """
     Perform Roulette Wheel Selection for either one or multiple selections.
     ---------------------------------------------
     INPUT:
         population: (list of lists)
         fitness_scores: (list)
-        num_selections: (int; default: 1) Number of individuals to select.
+        num_selections: (int; default: 2) Number of individuals to select.
 
     OUTPUT;
         sub_population: (list) Selected chromosomes
@@ -135,7 +136,8 @@ def roulette_selection(population, fitness_scores, num_selections=1):
     else:
         return sub_populations
 
-def tournament_selection(population, fitness_scores, tournament_size=3, num_selections=1):
+def tournament_selection(population, fitness_scores, tournament_size=3,
+                         num_selections=2):
     """
     Selects most fit via competetion (Tournament).
     ---------------------------------------------------
@@ -143,7 +145,7 @@ def tournament_selection(population, fitness_scores, tournament_size=3, num_sele
         population: (list of lists)
         fitness_scores: (list)
         tournament_size: (int; default=3)
-        num_selections: (int; default: 1) Number of individuals to select.
+        num_selections: (int; default: 2) Number of individuals to select.
 
     OUTPUT;
         sub_population: (list) Selected chromosomes
@@ -168,7 +170,7 @@ def tournament_selection(population, fitness_scores, tournament_size=3, num_sele
     else:
         return selected
 
-def single_point_crossover(parent1, parent2, crossover_rate):
+def single_point_crossover(parent1, parent2, crossover_rate=0.7):
     """
     Single-point crossover between two abusive parents, splitting at a randomly
     selected point in chromosome for recombination.
@@ -176,7 +178,8 @@ def single_point_crossover(parent1, parent2, crossover_rate):
     INPUT:
         parent1: (list) Parent 1 chromosome.
         parent2: (list) Parent 2 chromosome.
-        crossover_rate: (float) Probability of performing crossover.
+        crossover_rate: (float; default=0.7) Probability of performing
+        crossover ?
 
     OUTPUT:
         bastards: (tuple) Two offspring chromosomes.
@@ -191,7 +194,7 @@ def single_point_crossover(parent1, parent2, crossover_rate):
 
     return child1, child2
 
-def k_point_crossover(parent1, parent2, crossover_rate, k=2):
+def k_point_crossover(parent1, parent2, crossover_rate=0.7):
     """
     Combines chromosomes of parents to create offspring, inhereting best
     traits, using k-point crossover, which randomly selects k point in
@@ -200,13 +203,42 @@ def k_point_crossover(parent1, parent2, crossover_rate, k=2):
     INPUT:
         parent1: (list)
         parent2: (list)
-        crossover_rate: (float)
-        k: (int; defaul=2) Default: two-point crossover.
+        crossover_rate: (float; default=0.7)
 
     OUTPUT:
         bastards: (tuple) ?
     """
-    pass
+    # Randomly determine the k value: (1 <= k < len(parent1))
+    k = randint(1, len(parent1)-1)
+    # Initialize children
+    child1, child2 = [], []
+
+    # Ensure proper inputs
+    if k >= len(parent1) or k < 1:
+        raise ValueError(dedent("""
+k must be a positive integer less than the length of
+parent chromosome
+        """))
+
+    # Unique crossover points in sorted order
+    crossover_points = sorted(sample(range(1, len(parent1)), k))
+
+    # Crossover operation
+    for i in range(len(parent1)):
+        # Swap the kth position between parents
+        if i in crossover_points:
+            child1.append(parent2[i])
+            child2.append(parent1[i])
+
+        else:
+            child1.append(parent1[i])
+            child2.append(parent2[i])
+
+    # Inidicate whether crossover operation did anything
+    if child1 == parent1 and child2 == parent2:
+        raise Exception("Crossover did nothing!")
+
+    return child1, child2
 
 def mutation(chromosome):
     """
@@ -234,10 +266,21 @@ def genetic_algorithm(config_file):
     pass
 
 
-
+# Example usage
 population, capacity, S, generation, stop = \
 get_initial_population(knapsack_data)
-
 fits = [fitness(population[i], S, capacity) for i in range(len(population))]
-
+roulette = roulette_selection(population, fits, 2)
+parent1, parent2 = roulette[0], roulette[1]
+#tournament = tournament_selection(population, fits)
+#parent1, parent2 = tournament[0], tournament[1]
 breakpoint()
+
+child1, child2 = k_point_crossover(parent1, parent2)
+
+
+
+
+
+
+
