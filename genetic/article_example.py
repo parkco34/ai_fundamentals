@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from textwrap import dedent
-from random import random, sample, choice
+from random import random, sample, choice, randint
 
 # Data
 knapsack_data = {
@@ -94,7 +94,8 @@ def fitness(chromosome, weight_value_pair, capacity):
 
 def roulette_selection(population, fitness_scores, num_selections=2):
     """
-    Perform Roulette Wheel Selection for either one or multiple selections.
+    Perform Roulette Wheel Selection for either one or multiple selections,
+    producing the parents.
     ---------------------------------------------
     INPUT:
         population: (list of lists)
@@ -102,44 +103,14 @@ def roulette_selection(population, fitness_scores, num_selections=2):
         num_selections: (int; default: 2) Number of individuals to select.
 
     OUTPUT;
-        sub_population: (list) Selected chromosomes
+        selected: (list) Selected chromosomes
     """
-    sub_populations = []
-
-    total_fitness = sum(fitness_scores)
-    selection_probabilities = [fit / total_fitness for fit in fitness_scores]
-    # "Spinning wheela" via random number generation contained within
-    # probability distribution
-    cumulative_probs = []
-    cumulative_sum = 0
-
-    # Getting cumulative probabilites which allows the selection process to
-    # maintain exact probabilities assigned to individuals via their fitness
-    for prob in selection_probabilities:
-        cumulative_sum += prob
-        cumulative_probs.append(cumulative_sum)
+    pass # ?
    
-    # Selecting individuals in proportion to their fitness
-    for peepz in range(num_selections):
-        r = random()
-        
-        # Get sub-population that contains uniform random #
-        for i, cumulative_prob in enumerate(cumulative_probs):
-            if r <= cumulative_prob:
-                sub_populations.append(population[i])
-                break
-
-    # Determine if single or multiple individuals to be returned
-    if num_selections == 1:
-        return sub_populations[0]
-
-    else:
-        return sub_populations
-
 def tournament_selection(population, fitness_scores, tournament_size=3,
                          num_selections=2):
     """
-    Selects most fit via competetion (Tournament).
+    Selects most fit via competetion (Tournament), producing the parents.
     ---------------------------------------------------
     INPUT:
         population: (list of lists)
@@ -150,25 +121,7 @@ def tournament_selection(population, fitness_scores, tournament_size=3,
     OUTPUT;
         sub_population: (list) Selected chromosomes
     """
-    selected =[]
-
-    for dude in range(num_selections):
-        tournament_indices = sample(range(len(population)), tournament_size)
-        tournament_dudes = [population[i] for i in tournament_indices]
-        tournament_fitness = [fitness_scores[i] for i in tournament_indices]
-
-        # Highest fitness individual
-        winner_index = tournament_fitness.index(max(tournament_fitness))
-        winner = tournament_dudes[winner_index]
-
-        selected.append(winner)
-
-    # Number of dudes to return
-    if num_selections == 1:
-        return selected[0]
-
-    else:
-        return selected
+    pass # ?
 
 def single_point_crossover(parent1, parent2, crossover_rate=0.7):
     """
@@ -208,10 +161,18 @@ def k_point_crossover(parent1, parent2, crossover_rate=0.7):
     OUTPUT:
         bastards: (tuple) ?
     """
-    # Randomly determine the k value: (1 <= k < len(parent1))
-    k = randint(1, len(parent1)-1)
-    # Initialize children
-    child1, child2 = [], []
+    # Ensure parents are same length
+    if len(parent1) != len(parent2):
+        raise ValueError(dedent("""
+Parents must be thes same length!
+                         """))
+    # Crossover rate
+    if random() > crossover_rate:
+        return parent1[:], parent2[:] # if no crossover
+
+    # Randomly determine the k value w/ limit being one less than the length of
+    # parent chromsome
+    k = randint(1, min(len(parent1)-1, len(parent1)-1))
 
     # Ensure proper inputs
     if k >= len(parent1) or k < 1:
@@ -222,38 +183,56 @@ parent chromosome
 
     # Unique crossover points in sorted order
     crossover_points = sorted(sample(range(1, len(parent1)), k))
+    chromosome_length = len(parent1)
+    # Initialize children
+    child1, child2 = [], []
+    use_parent1 = True
 
-    # Crossover operation
-    for i in range(len(parent1)):
-        # Swap the kth position between parents
-        if i in crossover_points:
-            child1.append(parent2[i])
-            child2.append(parent1[i])
+    start = 0
+    for point in crossover_points + [chromosome_length]:
+        
+        if use_parent1:
+            child1.extend(parent1[start:point])
+            child2.extend(parent2[start:point])
 
         else:
-            child1.append(parent1[i])
-            child2.append(parent2[i])
+            child1.extend(parent2[start:point])
+            child2.extend(parent1[start:point])
+        
+        use_parent1 = not use_parent1
+        start = point
 
-    # Inidicate whether crossover operation did anything
-    if child1 == parent1 and child2 == parent2:
-        raise Exception("Crossover did nothing!")
+    # Ensure children are different from parents and eachother
+    if child1 == parent1 or child1 == parent2 or child1 == child2:
+        # If child identical to parent or other child, flip bit
+        flip_index = sample(range(chromosome_length), 1)[0]
+        child1[flip_index] = 1 - child1[flip_index]
+
+    if child2 == parent1 or child2 == parent2 or child2 == child1:
+        flip_index = sample(range(chromosome_length), 1)[0]
+        child2[flip_index] = 1 - child2[flip_index]
 
     return child1, child2
-
-def mutation(chromosome):
+    
+def bit_flip_mutation(chromosome):
     """
-    Mutation on a chromosome.
+    Mutation on a chromosome via BIT-FLIP.
     ------------------------------------------------
     INPUT:
         chromosome: (np.array)
-        mutation_rate: (float) Probability of mutating each gene.
 
     OUTPUT:
-        mutated_chromosome: (np.array)
+        mutated_chromosome: (list)
     """
-    pass
+    # rate ~ 1/L, where L = length of chromosome
+    mutation_rate = 1 / len(chromosome)
+    # Flip bits if probability less than mutation rate
+    mutated_chromosome = [1 - gene if random() < mutation_rate else gene for
+                         gene in chromosome]
 
-def genetic_algorithm(config_file):
+    return mutated_chromosome
+
+def genetic_algorithm():
     """
     Implements genetic algorithm for 0-1 knapsack problem.
     -------------------------------------------------
@@ -263,21 +242,58 @@ def genetic_algorithm(config_file):
     OUTPUT:
         best_solution, best_fitness, generation: (tuple: (np.array, float, int))  
     """
-    pass
+    # initialization
+    population, capacity, items, generation, stop = get_initial_population(knapsack_data)
+
+    best_solution = None
+    best_fit = 0
+
+    # Looping over generations
+    for gen in range(stop):
+        fitness_scores = [fitness(chromosome, items, capacity) for chromosome
+                          in population]
+        best_fit_indx = fitness_scores.index(max(fitness_scores))
+
+        # Track best solutions
+        if fitness_scores[best_fit_indx] > best_fit:
+            best_fit = fitness_scores[best_fit_indx]
+            best_solution = population[best_fit_indx]
+
+        # Selection: Roulette vs Tournament
+        parents = roulette_selection(population, fitness_scores)
+#        parents = tournament_selection(population, fitness_scores) # ? Adjust!
+        
+        # Crossover operator
+        kids = []
+        for i in range(0, len(parents), 2):
+            # Msut be pairs of parents
+            if i+1 < len(parents):
+                child1, child2 = single_point_crossover(parents[i], parents[i+1])
+                kids.extend([child1, child2])
+
+        # Mutation 
+        mutated_kids = [bit_flip_mutation(child) for child in kids]
+
+        population = mutated_kids
+
+    return best_solution, best_fit, gen
+
 
 
 # Example usage
+# ------------------------------------------------------------------------
 population, capacity, S, generation, stop = \
 get_initial_population(knapsack_data)
 fits = [fitness(population[i], S, capacity) for i in range(len(population))]
 roulette = roulette_selection(population, fits, 2)
-parent1, parent2 = roulette[0], roulette[1]
+#parent1, parent2 = roulette[0], roulette[1] # ? fix: parents SAME
 #tournament = tournament_selection(population, fits)
 #parent1, parent2 = tournament[0], tournament[1]
+#k = randint(1, min(len(parent1)-1, len(parent1)-1))
+#child1, child2 = k_point_crossover(parent1, parent2, k)
+# ------------------------------------------------------------------------
+#thing = genetic_algorithm()
 breakpoint()
-
-child1, child2 = k_point_crossover(parent1, parent2)
-
 
 
 
