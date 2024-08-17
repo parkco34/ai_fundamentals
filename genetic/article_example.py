@@ -404,7 +404,7 @@ def genetic_algorithm(selction_function=roulette_selection,
                            in next_generation]
         # Update population
 
-
+# Infinite loop somewhere ... ?
 
 
 # Example usage
