@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from textwrap import dedent
-from random import random, sample, choice, randint
+from random import random, sample, choice, randint, uniform
 
 # Data
 knapsack_data = {
@@ -20,6 +20,67 @@ knapsack_data = {
         {"bits": [0, 0, 0, 1, 0, 1], "weight": 13, "value4": 35}
     ]
 }
+
+def input_validation(population, fitness_scores, **kwargs):
+    """
+    Validates inputs for genetic algorithm functions.
+    ------------------------------------------------------
+    INPUT:
+        population: (list) Individuals
+        fitness_scores: (list)
+        **kwargs: Additional parameters to validate:
+            - tournament_size: (int)
+            - num_selections: (int)
+            - crossover_rate: (float)
+            - mutation_rate: (float)
+
+    OUTPUT:
+        None: Raises ValueError if inputs are invalid
+    """
+    # Ensure proper data dypes
+    if not isinstance(population, list) or not isinstance(fitness_scores,
+                                                          list):
+        raise ValueError("Population and fitness scores must be lists")
+
+    # Fitnesses much corrspond to individual in population
+    if len(population) != len(fitness_scores):
+        raise ValueError("Population and fitness scores must be same length")
+
+    if len(population) == 0:
+        raise ValueError("Population cannot be empty")
+
+    if any(score < 0 for score in fitness_scores):
+        raise ValueError("Fitness scores cannot be negative")
+
+    # For additional parameters for other functions
+    if "tournament_size" in kwargs:
+        tournament_size = kwargs["tournament_size"]
+
+        if not isinstance(tournament_size, int) or (tournament_size < 1) or ( 
+        tournament_size > len(population)):
+            raise ValueError("""Tournament size must be an integer between 1 and
+                             the population size""")
+    if "num_selections" in kwargs:
+        num_selections = kwargs["num_selections"]
+
+        if not isinstance(num_selections, int) or num_selections < 1:
+            raise ValueError("Number of selections must be a positive integer")
+
+    if "crossover_rate" in kwargs:
+        crossover_rate = kwargs["crossover_rate"]
+
+        if not isinstance(crossover_rate, (int, float)) or not (0 <= crossover_rate <=
+                                                         1):
+            raise ValueError("""Crossover rate needs to be a float/int between 0 and
+                             1""")
+    if "mutation_rate" in kwargs:
+        mutation_rate = kwargs["mutation_rate"]
+
+        if not isinstance(mutation_rate, (int, float)) or not (0 <=
+                                                               mutation_rate <=
+                                                               1):
+            raise ValueError("""Mutation rate needs to be a floating point number
+                             , or integer, between 0 and 1""")
 
 def get_initial_population(data):
     """
@@ -105,8 +166,44 @@ def roulette_selection(population, fitness_scores, num_selections=2):
     OUTPUT;
         selected: (list) Selected chromosomes
     """
-    pass # ?
-   
+    # INput validations
+    input_validation(population, fitness_scores, num_selections=num_selections)
+
+    # individuals for seleciton
+    selected = []
+
+    # Total fitness of population
+    total_fit = sum(fitness_scores)
+
+    # Total fitness of zero results in random sampling
+    if total_fit == 0:
+        return sample(population, num_selections)
+
+    # Relative fitness of individuals
+    relative_fits = [fit/total_fit for fit in fitness_scores]
+    # cumulative probabiities for "segments" fo the roulette wheel
+    cumulative_probs = [sum(relative_fits[:i+1]) for i in range(len(relative_fits))]
+     
+    # Initialization
+    selection_points = sorted([uniform(0, total_fit) for i in range(num_selections)])
+    selected = []
+    current_point = 0
+    current_sum = 0
+
+    # Selection process
+    for i, fit in enumerate(fitness_scores):
+        current_sum += fit
+        
+        while current_point < len(selection_points) and (current_sum >
+                                                         selection_points[current_point]):
+            selected.append(population[i])
+            current_point += 1
+
+        if len(selected) == num_selections:
+            break
+
+    return selected
+    
 def tournament_selection(population, fitness_scores, tournament_size=3,
                          num_selections=2):
     """
@@ -119,9 +216,33 @@ def tournament_selection(population, fitness_scores, tournament_size=3,
         num_selections: (int; default: 2) Number of individuals to select.
 
     OUTPUT;
-        sub_population: (list) Selected chromosomes
+        selected: (list) Selected chromosomes
     """
-    pass # ?
+    # input validation
+    input_validation(population, fitness_scores,
+                     tournament_size=tournament_size,
+                     num_selections=num_selections)
+
+    # Ensure number of selected individuals doesn't exceed population
+    if num_selections > len(population):
+        raise ValueError("Number of selections shouldn't exceed population")
+
+    selected = [] # Use set, instead... ?
+
+    while len(selected) < num_selections:
+        # Random selection of contestants
+        contestants = sample(population, tournament_size)
+        contestant_fitness = [fitness_scores[population.index(c)] for c in
+                                             contestants]
+        # index of best contestant
+        winner_index = contestant_fitness.index(max(contestant_fitness))
+        winner = contestants[winner_index]
+
+        # Ensure parent isn't asexual
+        if winner not in selected:
+            selected.append(contestants[winner_index])
+
+    return selected
 
 def single_point_crossover(parent1, parent2, crossover_rate=0.7):
     """
@@ -285,7 +406,8 @@ def genetic_algorithm():
 population, capacity, S, generation, stop = \
 get_initial_population(knapsack_data)
 fits = [fitness(population[i], S, capacity) for i in range(len(population))]
-roulette = roulette_selection(population, fits, 2)
+tournament = tournament_selection(population, fits)
+#roulette = roulette_selection(population, fits)
 #parent1, parent2 = roulette[0], roulette[1] # ? fix: parents SAME
 #tournament = tournament_selection(population, fits)
 #parent1, parent2 = tournament[0], tournament[1]
