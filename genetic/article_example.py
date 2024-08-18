@@ -192,6 +192,9 @@ def roulette_selection(population, fitness_scores, num_selections=2):
      
     # Initialization
     selected = []
+    attempts = 0
+    # Max number of attempts to avoid infinite loop
+    max_attempts = 100
     
     # infinite loop here! ?
     while len(selected) < num_selections:
@@ -206,7 +209,19 @@ def roulette_selection(population, fitness_scores, num_selections=2):
                     selected.append(population[i])
 
                 break
-        print(f"roulette while--> selected: {selected}")
+
+        attempts += 1
+        if attempts > max_attempts:
+            print("""Max attempts reached; adding random individual to avoid
+                  infinite loop""")
+            remaining = [ind for ind in population if ind not in selected]
+
+            if not remaining:
+                print("Error: No remaining individuals to select from")
+                break
+
+            selected.append(choice(remaining))
+            break
 
     return selected
     
@@ -379,6 +394,10 @@ def genetic_algorithm(selection_function=roulette_selection,
     OUTPUT:
         best_solution, best_fitness, generation: (tuple: (np.array, float, int))  
     """
+    # Dictionary to store values for comparison
+    things = {"population":[], "fitness": [], 
+              "parents": [], "children": [], "best_fit": [], "generation": []}
+
     # initialization
     population, capacity, items, generation, stop = get_initial_population(knapsack_data)
     fitness_scores = [fitness(chromosome, items, capacity) for chromosome in population]
@@ -388,6 +407,8 @@ def genetic_algorithm(selection_function=roulette_selection,
 
     # Main loop
     while generation < stop:
+        things["population"].append(population)
+        things["fitness"].append(fitness_scores)
         # Selection: Initially just the original population
         parents = selection_function(population, fitness_scores,
                        num_selections=len(population), **kwargs)
@@ -405,6 +426,7 @@ def genetic_algorithm(selection_function=roulette_selection,
         # Evaluate new generation's fitness
         fitness_scores = [fitness(chromosome, items, capacity) for chromosome
                            in next_generation]
+
         # Update population
         population = next_generation
 
@@ -414,10 +436,15 @@ def genetic_algorithm(selection_function=roulette_selection,
             best_fitness = max_fitness
             best_solution = population[fitness_scores.index(best_fitness)]
 
+        # Store values in dictionary for debugging
+        things["parents"].append(parents)
+        things["best_fit"].append(best_fitness)
+        things["generation"].append(generation)
+
         # New generation
         generation += 1
-        print(f"Generation: {generation}")
 
+    print(f"Dictionary for debugging: {thing}")
     return best_solution, best_fitness, generation
 
 # Infinite loop somewhere ... ?
@@ -437,6 +464,9 @@ fits = [fitness(population[i], S, capacity) for i in range(len(population))]
 #child1, child2 = k_point_crossover(parent1, parent2, k)
 # ------------------------------------------------------------------------
 #thing = genetic_algorithm()
+next_generation = []
+parents = roulette_selection(population, fits, num_selections=len(population))
+
 breakpoint()
 
 # ?
