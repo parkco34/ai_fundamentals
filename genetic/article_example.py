@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """
-The Help:
+Sources used for learning:
     - https://faun.pub/genetic-algorithms-to-solve-the-zero-one-knapsack-problem-implementation-26c1982f44b3
+    - 
 """
 from textwrap import dedent
 from random import random, sample, choice, randint, uniform
@@ -153,7 +154,7 @@ def fitness(chromosome, weight_value_pair, capacity):
         profit = dot_product(chromosome, values)
 
     else:
-        profit = 0 # ?
+        profit = 1e-6
 
     return profit
 
@@ -192,6 +193,7 @@ def roulette_selection(population, fitness_scores, num_selections=2):
     # Initialization
     selected = []
     
+    # infinite loop here! ?
     while len(selected) < num_selections:
         # Uniform random number for the "spin" landing on point
         point = uniform(0,1)
@@ -204,6 +206,7 @@ def roulette_selection(population, fitness_scores, num_selections=2):
                     selected.append(population[i])
 
                 break
+        print(f"roulette while--> selected: {selected}")
 
     return selected
     
@@ -359,7 +362,7 @@ def bit_flip_mutation(chromosome):
 
     return mutated_chromosome
 
-def genetic_algorithm(selction_function=roulette_selection,
+def genetic_algorithm(selection_function=roulette_selection,
                       crossover_function=single_point_crossover,
                       mutation_function=bit_flip_mutation, **kwargs):
     """
@@ -379,13 +382,13 @@ def genetic_algorithm(selction_function=roulette_selection,
     # initialization
     population, capacity, items, generation, stop = get_initial_population(knapsack_data)
     fitness_scores = [fitness(chromosome, items, capacity) for chromosome in population]
-
+    
     best_soution = None
     best_fitness = float("-inf")
 
     # Main loop
     while generation < stop:
-        # Selection
+        # Selection: Initially just the original population
         parents = selection_function(population, fitness_scores,
                        num_selections=len(population), **kwargs)
         # Crossover
@@ -400,9 +403,22 @@ def genetic_algorithm(selction_function=roulette_selection,
                            next_generation]
 
         # Evaluate new generation's fitness
-        new_gen_fitness = [fitness(chromosome, items, capacity) for chromosome
+        fitness_scores = [fitness(chromosome, items, capacity) for chromosome
                            in next_generation]
         # Update population
+        population = next_generation
+
+        # Track best solution
+        max_fitness = max(fitness_scores)
+        if max_fitness > best_fitness:
+            best_fitness = max_fitness
+            best_solution = population[fitness_scores.index(best_fitness)]
+
+        # New generation
+        generation += 1
+        print(f"Generation: {generation}")
+
+    return best_solution, best_fitness, generation
 
 # Infinite loop somewhere ... ?
 
@@ -413,8 +429,8 @@ population, capacity, S, generation, stop = \
 get_initial_population(knapsack_data)
 fits = [fitness(population[i], S, capacity) for i in range(len(population))]
 #tournament = tournament_selection(population, fits)
-roulette = roulette_selection(population, fits)
-parent1, parent2 = roulette[0], roulette[1] # ? fix: parents SAME
+#roulette = roulette_selection(population, fits)
+#parent1, parent2 = roulette[0], roulette[1] # ? fix: parents SAME
 #tournament = tournament_selection(population, fits)
 #parent1, parent2 = tournament[0], tournament[1]
 #k = randint(1, min(len(parent1)-1, len(parent1)-1))
@@ -423,4 +439,8 @@ parent1, parent2 = roulette[0], roulette[1] # ? fix: parents SAME
 #thing = genetic_algorithm()
 breakpoint()
 
-
+# ?
+"""
+1. What if child same as parent
+2. 
+"""
