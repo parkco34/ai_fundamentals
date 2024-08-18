@@ -182,6 +182,7 @@ def roulette_selection(population, fitness_scores, num_selections=2):
 
     # Total fitness of zero results in random sampling
     if total_fit == 0:
+        print("Resorting to random sample!")
         return sample(population, num_selections)
 
     # Relative fitness of individuals
@@ -189,7 +190,7 @@ def roulette_selection(population, fitness_scores, num_selections=2):
     # cumulative probabiities for "segments" fo the roulette wheel, where the
     # final cumulative probability is 1 for the whole wheel
     cumulative_probabilities = [sum(relative_fits[:i+1]) for i in range(len(relative_fits))]
-     
+    print(f"Cumulative Probabilities: {cumulative_probabilities}") 
     # Initialization
     selected = []
     attempts = 0
@@ -201,6 +202,7 @@ def roulette_selection(population, fitness_scores, num_selections=2):
         # Uniform random number for the "spin" landing on point
         point = uniform(0,1)
         # "Spinning" the wheel
+        breakpoint()
         for i, prob in enumerate(cumulative_probabilities):
             # Wheel stops spinning 
             if point <= prob:
@@ -467,7 +469,7 @@ fits = [fitness(population[i], S, capacity) for i in range(len(population))]
 next_generation = []
 parents = roulette_selection(population, fits, num_selections=len(population))
 
-breakpoint()
+#breakpoint()
 
 # ?
 """
