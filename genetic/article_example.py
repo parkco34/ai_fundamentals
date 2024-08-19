@@ -380,7 +380,7 @@ def bit_flip_mutation(chromosome):
 
 def genetic_algorithm(selection_function=roulette_selection,
                       crossover_function=single_point_crossover,
-                      mutation_function=bit_flip_mutation, **kwargs):
+                      mutation_function=bit_flip_mutation, elitism=True, **kwargs):
     """
     Implements genetic algorithm for 0-1 knapsack problem.
     -------------------------------------------------
@@ -391,6 +391,7 @@ def genetic_algorithm(selection_function=roulette_selection,
             - num_selections: (int)
             - crossover_rate: (float)
             - mutation_rate: (float)
+            - elitism: (bool; default=True)
 
     OUTPUT:
         best_solution, best_fitness, generation: (tuple: (np.array, float, int))  
@@ -408,28 +409,48 @@ def genetic_algorithm(selection_function=roulette_selection,
 
     # Main loop
     while generation < stop:
+        if elitism:
+            best_individual = max(population, key=lambda ind: fitness(ind,
+                                                                        items,
+                                                                       capacity))
+            best_individual_fitness = fitness(best_individual, items, capacity)
+            
+            if best_individual_fitness > best_fitness:
+                best_solution = best_individual
+                best_fitness = best_individual_fitness
+
         things["population"].append(population)
         things["fitness"].append(fitness_scores)
         # Selection: Initially just the original population
         parents = selection_function(population, fitness_scores,
                        num_selections=len(population), **kwargs)
+
+        # Ensure even number of parents for crossover
+        if len(parents) % 2 != 0:
+            parents.append(choice(parents))
+
         # Crossover
         next_generation = []
+        children = []
         for i in range(0, len(parents), 2):
             parent1, parent2 = parents[i], parents[i+1]
             child1, child2 = crossover_function(parent1, parent2, **kwargs)
             next_generation.extend([child1, child2])
+            children.append((child1, child2))
 
         # Mutation
         next_generation = [mutation_function(child) for child in
                            next_generation]
 
-        # Evaluate new generation's fitness
-        fitness_scores = [fitness(chromosome, items, capacity) for chromosome
-                           in next_generation]
+        if elitism:
+            next_generation[0] = best_solution
 
         # Update population
         population = next_generation
+
+        # Evaluate new generation's fitness
+        fitness_scores = [fitness(chromosome, items, capacity) for chromosome
+                           in next_generation]
 
         # Track best solution
         max_fitness = max(fitness_scores)
@@ -439,13 +460,14 @@ def genetic_algorithm(selection_function=roulette_selection,
 
         # Store values in dictionary for debugging
         things["parents"].append(parents)
+        things["children"].append(children)
         things["best_fit"].append(best_fitness)
         things["generation"].append(generation)
 
         # New generation
         generation += 1
 
-    print(f"Dictionary for debugging: {thing}")
+    print(f"Dictionary for debugging: {things}")
     return best_solution, best_fitness, generation
 
 # Infinite loop somewhere ... ?
@@ -453,20 +475,13 @@ def genetic_algorithm(selection_function=roulette_selection,
 
 # Example usage
 # ------------------------------------------------------------------------
-population, capacity, S, generation, stop = \
-get_initial_population(knapsack_data)
-fits = [fitness(population[i], S, capacity) for i in range(len(population))]
-#tournament = tournament_selection(population, fits)
-#roulette = roulette_selection(population, fits)
-#parent1, parent2 = roulette[0], roulette[1] # ? fix: parents SAME
-#tournament = tournament_selection(population, fits)
-#parent1, parent2 = tournament[0], tournament[1]
-#k = randint(1, min(len(parent1)-1, len(parent1)-1))
-#child1, child2 = k_point_crossover(parent1, parent2, k)
+#population, capacity, S, generation, stop = \
+#get_initial_population(knapsack_data)
+#fits = [fitness(population[i], S, capacity) for i in range(len(population))]
+#next_generation = []
+#parents1 = roulette_selection(population, fits, num_selections=len(population))
 # ------------------------------------------------------------------------
-#thing = genetic_algorithm()
-next_generation = []
-parents1 = roulette_selection(population, fits, num_selections=len(population))
+thing = genetic_algorithm()
 
 breakpoint()
 
