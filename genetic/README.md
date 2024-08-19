@@ -1,5 +1,3 @@
-Here’s a `README.md` file that outlines the general steps to solve the problem based on the instructions given:
-
 ---
 
 # Genetic Algorithm for 0-1 Knapsack Problem
