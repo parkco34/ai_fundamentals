@@ -202,7 +202,6 @@ def roulette_selection(population, fitness_scores, num_selections=2):
         # Uniform random number for the "spin" landing on point
         point = uniform(0,1)
         # "Spinning" the wheel
-        breakpoint()
         for i, prob in enumerate(cumulative_probabilities):
             # Wheel stops spinning 
             if point <= prob:
@@ -467,12 +466,13 @@ fits = [fitness(population[i], S, capacity) for i in range(len(population))]
 # ------------------------------------------------------------------------
 #thing = genetic_algorithm()
 next_generation = []
-parents = roulette_selection(population, fits, num_selections=len(population))
+parents1 = roulette_selection(population, fits, num_selections=len(population))
 
-#breakpoint()
+breakpoint()
 
 # ?
 """
-1. What if child same as parent
-2. 
+1. What if child same as parent?
+2. What if number of parents not the same as previously, or none are remaining?
+3. 
 """
