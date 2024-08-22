@@ -475,13 +475,13 @@ def genetic_algorithm(selection_function=roulette_selection,
 
 # Example usage
 # ------------------------------------------------------------------------
-#population, capacity, S, generation, stop = \
-#get_initial_population(knapsack_data)
+population, capacity, S, generation, stop = \
+get_initial_population(knapsack_data)
 #fits = [fitness(population[i], S, capacity) for i in range(len(population))]
 #next_generation = []
 #parents1 = roulette_selection(population, fits, num_selections=len(population))
 # ------------------------------------------------------------------------
-thing = genetic_algorithm()
+#thing = genetic_algorithm()
 
 breakpoint()
 
