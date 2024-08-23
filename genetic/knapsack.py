@@ -21,6 +21,7 @@ knapsack_data = {
 # Population size determined via "small" for simple problem
 POP_SIZE = 50
 ITEMS = [(item["weight"], item["value"]) for item in knapsack_data["items"]]
+CAPACITY = knapsack_data["capacity"]
 
 def get_data(config_file):
     """
@@ -37,7 +38,7 @@ def get_data(config_file):
     """
     pass
 
-def get_population(data):
+def get_population(data, pop_size):
     """
     BINARY ENCODING: Randomly generate UNIQUE binary strings for the number of items,
     where 1 represents item being included in knapsack and 0 for exclusion of
@@ -45,25 +46,23 @@ def get_population(data):
     ------------------------------------------
     INPUT:
         data: (list of dictionaries) Dict items in "items" key
+        pop_size: (int) Population size
 
     OUTPUT:
         population: (list)
     """
-    # Ensure unique individuals
-    unique_population = set()
-    
-    for _ in range(POP_SIZE * 2):
-        chromosome = tuple(randint(0, 1) for _ in range(len(data)))
-        unique_population.add(chromosome)
+    # Getting unique population 
+    population = []
+    while len(population) < pop_size:
+        chromosome = [randint(0,1) for _ in range(len(data))]
 
-        if len(population) >= POP_SIZE:
-            break
+        # Ensure uniqueness
+        if chromosome not in population:
+            population.append(chromosome)
 
-    # Convert to list of lists
-    population = [list(chromosome) for chromosome in unique_population]
 
-    # Log population for verification of my results
-    logging.info("Generated Population:")
+    # Log population
+    logging.info("Generated Population")
     for chromosome in population:
         logging.info(f"{chromosome}")
 
@@ -78,7 +77,7 @@ def fitness(chromosome):
         chromosome: (list) Individual in population
 
     OUTPUT:
-        total_value: (float)
+        total_value: (int) 
     """
     total_weight = sum(gene * item[0] for gene, item in zip(chromosome, ITEMS))
     total_value = sum(gene * item[1] for gene, item in zip(chromosome, ITEMS))
@@ -105,24 +104,24 @@ def roulette_selection(population):
     OUTPUT:
         parents: (tuple)
     """
+    # Caculate fitness scores for each chromosome
     fitness_scores = [fitness(chrome) for chrome in population]
+    # Relative/cumulative fitness for constructing the wheel
     total_fitness = sum(fitness_scores)
-    relative_scores = [fitness_scores[i] / total_fitness for i in
-                       range(len(fitness_scores))]
+    relative_scores = [score / total_fitness for score in fitness_scores]
     cumulative_scores = [sum(relative_scores[:i+1]) for i in
                          range(len(relative_scores))]
 
-    # Uniform random number: "Spining" the wheel
-    rand_num = uniform(0,1)
+    points = sorted([uniform(0,1), uniform(0,1)])
+    parents = []
 
-    parents = () # Intialize parents tuple
+    # Uniform random number: "Spining" the wheel; selecting first and second
+    # parent
     for i, prob in enumerate(cumulative_scores):
-        # "Spinning" the wheel
-        if point <= prob:
-            # Ensure unique parents
-            if population[i] not in parents:
-                parents.append(population[i])
+        if len(parents) < 2 and prob >= points[len(parents)]:
+            parents.append(population[i])
 
+        if len(parents) == 2:
             break
 
     return parents
