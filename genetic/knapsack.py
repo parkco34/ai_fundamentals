@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import logging
-from random import uniform, sample, randint
+from random import uniform, sample, randint, random
 
 # Setting up logging
 logging.basicConfig(filename="example_population.log", level=logging.INFO,
@@ -102,33 +102,51 @@ def roulette_selection(population):
         population: (list) All current chromosomes
 
     OUTPUT:
-        parents: (tuple)
+        parents: (list)
     """
     # Caculate fitness scores for each chromosome
     fitness_scores = [fitness(chrome) for chrome in population]
     # Relative/cumulative fitness for constructing the wheel
     total_fitness = sum(fitness_scores)
-    relative_scores = [score / total_fitness for score in fitness_scores]
+
+    # Avoid division by zero
+    if total_fitness == 0:
+        raise ValueError("Total fitness is zero; can't perform roulette selection.")
+    relative_scores = [score / total_fitness for score in fitness_scores if
+                       total_fitness != 0]
     cumulative_scores = [sum(relative_scores[:i+1]) for i in
                          range(len(relative_scores))]
 
-    points = sorted([uniform(0,1), uniform(0,1)])
     parents = []
 
-    # Uniform random number: "Spining" the wheel; selecting first and second
-    # parent
-    for i, prob in enumerate(cumulative_scores):
-        if len(parents) < 2 and prob >= points[len(parents)]:
-            parents.append(population[i])
+    while len(parents) < 2:
+        points = sorted([uniform(0,1), uniform(0,1)])
+        # Uniform random number: "Spining" the wheel; selecting first and second
+        # parent
+        for i, prob in enumerate(cumulative_scores):
+            if len(parents) < 2 and prob >= points[len(parents)]:
+                parents.append(population[i])
 
-        if len(parents) == 2:
-            break
+    return parents[0], parents[1]
 
-    return parents
-
-def tournament_selection():
+def tournament_selection(population, p=0.75, tournament_size=3):
     """
-    GENERATES TWO MOST FIT PARENTS.
+    GENERATES MOST FIT PARENTS FOR REPRODUCTION VIA COMPETITION
+    -----------------
+    LIKELIHOOD VALUES*
+    -----------------
+    HIGH (p <= .9):
+        - Strongly favors most fit in tournament
+        - Speeds up convergence by consistently selecting best individuals
+    MEDIUM (0.70 <= p <= 0.8):
+        - Maintains diversity by allowing some less-fit individuals to be
+        chosen in next generation
+        - Good starting point if you're not sure about best value for the
+        p*
+    LOW (p <= 0.6):
+        - More randomness
+        - Prevents premature convergence
+    ----------------------------------------
     1. Choose tournament size
     2. Randomly select a number of individuals from population, selecting the
     most fit among them to be parents for next generation.
@@ -138,24 +156,120 @@ def tournament_selection():
     ----------------------------------------
     INPUT:
         population: (list) All current chromosomes
-        tournament_size: (int) Number individuals in tournament at a time.
+        p: (float; default=0.75) Probability of selecting the most highly ranked
+        indiviudal.
+        tournament_size: (int; default=3) Number individuals in tournament at a time.
 
     OUTPUT:
-        parents: (tuple)
+        parent1, parent2: (list of lists)
     """
-    pass
+    parents = []
+    cumulative_prob = 0
+    remaining_prob = 1
+    count = 0
+   
+    # If tournament size None, include 20% of the population
+    if not tournament_size:
+        tournament_size = int(.20 * len(population))
 
-def single_point_crossover():
-    pass
+    contestants = sample(population, tournament_size)
+    # Sort contestants based on their fitness
+    contestants.sort(key=fitness, reverse=True)
+   
+    while len(parents) < 2 and count < 50: # ?
+        count += 1
+
+        for i in range(len(contestants)):
+            cumulative_prob += p * (remaining_prob)
+            remaining_prob *= (1 - p)
+
+            if random() <= cumulative_prob and contestants[i] not in parents:
+                parents.append(contestants[i])
+
+                if len(parents) == 2:
+                    break
+
+    return parents[0], parents[1]
+
+def valid_solution(chromosome, items, capacity): # ?
+    """
+    Decides whether the resulting offspring are valid solutions.
+    -----------------------------------
+    INPUT:
+        chromosome: (list) Individual
+        items: (list of tuples) weight-value pairs
+        capacity: (int) Maximum weight of knapsack
+
+    OUTPUT:
+        (bool) Valid solution or not.
+    """
+    total_weight = sum(chromosome[i] for i in range(len(chromosome)))
+    return total_weight <= capacity
+
+# Crossover
+def single_point_crossover(parent1, parent2, crossover_rate=0.7):
+    """
+    Single-point crossover between two abusive parents, splitting at a random
+    point in the chromosome, where the the genes after that point will be
+    swapped with the other parent.
+    ----------------------------------------------------
+    INPUT:
+        parent1: (list) 
+        parent2: (list)
+        crossover_rate: (float; default=0.7) Probability of 
+
+    OUTPUT:
+        child1, child2: (list of lists) Offspring
+    """
+    children = []
+
+    # Crossover or not
+    if random() <= crossover_rate:
+        # Crossover point, where we don't include the first and last index,
+        # ensuring crossover is fruitful, avoiding asexaul reproduction
+        point = randint(1, len(parent1)-1) 
+        
+        # Crossover
+        child1, child2 = parent1[:point] + parent2[point:], parent2[:point] + \
+        parent1[point:]
+
+    else:
+        child1, child2 = parent1[:], parent2[:]
+
+    # Sanity check ?
+
+    return child1, child2
 
 def k_point_crossover():
     pass
 
-def flip_bit_mutation():
-    pass
+# Mutation
+def bit_flip_mutation(child):
+    """
+    Mutation of child via BIT-FLIP, determined by the mutationrate:
+    ~ 1 / len(child).
+    ---------------------------------------------
+    INPUT:
+        child: (list)
+
+    OUTPUT:
+        mutated_child: (list)
+    """
+    mutation_rate = 1 / len(child)
+    
+    mutated_child = [1 - gene if random() < mutation_rate else gene for
+                          gene in child]
+
+    return mutated_child
 
 def main():
     pass
 
+population = get_population(knapsack_data["items"], 50)
+lst = []
+for i in range(5000):
+    parent1, parent2 = tournament_selection(population)
+    child1, child2 = single_point_crossover(parent1, parent2)
+    mutant1, mutant2 = bit_flip_mutation(child1), bit_flip_mutation(child2)
 
 breakpoint()
