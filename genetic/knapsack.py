@@ -17,10 +17,11 @@ data = {
     ]
 }
 
+data = knapsack_data["items"]
 POP_SIZE = 50
 ITEMS = [(item["weight"], item["value"]) for item in knapsack_data["items"]]
 CAPACITY = knapsack_data["capacity"]
-population = get_population(data["items"], POP_SIZE)
+population = get_population(data, POP_SIZE)
 -----------------------------------------------------------------------------
 """
 import logging
@@ -35,12 +36,14 @@ logging.basicConfig(filename="example_population.log", level=logging.INFO,
 def generate_seed():
     return randint(0, 2 ** 32 - 1)
 
-def get_data(config_file):
+def get_data(config_file=None):
     """
     Generates the initial population.
     ------------------------------------
     INPUT:
         config_file: (str) Path to configuration file
+        example_data: (bool; default=False) If True, bypassing reading the data
+        in the config_file, and uses the example data provided.
 
     OUTPUT:
         population: (2d array)
@@ -48,33 +51,35 @@ def get_data(config_file):
         items: (list of tuples) weight-value pairs
         stop: (int) Stopping condition
     """
-    with open(config_file, "r") as file:
-        lines = file.readlines()
-        pop_size = int(lines[0].strip())
-        n = int(lines[1].strip())
-        stop = int(lines[2].strip())
-        W = int(lines[3].strip())
-        S = [tuple(map(int, line.strip().split())) for line in lines[4:]]
+    if config_file:
+        # Read from file per assignment instructions
+        with open(config_file, "r") as file:
+            lines = file.readlines()
+            pop_size = int(lines[0].strip())
+            stop = int(lines[2].strip())
+            capacity = int(lines[3].strip())
+            # Needs to be able to handle any relevant data type in the input LIST
+            items = [tuple(map(int, line.strip().split())) for line in lines[4:]]
+            # Encoding
+            chromosome = [randint(0, 1) for _ in range(len(pop_size))]
 
-    return pop_size, n, stop, W, S
+    else:
+        data = {
+            "capacity": 20,
+            "items": [
+                {"weight": 1, "value": 3},
+                {"weight": 3, "value": 5},
+                {"weight": 4, "value": 12},
+                {"weight": 5, "value": 15},
+                {"weight": 6, "value": 18},
+                {"weight": 8, "value": 20}
+            ]
+        }
 
-def get_population(data, pop_size):
-    """
-    BINARY ENCODING: Randomly generate UNIQUE binary strings for the number of items,
-    where 1 represents item being included in knapsack and 0 for exclusion of
-    item.
-    ------------------------------------------
-    INPUT:
-        data: (list of dictionaries) Dict items in "items" key
-        pop_size: (int) Population size
-
-    OUTPUT:
-        population: (list)
-    """
-    # INput validation
-    if not (isinstance(data, list) and isinstance(data[0], dict)):
-        raise ValueError("""{20 * "*"}\n\nInvalid input!\n\nInput needs to be a list of
-                         dictionaries\n\n{20 * "*"}""")
+        pop_size = 50
+        items = [(item["weight"], item["value"]) for item in data["items"]]
+        capacity = data["capacity"]
+        stop = 58
 
     # Getting unique population 
     population = []
@@ -90,7 +95,7 @@ def get_population(data, pop_size):
     for chromosome in population:
         logging.info(f"{chromosome}")
 
-    return population
+    return population, pop_size, stop, capacity, items
 
 def fitness(chromosome):
     """
@@ -326,7 +331,7 @@ def create_new_population(population, elite_size=2):
     
     return new_population 
 
-def main(config_file, seed=None):
+def main(seed=None):
     if seed is None:
         seed = generate_seed()
 
@@ -338,14 +343,14 @@ def main(config_file, seed=None):
 
     # COnstants
     global POP_SIZE, ITEMS, CAPACITY
-    POP_SIZE, N, STOP, CAPACITY, ITEMS = get_data(config_file)
-
+    POP_SIZE, N, STOP, CAPACITY, ITEMS = get_data()
+    print(f"Globals: {POP_SIZE}, {CAPACITY}")
+    
     population = get_population(ITEMS, POP_SIZE)
-
+    
     generation = 0
     max_generations = 100
-
-    breakpoint()
+    print("before while loop")
     while generation < max_generations:
         population = create_new_population(population)
         best_solution = max(population, key=fitness)
@@ -359,4 +364,4 @@ def main(config_file, seed=None):
 
 
 if __name__ == "__main__":
-    main("data/config_1.txt")
+    main()
