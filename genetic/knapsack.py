@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python, random
 """
 0/1 Knapsack Problem -Completed: 8/25/24
 -----------------------------------------------------------------------------
@@ -17,17 +17,16 @@ data = {
     ]
 }
 
-data = knapsack_data["items"]
-POP_SIZE = 50
-ITEMS = [(item["weight"], item["value"]) for item in knapsack_data["items"]]
-CAPACITY = knapsack_data["capacity"]
-population = get_population(data, POP_SIZE)
+pop_size = 50
+items = [(item["weight"], item["value"]) for item in data["items"]]
+capacity = data["capacity"]
+stop = 58
+population, POP_SIZE, STOP, CAPACITY, ITEMS = get_data()
 -----------------------------------------------------------------------------
 """
 import logging
-import numpy as np
-import random
 from random import uniform, sample, randint
+import random
 
 # Setting up logging
 logging.basicConfig(filename="example_population.log", level=logging.INFO,
@@ -60,8 +59,6 @@ def get_data(config_file=None):
             capacity = int(lines[3].strip())
             # Needs to be able to handle any relevant data type in the input LIST
             items = [tuple(map(int, line.strip().split())) for line in lines[4:]]
-            # Encoding
-            chromosome = [randint(0, 1) for _ in range(len(pop_size))]
 
     else:
         data = {
@@ -84,7 +81,7 @@ def get_data(config_file=None):
     # Getting unique population 
     population = []
     while len(population) < pop_size:
-        chromosome = [randint(0,1) for _ in range(len(data))]
+        chromosome = [randint(0,1) for _ in range(len(items))]
 
         # Ensure uniqueness
         if chromosome not in population:
@@ -202,7 +199,7 @@ def tournament_selection(population, p=0.75, tournament_size=3):
         contestants.sort(key=fitness, reverse=True)
 
         # Select best individual with probability p
-        if random() < p:
+        if random.random() < p:
             winner = contestants[0]
 
         else:
@@ -253,7 +250,7 @@ def single_point_crossover(parent1, parent2, crossover_rate=0.7,
     children = []
 
     # Crossover or not
-    if random() <= crossover_rate:
+    if random.random() <= crossover_rate:
         # Crossover point, where we don't include the first and last index,
         # ensuring crossover is fruitful, avoiding asexaul reproduction
         point = randint(1, len(parent1)-1) 
@@ -292,7 +289,7 @@ def bit_flip_mutation(child, mutation_rate=0.01):
         mutated_child = child[:]
         
         for i in range(len(mutated_child)):
-            if random() <= mutation_rate:
+            if random.random() <= mutation_rate:
                 # FLips bit
                 mutated_child[i] = 1 - mutated_child[i]
 
@@ -316,9 +313,8 @@ def create_new_population(population, elite_size=2):
     
     # Elists
     new_population = sorted_population[:elite_size]
-    
     # Iteratively generate new population of individuals
-    while len(new_population) < len(population):
+    while len(new_population) < len(population): # Update this! ?
         # ? --> Replace specific function with parameter
         parent1, parent2 = tournament_selection(sorted_population)
         child1, child2 = single_point_crossover(parent1, parent2)
@@ -335,22 +331,21 @@ def main(seed=None):
     if seed is None:
         seed = generate_seed()
 
-    # Set random seed
+    # Set random seed, ensuring the sequence of random numbers are the are the
+    # same for reproducibility.
     random.seed(seed)
-    np.random.seed(seed)
-        
     print(f"Using random seed: {seed}")
-
+    
     # COnstants
-    global POP_SIZE, ITEMS, CAPACITY
-    POP_SIZE, N, STOP, CAPACITY, ITEMS = get_data()
-    print(f"Globals: {POP_SIZE}, {CAPACITY}")
-    
-    population = get_population(ITEMS, POP_SIZE)
-    
+    global POP_SIZE, STOP, CAPACITY, ITEMS
+    population, POP_SIZE, STOP, CAPACITY, ITEMS = get_data("data/config_1.txt")
+    # Article example ------------------------
+#    population, POP_SIZE, STOP, CAPACITY, ITEMS = get_data()
+    # ----------------------------------------
     generation = 0
     max_generations = 100
-    print("before while loop")
+    print(f"Maximium number of generations set to : {max_generations}")
+    breakpoint()
     while generation < max_generations:
         population = create_new_population(population)
         best_solution = max(population, key=fitness)
@@ -359,9 +354,14 @@ def main(seed=None):
         generation += 1
 
     best_solution = max(population, key=fitness)
+    # Get weight of the best solution
+    best_weight = sum(gene * item[0] for gene, item in zip(best_solution,
+                                                          ITEMS))
+    # Output resutls
+    print(f"Best weight is {best_weight}")
     print(f"Best solution is {fitness(best_solution)}")
     print(f"Winner: {best_solution}")
 
 
 if __name__ == "__main__":
-    main()
+    main(seed=73)
