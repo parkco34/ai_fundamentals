@@ -21,7 +21,7 @@ pop_size = 50
 items = [(item["weight"], item["value"]) for item in data["items"]]
 capacity = data["capacity"]
 stop = 58
-population, POP_SIZE, STOP, CAPACITY, ITEMS = get_data()
+population, STOP, CAPACITY, ITEMS = get_data()
 -----------------------------------------------------------------------------
 """
 import logging
@@ -33,6 +33,8 @@ logging.basicConfig(filename="example_population.log", level=logging.INFO,
                     format="%(message)s")
 
 def generate_seed():
+    # Covers all possible values of a 32-bit unsigned integer, standard for
+    # seed generation, thereby reducing the chance of collisions.
     return randint(0, 2 ** 32 - 1)
 
 def get_data(config_file=None):
@@ -73,10 +75,10 @@ def get_data(config_file=None):
             ]
         }
 
-        pop_size = 50
+        pop_size = 50 # ?
         items = [(item["weight"], item["value"]) for item in data["items"]]
         capacity = data["capacity"]
-        stop = 58
+        stop = 58 # ?
 
     # Getting unique population 
     population = []
@@ -91,24 +93,26 @@ def get_data(config_file=None):
     logging.info("Generated Population")
     for chromosome in population:
         logging.info(f"{chromosome}")
+    
+    return population, capacity, items, stop
 
-    return population, pop_size, stop, capacity, items
-
-def fitness(chromosome):
+def fitness(chromosome, items, capacity):
     """
     Calculates fitness of chromosome, ensuring it doesn't exceed maximum
     capacity of knapsack, returning the total value of chromosome.
     ------------------------------------------------------
     INPUT:
         chromosome: (list) Individual in population
+        items: (list of tuples) weight-value pairs
+        capacity: (int) Maximum weight of knapsack
 
     OUTPUT:
         total_value: (int) 
     """
-    total_weight = sum(gene * item[0] for gene, item in zip(chromosome, ITEMS))
-    total_value = sum(gene * item[1] for gene, item in zip(chromosome, ITEMS))
+    total_weight = sum(gene * item[0] for gene, item in zip(chromosome, items))
+    total_value = sum(gene * item[1] for gene, item in zip(chromosome, items))
 
-    if total_weight > CAPACITY:
+    if total_weight > capacity:
         return 1e-5
 
     return total_value
@@ -336,27 +340,26 @@ def main(seed=None):
     random.seed(seed)
     print(f"Using random seed: {seed}")
     
-    # COnstants
-    global POP_SIZE, STOP, CAPACITY, ITEMS
-    population, POP_SIZE, STOP, CAPACITY, ITEMS = get_data("data/config_1.txt")
+    population, capacity, items, stop = get_data("data/config_1.txt")
     # Article example ------------------------
-#    population, POP_SIZE, STOP, CAPACITY, ITEMS = get_data()
+    # population, capacity, items, stop = get_data()
     # ----------------------------------------
     generation = 0
-    max_generations = 100
+    max_generations = 100 # What's a good number for the given data ??
     print(f"Maximium number of generations set to : {max_generations}")
-    breakpoint()
+    
     while generation < max_generations:
         population = create_new_population(population)
         best_solution = max(population, key=fitness)
         logging.info(f"""Generation {generation}: Best solution {best_solution}
                     with fitness {fitness(best_solution)}""")
         generation += 1
+        # Early stopping condition hither
 
     best_solution = max(population, key=fitness)
     # Get weight of the best solution
     best_weight = sum(gene * item[0] for gene, item in zip(best_solution,
-                                                          ITEMS))
+                                                          items))
     # Output resutls
     print(f"Best weight is {best_weight}")
     print(f"Best solution is {fitness(best_solution)}")
@@ -364,4 +367,7 @@ def main(seed=None):
 
 
 if __name__ == "__main__":
+    print("""
+    outputs = {name: eval(name) for name in dir() if not name.startswith("__") and not callable(eval(name))}
+    """)
     main(seed=73)
