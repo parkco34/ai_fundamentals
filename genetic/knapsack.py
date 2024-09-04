@@ -22,15 +22,50 @@ items = [(item["weight"], item["value"]) for item in data["items"]]
 capacity = data["capacity"]
 stop = 58
 population, STOP, CAPACITY, ITEMS = get_data()
------------------------------------------------------------------------------
+---------
+# Results:
+---------
+best_solution = [1, 0, 0, 1, 1, 1]
+best_weight = 20
+best_value = 
+----------------------------------------------------------------------------
 """
 import logging
 from random import uniform, sample, randint
 import random
+import tkinter as tk
+from tkinter import filedialog
 
 # Setting up logging
 logging.basicConfig(filename="example_population.log", level=logging.INFO,
                     format="%(message)s")
+
+class GUI:
+    def __init__(self, initial_dir="data"):
+        self.root = tk.Tk()
+        self.root.withdraw() # Hides tkinter window
+        self.initial_dir = initial_dir
+        self.selected_file = None
+
+    def open_file_dialog(self):
+        """
+        OPens a file dialog for user to select configuration file.
+        ------------------------------------------
+        """
+        self.selected_file = filedialog.askopenfilename(
+            initialdir = self.initial_dir,
+            title="Select Configuration File",
+            filetypes=(("Text files", "*.txt"), ("All files", "*.*"))
+        )
+
+        return self.selected_file
+
+    def run(self):
+        """
+        Runs GUI application (if needed i future).
+        """
+        self.root.mainloop()
+
 
 def generate_seed():
     # Covers all possible values of a 32-bit unsigned integer, standard for
@@ -117,7 +152,18 @@ def fitness(chromosome, items, capacity):
 
     return total_value
 
-def roulette_selection(population):
+def my_fitness():
+    """
+    ExTRA CREDIT ?
+    ------------------------------------------
+    INPUT:
+
+    OUTPUT:
+
+    """
+    pass
+
+def roulette_selection(population, items, capacity):
     """
     GENERATES TWO MOST FIT PARENTS.
     1. Generate and sort fitness values
@@ -135,13 +181,15 @@ def roulette_selection(population):
         parents: (list)
     """
     # Caculate fitness scores for each chromosome
-    fitness_scores = [fitness(chrome) for chrome in population]
+    fitness_scores = [fitness(chrome, items, capacity) for chrome in population]
     # Relative/cumulative fitness for constructing the wheel
     total_fitness = sum(fitness_scores)
 
     # Avoid division by zero
     if total_fitness == 0:
         raise ValueError("Total fitness is zero; can't perform roulette selection.")
+
+    # Get relalative/cumulative fitnesses
     relative_scores = [score / total_fitness for score in fitness_scores if
                        total_fitness != 0]
     cumulative_scores = [sum(relative_scores[:i+1]) for i in
@@ -159,7 +207,7 @@ def roulette_selection(population):
 
     return parents[0], parents[1]
 
-def tournament_selection(population, p=0.75, tournament_size=3):
+def tournament_selection(population, items, capacity, p=0.75, tournament_size=3):
     """
     GENERATES MOST FIT PARENTS FOR REPRODUCTION VIA COMPETITION
     -----------------
@@ -200,7 +248,7 @@ def tournament_selection(population, p=0.75, tournament_size=3):
 
     while len(parents) < 2:
         contestants = sample(population, tournament_size)
-        contestants.sort(key=fitness, reverse=True)
+        contestants.sort(key=lambda chrome: fitness(chrome, items, capacity), reverse=True)
 
         # Select best individual with probability p
         if random.random() < p:
@@ -273,6 +321,9 @@ def single_point_crossover(parent1, parent2, crossover_rate=0.7,
     return child1, child2
 
 def k_point_crossover():
+    """
+    ?
+    """
     pass
 
 # Mutation
@@ -300,32 +351,47 @@ def bit_flip_mutation(child, mutation_rate=0.01):
     return mutated_child
 
 # ?
-def create_new_population(population, elite_size=2):
+def create_new_population(population, items, capacity, elite_size=2,
+                          selection_method="tournament"):
     """
     Generates a new population via elitism ...
     ---------------------------------------------
     INPUT:
-        population: (list)
+        population: (list) Current population of chromosomes
+        items: (list of tuples) Weight-value pairs
         elite_size: (int; default=2) Number of the best fit individuals to
         carry on to the next generation, w/out any crossover or mutation
+        selection_method: (str) Roulette or Tournament
 
     OUTPUT:
         new_population: (list of lists) For next generation
     """
     # Sort based on fitness
-    sorted_population = sorted(population, key=fitness, reverse=True)
+    sorted_population = sorted(population, key=lambda chrome: fitness(chrome,
+                                                                      items,
+                                                                      capacity),
+                              reverse=True)
     
     # Elists
     new_population = sorted_population[:elite_size]
     # Iteratively generate new population of individuals
-    while len(new_population) < len(population): # Update this! ?
-        # ? --> Replace specific function with parameter
-        parent1, parent2 = tournament_selection(sorted_population)
+    while len(new_population) < len(population):
+        # Select parents based on selection method
+        if selection_method == "tournament":
+            parent1, parent2 = tournament_selection(population, items, capacity)
+
+        else:
+            parent1, parent2 = roulette_selection(population, items, capacity)
+        
+        # Single-point crossover
         child1, child2 = single_point_crossover(parent1, parent2)
 
         if len(new_population) < len(population):
             new_population.append(child1)
             new_population.append(child2)
+
+        # make sure new population same size as original
+        new_population = new_population[:len(population)]
 
     # ? --> Input validation
     
@@ -339,35 +405,55 @@ def main(seed=None):
     # same for reproducibility.
     random.seed(seed)
     print(f"Using random seed: {seed}")
-    
-    population, capacity, items, stop = get_data("data/config_1.txt")
+
+    # Start GUI and get file from user
+    gui = GUI()
+    config_file = gui.open_file_dialog()
+    print(f"Configuration file selected: {config_file}")
+
+    if not config_file:
+        print("No configuration file selected.  Exiting.")
+        return
+
+    # Initialize population
+    population, capacity, items, stop = get_data(config_file)
+
     # Article example ------------------------
     # population, capacity, items, stop = get_data()
     # ----------------------------------------
+    best_solution = None
+    best_value = None # ?
     generation = 0
     max_generations = 100 # What's a good number for the given data ??
     print(f"Maximium number of generations set to : {max_generations}")
     
     while generation < max_generations:
-        population = create_new_population(population)
-        best_solution = max(population, key=fitness)
+        population = create_new_population(population, items, capacity)
+        best_solution = max(population, key=lambda chrome: fitness(chrome,
+                                                                   items,
+                                                                   capacity))
+        # Log info for others to verify/reproduce
         logging.info(f"""Generation {generation}: Best solution {best_solution}
-                    with fitness {fitness(best_solution)}""")
+                     with fitness {fitness(best_solution, items, capacity)}""")
+        # Next gen
         generation += 1
-        # Early stopping condition hither
+#        # Early stopping condition hither ... ?
 
-    best_solution = max(population, key=fitness)
     # Get weight of the best solution
     best_weight = sum(gene * item[0] for gene, item in zip(best_solution,
                                                           items))
     # Output resutls
     print(f"Best weight is {best_weight}")
-    print(f"Best solution is {fitness(best_solution)}")
+    print(f"Best solution is {fitness(best_solution, items, capacity)}")
     print(f"Winner: {best_solution}")
 
 
 if __name__ == "__main__":
-    print("""
-    outputs = {name: eval(name) for name in dir() if not name.startswith("__") and not callable(eval(name))}
-    """)
-    main(seed=73)
+    population, capacity, items, stop = get_data()
+#    population, capacity, items, stop = get_data("data/config_2.txt")
+    breakpoint()
+#    main(seed=73)
+    
+#    print("""
+#    outputs = {name: eval(name) for name in dir() if not name.startswith("__") and not callable(eval(name))}
+#    """)
