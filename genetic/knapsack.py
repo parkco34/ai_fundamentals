@@ -432,6 +432,13 @@ def main(seed=None):
         best_solution = max(population, key=lambda chrome: fitness(chrome,
                                                                    items,
                                                                    capacity))
+
+        # Current best 
+        best_weight, best_value = (sum(item[j] 
+                                         for i, item in enumerate(items) 
+                                         if best_solution[i] == 1) for j in (0, 1))
+
+        
         # Log info for others to verify/reproduce
         logging.info(f"""Generation {generation}: Best solution {best_solution}
                      with fitness {fitness(best_solution, items, capacity)}""")
@@ -439,20 +446,14 @@ def main(seed=None):
         generation += 1
 #        # Early stopping condition hither ... ?
 
-    # Get weight of the best solution
-    best_weight = sum(gene * item[0] for gene, item in zip(best_solution,
-                                                          items))
     # Output resutls
     print(f"Best weight is {best_weight}")
-    print(f"Best solution is {fitness(best_solution, items, capacity)}")
+    print(f"Best value is {best_value}")
     print(f"Winner: {best_solution}")
 
 
 if __name__ == "__main__":
-    population, capacity, items, stop = get_data()
-#    population, capacity, items, stop = get_data("data/config_2.txt")
-    breakpoint()
-#    main(seed=73)
+    main(seed=73)
     
 #    print("""
 #    outputs = {name: eval(name) for name in dir() if not name.startswith("__") and not callable(eval(name))}
