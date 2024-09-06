@@ -422,7 +422,6 @@ def main(seed=None):
     # population, capacity, items, stop = get_data()
     # ----------------------------------------
     best_solution = None
-    best_value = None # ?
     generation = 0
     max_generations = 100 # What's a good number for the given data ??
     print(f"Maximium number of generations set to : {max_generations}")
@@ -432,12 +431,6 @@ def main(seed=None):
         best_solution = max(population, key=lambda chrome: fitness(chrome,
                                                                    items,
                                                                    capacity))
-
-        # Current best 
-        best_weight, best_value = (sum(item[j] 
-                                         for i, item in enumerate(items) 
-                                         if best_solution[i] == 1) for j in (0, 1))
-
         
         # Log info for others to verify/reproduce
         logging.info(f"""Generation {generation}: Best solution {best_solution}
@@ -445,6 +438,10 @@ def main(seed=None):
         # Next gen
         generation += 1
 #        # Early stopping condition hither ... ?
+
+    # Best value and total weight of best solution
+    best_weight, best_value = (sum(gene * item[j] for gene, item in
+                                   zip(best_solution, items) for j in range(2)))
 
     # Output resutls
     print(f"Best weight is {best_weight}")
