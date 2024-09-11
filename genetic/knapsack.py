@@ -58,7 +58,7 @@ class GUI:
             filetypes=(("Text files", "*.txt"), ("All files", "*.*"))
         )
 
-        return self.selected_file
+        return self.selected_file if self.selected_file else None
 
     def run(self):
         """
@@ -411,12 +411,13 @@ def main(seed=None):
     config_file = gui.open_file_dialog()
     print(f"Configuration file selected: {config_file}")
 
-    if not config_file:
-        print("No configuration file selected.  Exiting.")
-        return
+    if config_file is None:
+        print("No configuration file selected. USing example data.")
+        population, capacity, items, stop = get_data()
 
-    # Initialize population
-    population, capacity, items, stop = get_data(config_file)
+    else:
+        # Initialize population
+        population, capacity, items, stop = get_data(config_file)
 
     # Article example ------------------------
     # population, capacity, items, stop = get_data()
@@ -439,9 +440,11 @@ def main(seed=None):
         generation += 1
 #        # Early stopping condition hither ... ?
 
-    # Best value and total weight of best solution
-    best_weight, best_value = (sum(gene * item[j] for gene, item in
-                                   zip(best_solution, items) for j in range(2)))
+    # Best value and total weight of best solutionz
+    best_weight, best_value = (
+    sum(gene * item[0] for gene, item in zip(best_solution, items)),
+    sum(gene * item[1] for gene, item in zip(best_solution, items))
+)
 
     # Output resutls
     print(f"Best weight is {best_weight}")
