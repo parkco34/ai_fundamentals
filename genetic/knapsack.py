@@ -453,7 +453,7 @@ def main(seed=None):
 
 
 if __name__ == "__main__":
-    main(seed=73)
+    main(seed=None)
     
 #    print("""
 #    outputs = {name: eval(name) for name in dir() if not name.startswith("__") and not callable(eval(name))}
