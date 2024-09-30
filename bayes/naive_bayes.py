@@ -18,6 +18,12 @@ def read_data(filename):
     with open(filename ,"r") as file:
         text = file.read()
 
+    data = text.strip().split("\n")
+    
+    # Parition data into features and labels
+    data = {}
+    
+
     return text
 
 def split_data(dataset):
@@ -49,5 +55,7 @@ def summarize_data_classes(features, classes):
     pass
 
 
+
+data = read_data("data/reviews_polarity_train.csv")
 
 breakpoint()
