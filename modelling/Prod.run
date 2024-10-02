@@ -1,0 +1,9 @@
+reset;
+model Prod.mod;
+data Prod.dat;
+
+option solver gurobi;
+
+solve;
+
+display X;

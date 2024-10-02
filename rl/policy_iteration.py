@@ -27,4 +27,9 @@ for i in range(num_iterations):
     for episode in range(num_episodes):
         observation = env.reset()
         state = discretize_state(observation)
+        done = False
+
+        while not done:
+            action = policy[state]
+
 
