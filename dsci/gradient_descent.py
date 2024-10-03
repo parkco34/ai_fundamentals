@@ -41,21 +41,18 @@ def gradient_descent(X, y, learning_rate, epochs):
         y: numpy.ndarray
         learning_rate: float
         epochs: int
-
     OUTPUT:
         theta: numpy.ndarray
     """
-    # m samples, n features
-    m, n = X.shape
-    # Initialize weights randomly
+    m, n = X.shape  # m is number of samples, n is number of features
+    # initialize weights randomly
     theta = np.random.randn(n, 1)
-    
+
     for epoch in range(epochs):
         y_pred = X.dot(theta)
         gradients = (2 / m) * X.T.dot(y_pred - y)
         # Update weights
         theta -= learning_rate * gradients
-
     return theta
 
 # Experiments
