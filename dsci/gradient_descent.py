@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+"""
+Implementing Gradient Descent to minimize cost function of synthetic dataset
+generated from a non-linear function.
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -7,16 +11,16 @@ np.random.seed(73)
 
 # Generate 200 randomly generated values of X between −10 and 10
 X = np.random.uniform(-10, 10, 200).reshape(-1, 1)
+m = len(X)
 # Target value
 y = 5 * X**4 + 2 * X**3 + 9 * X + 12
 
-# Bias, returning an array of ones of the same size and shape as the input
-X_bias = np.ones_like(X)
+# Bias term; combining a column of ones w/ shape (m,1) and original X values
+X_bias = np.c_[np.ones((m, 1)), X] # Fits data that might not pass thru origin
 
 # Hyperparameters
 learning_rates = [0.001, 0.01, 0.0005]
-# Polynomial Regression technique for non-linear relationships
-X_design = np.c_[X_bias, X, X**2, X**3, X**4]
+# Polynomial Regression; adding powers of each feature as new features
 epochs = 1000
 
 def compute_error(y_actual, y_predicted):
@@ -58,17 +62,14 @@ def gradient_descent(X, y, learning_rate, epochs):
 # Experiments
 for lr in learning_rates:
     # OPtimize weights
-    optimal_theta = gradient_descent(X_design, y, learning_rate=lr, epochs=epochs)
+    optimal_theta = gradient_descent(X_bias, y, learning_rate=lr, epochs=epochs)
     # Predictions
-    y_pred = X_design.dot(optimal_theta)
+    y_pred = X_bias.dot(optimal_theta)
     # Compute error
     rmse = compute_error(y, y_pred)
-
-    print(f"Learning rate: {lr}\nRMSE: {rmse:.4f}")
-
+    print(f"Learning Rate: {lr:.4f}; RMSE: {rmse:.4f}")
 
 
-breakpoint()
 
 
 
