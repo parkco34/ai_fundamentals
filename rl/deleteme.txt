@@ -1,0 +1,137 @@
+CartPole with Policy Iteration, TD, MC, and Function
+Approximation (Due: 10/4 @ 11:59 pm EST)
+Assignment Overview
+In this assignment, you will explore and implement various reinforcement learning (RL) algorithms to solve
+the classic CartPole-v0 problem from OpenAI Gym. This environment presents a continuous state space
+and a discrete action space, offering an excellent platform to compare tabular methods with function ap-
+proximation techniques.
+Learning Objectives
+• Implement and understand policy iteration, temporal difference (TD) learning, and Monte Carlo (MC)
+methods.
+• Apply discretization techniques to handle continuous state spaces in tabular methods.
+• Utilize function approximation to manage high-dimensional or continuous state spaces.
+• Compare the performance of different RL algorithms and understand their advantages and limitations.
+Background
+The CartPole-v0 environment consists of a pole attached by an unactuated joint to a cart, which moves
+along a frictionless track. The goal is to prevent the pole from falling over by applying forces (left or right)
+to the cart. The environment provides four continuous observations:
+1. Cart Position
+2. Cart Velocity
+3. Pole Angle
+4. Pole Velocity at Tip
+Assignment Tasks
+Part 1: Tabular Methods with Discretization
+1. State Space Discretization
+Objective: Convert the continuous state space into a finite set of discrete states.
+Instructions:
+• Define bins for each of the four state variables.
+• Create a mapping function to convert continuous observations into discrete states.
+2. Policy Iteration
+Objective: Implement policy evaluation and improvement to find the optimal policy.
+Instructions:
+• Perform iterative policy evaluation until the value function converges.
+1
+3. Temporal Difference Learning (SARSA and Q-Learning)
+Objective: Implement online learning algorithms to estimate the action-value function.
+Instructions:
+• Implement SARSA and Q-Learning algorithms using the discretized state space.
+4. Monte Carlo Methods
+Objective: Use episodic sampling to estimate the value of states.
+Instructions:
+• Implement Monte Carlo prediction.
+5. Performance Evaluation
+Objective: Compare the performance of the tabular methods.
+Instructions:
+• Define evaluation metrics (e.g., average return per episode, number of episodes to convergence).
+• Plot learning curves for each method.
+• Analyze the stability and efficiency of the algorithms.
+Part 2: Function Approximation
+1. Linear Function Approximation
+Objective: Implement TD learning with linear function approximation.
+Instructions:
+• Represent the Q-function as a linear combination of features.
+2. Non-Linear Function Approximation (Neural Networks)
+Objective: Implement TD learning with neural networks.
+Instructions:
+• Design a neural network to approximate the Q-function.
+• Decide on the architecture (number of layers, neurons, activation functions).
+3. Monte Carlo Methods with Function Approximation
+Objective: Combine MC methods with function approximation.
+Instructions:
+• Use the returns from episodes to update the function approximator.
+• Ensure that the function approximator generalizes well across states.
+4. Performance Evaluation
+Objective: Compare the performance of function approximation methods with tabular methods.
+Instructions:
+• Use the same evaluation metrics as before.
+• Discuss the impact of function approximation on learning speed and policy quality.
+• Analyze the effects of hyperparameters and network architecture.
+2
+Deliverables
+1. Code Implementation
+• Well-documented code for all implemented methods.
+• Separate scripts or notebooks for each part is recommended.
+• Include comments explaining key sections of the code.
+2. Report
+• Introduction: Briefly describe the CartPole-v0 environment and the objectives.
+• Methodology:
+– Explain the discretization process.
+– Describe the implementation details of each algorithm.
+– Discuss the function approximation techniques used.
+• Results:
+– Present learning curves and performance metrics.
+– Include tables or charts comparing different methods.
+• Discussion:
+– Analyze the results.
+– Discuss the strengths and weaknesses of each method.
+– Reflect on any challenges faced and how they were overcome.
+• Conclusion: Summarize the key findings.
+3. Supplementary Material
+• Any additional files or data generated during the assignment.
+• Hyperparameters used for each method.
+Grading Criteria
+• Code Quality (40%)
+– Correctness of implementations.
+– Code readability and organization.
+– Use of comments and documentation.
+• Report Quality (40%)
+– Clarity and coherence of explanations.
+– Depth of analysis and understanding.
+– Quality of visualizations and presentation of results.
+• Performance and Analysis (20%)
+– Successful training and convergence of algorithms.
+– Insightful comparison and discussion of methods.
+– Critical thinking demonstrated in addressing challenges.
+3
+Guidelines and Hints
+Discretization Tips
+• Use uniform bins or consider adaptive binning based on data distribution.
+• The number of bins affects the state space size—balance granularity with computational feasibility.
+Algorithm Implementation
+• For policy iteration, ensure proper convergence criteria.
+• In TD methods, carefully tune the learning rate α and exploration rate ϵ.
+• Monitor the TD error to debug and adjust parameters.
+Function Approximation
+• Feature scaling can improve neural network training.
+• For linear approximation, select features that capture relevant state information.
+• Be cautious of overfitting—use techniques like regularization if necessary.
+Evaluation
+• Run multiple trials to account for stochasticity.
+• Use seed values for reproducibility.
+• Compare not just final performance but also learning speed.
+Resources
+• OpenAI Gym documentation: CartPole-v0
+• Sutton & Barto’s Reinforcement Learning: An Introduction for theoretical foundations.
+Academic Integrity
+Ensure that all work submitted is your own. You may discuss high-level concepts with peers, but code
+sharing or copying is strictly prohibited. Plagiarism will result in severe penalties as per the institution’s
+academic policies.
+Gen AI Policy. This course maintains a policy against the use of generative AI tools for completing
+programming assignments. All work submitted must be entirely the student’s own original creation. The
+use of AI assistants such as ChatGPT, GitHub Copilot, or any similar tools to generate code, develop
+algorithms, or produce any part of the assignment is prohibited. This policy ensures that students engage
+directly with the course material, develop their own problem-solving skills, and gain a deep understanding
+of reinforcement learning concepts through hands-on programming experience. Any violation of this policy
+will be considered academic misconduct. Students are encouraged to rely on course materials, textbooks,
+and authorized resources provided by the instructor for assistance.
+4
