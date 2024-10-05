@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from itertools import product
 
-env = gym.make('CartPole-v1')  # Updated environment version
+# Specify the exact version of the environment
+env = gym.make('CartPole-v1')
 actions = [0, 1]
 alpha = 0.1
 gamma = 1.0
@@ -62,7 +63,9 @@ def choose_action(Q, state, epsilon):
 Q_sarsa = {}
 rewards_sarsa = []
 for episode in range(num_episodes):
-    observation, info = env.reset()
+    observation = env.reset()
+    if isinstance(observation, tuple):  # Handle potential changes in gym API
+        observation = observation[0]
     state = discretize_state(observation)
     action = choose_action(Q_sarsa, state, epsilon)
     total_reward = 0
@@ -88,7 +91,9 @@ for episode in range(num_episodes):
 Q_q_learning = {}
 rewards_q_learning = []
 for episode in range(num_episodes):
-    observation, info = env.reset()
+    observation = env.reset()
+    if isinstance(observation, tuple):  # Handle potential changes in gym API
+        observation = observation[0]
     state = discretize_state(observation)
     total_reward = 0
     done = False
@@ -123,3 +128,5 @@ plt.ylabel('Average Return')
 plt.title('Learning Curves')
 plt.legend()
 plt.show()
+
+env.close()
