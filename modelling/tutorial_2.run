@@ -1,0 +1,15 @@
+# Reset the environment
+reset;
+
+# Specify the solver to use (e.g., CPLEX or Gurobi)
+option solver cplex;  # If using a different solver like gurobi, replace 'cplex' with the correct name.
+
+# Load the model and data
+model tutorial_2.mod;
+data tutorial_2.dat;
+
+# Solve the problem
+solve;
+
+# Display the results
+display X;

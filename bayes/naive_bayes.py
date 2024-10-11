@@ -18,13 +18,10 @@ def read_data(filename):
     with open(filename ,"r") as file:
         text = file.read()
 
+    # list of sentences and labels
     data = text.strip().split("\n")
     
-    # Parition data into features and labels
-    data = {}
-    
-
-    return text
+    return data
 
 def split_data(dataset):
     """
