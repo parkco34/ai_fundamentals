@@ -1,0 +1,37 @@
+Integrating Developmental Reversals into Temporal Duality Reinforcement Learning for Enhanced Decision-Making
+
+Cory Parker
+
+Abstract
+Rl agents traditionally rely on forward planning, making decisions based on expected future rewards.  This approach, however, doesn't efficiently utilize historical information that could enahce decision making, especially in complex, or large state spaces, and for partially observable environments.  Temporal Duality Reinforcement Learning (TDRL) attempts to address this limitation by proposing forward and backward reasoning through the combination of foward and backward value functions, where the objective of backward planning is to learn optimal reverse policies that maximizes the expected cumulative reward, from goal state to possible initial states.  What I'm proposing is an approach that is comprised of Reverse Reinforcement Learning, Negative Probabilities, as well as insights from cognitive psychology, such as Fuzzy-Trace Theory (FTT) and Developmental Reversals in memory and reasoning.  The question I'm basing this work on is "if I have no memory, how would I reason about my current state, given the all the possible prior states that got me here?"  By using Reverse General Value Functions (GVFs) and entertaining Negative Probabilities as introduced my Richard Feynman, this method has the potential of enabling agents to reason both forward and backward, leading to better exploration and thus, more informed decision making.  Parallels may be drawn from FTT, which explains how reliance on gist-based reasoning can lead to developmental reversals in coginitive tasks, I incorporate similar prin]ciples to enhance exploration and decision-making in RL agents.  Experimental results on tasks such as Gridworld and the Towers of Hanoi may reveal the accelerated learning and improved policy performance compared to methods explored thus far.  This work seeks to integrate reverse dynamics, negative probabilities, and cognitive-inspired mechanisms into TDRL, offering a fascinating approach for developing RL agents capable of both historical and prospective information for enhanced decision-making.
+
+1 Introduction
+    Reinforcement Learning (RL) has acheived staggering success from gaming to playing robotics.  Traditionally, RL agents predominantly focus on forward planning, making decisions based on only future expected rewards.  While effective, this approach seems to be overlooking valuable historical context that could enhancing generalization and decision-making, especially in complex, large and partially observable environments, where past experiences influence current states.  
+    To address this limitation, Temporal Duality Reinforcement Learning (TDRL) was proposed to integrate forward and backward reasoning through the combination of forward/backward value functions[?].  This dual perspective enables agents to consider both future rewards and accumulated past rewards, which should lead to exploration efficiency and policy performance.
+    Human cognition seems to suggets, however, the relationship between past experiences and decision-making is somewhat more nuanced.  Cognitive reasearch, at least in Fuzzy-Trace Theory (FFT), implies that inidividuals rely on essential meaning, or "gist" of past experiences rather than exact details for decision-making.  The gist-based reasoning results in adaptive and efficient decision-making as it doesn't rely on memory when faced with complex information.
+    In fields like Quantum Mechanics and statisical mechanics, Negative Probabilities provides a mathematical framework for hadnling situations where traditional probabilities maybe insufficient [?].  Allowing probabilitiesto take on negative values in intermediate calculations may be able to simplify complex computations without affecting the validity of final, observable probabiities.
+
+1.1 Motivation and Objectives
+The motivation for this work is to enhance TDRL via gist-based reasoning and negative probabilities, enabling RL agents to make efficient decisions without depending on memory.  Essentially to reason abackwards to improve on the exploration-exploitation problem in RL.  The objectves of this paper are:
+    1) Intefrate gist-based reasoning into TDRL
+    2) ncorporate Negative Probabilities (maybe)
+    3) Enhance Reverse Reinforcement Learning
+    4) Demonstrate improved performance
+
+1.2 Contributions
+    - Theoretical proof that the combined value function converges to the optimal value function under certain conditions, even with the inclusion of negative probabilities.
+    - Empirical evidence demonstrating the proposed methods outperform current methods in terms of learning speed and policy optimality.
+    - Making better, more efficient decision without reliance on memory.
+
+2 Background
+2.1 Temporal Duality Reinforcement Learning (TDRL)
+TDRL integrates forward and backward value functions to improve decision-making in RL agents [?].  The forward value function estimates expected rewards, the backward value functions considers the accumulated rewards from the initial state, and this duality enables agents to utilize prospective and retrospective information.
+
+2.2 Gist-Based Reasoning and Fuzzy-Trace Theory
+Fuzzy-Trace Theory (FFT) postulates there's two forms of memory representations: verbatim traces (details) and gist traces (meaning) [?].  Typically, people rely more on gist traces for efficient reasoning, which reduces the cognitive load of recalling every single detail of a memory.  This implies agents can make efficient decisions by merely focusing on the "gist" of past experiences without relying on extensive memory storage.
+
+2.3 Negative Probabilities
+The great physicist, Richard Feynman, introduced the concept of negative probabilities to shine a light on circumstances in which traditional probabilites are inadquate.  For intermediate steps, negative probabilities can simplify calculations, where the final observable probabilities remain valid and non-negative.
+
+2.4 Reverse Reinforcement Learning
+Reverse Reinforcement Learning  focuses on learning about past experiences 

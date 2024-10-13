@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-POLICY ITERATION Assignement:
+POLICY ITERATION Assignement: CARTPOLE-V0 Problem
 Implement policy evaluation and improvement to find optimal policy.
 ----------------------------------------------------------------------
 Learning Objectives
