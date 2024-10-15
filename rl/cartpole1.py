@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """
 --------------------
-CartPole-V0 Problem:
+CARTPOLE-V0 PROBLEM:
+    A pole is attached by an un-actuated joint to a cart, which moves along a frictionless track. The system is controlled by applying a force of +1 or -1 to the cart. The pendulum starts upright, and the goal is to prevent it from falling over. A reward of +1 is provided for every timestep that the pole remains upright. The episode ends when the pole is more than 15 degrees from vertical, or the cart moves more than 2.4 units from the center.
 --------------------
 The classic CartPole-v0 problem from OpenAI Gym. This environment presents a continuous state space and a discrete action space, offering an excellent platform to compare tabular methods with function ap- proximation techniques.
 ------------------------------------------------------------
@@ -75,10 +76,86 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 
+# CartPole environment
+env = gym.make("CartPole-v1")
+# Outputs the lower/upper bounds of observation space
+print(env.observation_space.low, "\n", env.observation_space.high) # |S|,|A(s)|
+
+def Qtable(state_space=len(env.observation_space.low), action_space=env.action_space.n, bin_size=30):
+    """
+    Q-TABLE: Defined by the number of state and actions...
+    ------------------------------------------------------
+    Defines bins with normalization for extreme values velocity values.
+    ------------------------------------------------
+    INPUT:
+        state_space: (int); default: 4 -> {cart_pos, cart_vel, pole_pos,
+            pole_angle_vel}
+        action_space: (int); default: 2 -> {right, left}
+        bin_size: (int); default: 30
+
+    OUTPUT:
+        q_table, bins: (tuple of ndarrays ?, list of ndarryas)
+    """
+    # Ranges for each of the state variables, where they're evenly spaced
+    # intervals
+    bins = [
+        # Cart position (in meters)
+        np.linspace(-4.8, 4.8, bin_size),
+        # Cart velocity
+        np.linspace(-4, 4, bin_size),
+        # Pole position
+        np.linspace(-0.418, 0.418, bin_size),
+        # Pole angular velocity (in radians/second)
+        np.linspace(-4, 4, bin_size)
+    ]
+
+    """ Creating the Q-table, where its size established via [bin_size] *
+    state_space + [action_space] resulting in CartPole shape: 
+      [30, 30, 30, 30, 2] """
+    q_table = np.random.uniform(low=-1, high=1, size=[bin_size] * state_space
+                             + [action_space])
+
+    return q_table, bins
+
+def discrete(state, bins):
+    """
+    Discretizes continuous space
+    ----------------------------
+    INPUT:
+        state: (int) Continuous state space.
+        bins: (list of ndarrays) discretized bins.
+
+    OUTPUT:
+        (tuple) for making it hashable for indexing into multidimensional
+        (4-dimensional table, here) Q-table.
+    """
+    index = []
+
+    for i in range(len(state)):
+        # Boundaries on state values
+        state_value = np.clip(state[i], bins[i][0], bins[i][-1])
+        # Corresponding Indices of bins
+        index.append(np.digitize(state_value, bins[i])-1)
+
+    return tuple(index)
+
+def q_learning(q_table, bins, episodes=5000, discount=0.9, alpha=0.2,
+               timestep=5000, epsilon=0.8, epsilon_decay=0.99,
+               epsilon_min=0.01):
+    """
+    ?
+    """
+    pass
+
+def main():
+    q_table = Qtable()
 
 
 
-
+if __name__ == "__main__":
+    # To see all environments in gymnasium
+#    gym.pprint_registry()
+    main()
 
 
 
