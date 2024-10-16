@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 """
+Helped by:
+    https://github.com/maciejbalawejder/Reinforcement-Learning-Collection/blob/main/Q-Table/Qtable.ipynb
+    https://gymnasium.farama.org/environments/classic_control/cart_pole/
+
 --------------------
 CARTPOLE-V0 PROBLEM:
     A pole is attached by an un-actuated joint to a cart, which moves along a frictionless track. The system is controlled by applying a force of +1 or -1 to the cart. The pendulum starts upright, and the goal is to prevent it from falling over. A reward of +1 is provided for every timestep that the pole remains upright. The episode ends when the pole is more than 15 degrees from vertical, or the cart moves more than 2.4 units from the center.
@@ -85,8 +89,16 @@ def Qtable(state_space=len(env.observation_space.low), action_space=env.action_s
     """
     Q-TABLE: Defined by the number of state and actions...
     ------------------------------------------------------
-    Defines bins with normalization for extreme values velocity values.
-    ------------------------------------------------
+    Each element Q[i,j,k,l,m] represents the Q-value for:
+        Cart position in bin i
+        Cart velocity in bin j
+        Pole angle in bin k
+        Pole angular velocity in bin l
+        Action m (0 or 1, corresponding to left or right)
+    ----------------------------------------------------------------
+    BINS: List of numpy arrays representing the discretized boundaries for one
+    of the state variables in env., a numpy array for each state.
+    ----------------------------------------------------------------
     INPUT:
         state_space: (int); default: 4 -> {cart_pos, cart_vel, pole_pos,
             pole_angle_vel}
@@ -109,13 +121,13 @@ def Qtable(state_space=len(env.observation_space.low), action_space=env.action_s
         np.linspace(-4, 4, bin_size)
     ]
 
-    """ Creating the Q-table, where its size established via [bin_size] *
-    state_space + [action_space] resulting in CartPole shape: 
-      [30, 30, 30, 30, 2] """
+    # [bin_size] * state_space -> creates list of bin_size repeated state_space
+    # times, and w/ action dimension (+ [action_space]), becoming: [30, 30, 30, 30, 2]
+    # initializes Q-table w/ random value tween -1 and 1
     q_table = np.random.uniform(low=-1, high=1, size=[bin_size] * state_space
                              + [action_space])
 
-    return q_table, bins
+    return q_table, bins # q_table.ndim == 5, list of 4 np arrays
 
 def discrete(state, bins):
     """
@@ -127,35 +139,90 @@ def discrete(state, bins):
 
     OUTPUT:
         (tuple) for making it hashable for indexing into multidimensional
-        (4-dimensional table, here) Q-table.
+        (5-dimensional table, here: q_table.ndim) Q-table.
     """
     index = []
 
     for i in range(len(state)):
-        # Boundaries on state values
-        state_value = np.clip(state[i], bins[i][0], bins[i][-1])
-        # Corresponding Indices of bins
-        index.append(np.digitize(state_value, bins[i])-1)
+        # Corresponding Indices of bins; discretization process
+        index.append(np.digitize(state[i], bins[i])-1)
 
     return tuple(index)
 
-def q_learning(q_table, bins, episodes=5000, discount=0.9, alpha=0.2,
-               timestep=5000, epsilon=0.8, epsilon_decay=0.99,
-               epsilon_min=0.01):
+def q_learning(q_table, bins, episodes=5000, discount=0.95, alpha=0.1,
+               timestep=100, epsilon=0.2):
     """
-    ?
+    Learns iteratively, the optimal Q-value function using the Bellman
+    equation via storing Q-values in the Q-table to be updated @ each time
+    step.
+    ------------------------------------------------------------
+    INPUT:
+        q_table: (np.arrays) initialized Q-table
+        bins: (list of np.arrays) Discretized bins for state variables 
+        episodes: (int) Number of episodes to train over
+        discount: (float) Discount factor determining importance of future
+            rewards
+        alpha: (float) Learning rate
+        timestep: (int) Interfval reporting training progress
+        epsilon: Initial exploration rate
+
+    OUTPUT:
+        (None)
     """
-    pass
+    # Initializations ?
+    reward, steps = 0, 0
 
-def main():
-    q_table = Qtable()
+    for episode in range(1, episodes+1):
+        steps += 1
+        # Initialize indices for Q-table
+        initial_state, _ = env.reset() # numpy array, empty dict
+        current_state = discrete(initial_state, bins)
+
+        score = 0
+        done =  False
+
+        for t in range(timestep):
+            # Epsilon-greedy action selection
+            if np.random.random() < epsilon:
+                # env.action_space -> All possible actions in environment
+                # sample() -> randomly selects an action via (left=0, right=1)
+                action = env.action_space.sample() # Explore w/ prob. 𝜀
+                print(f"Explore!\nValue")
+
+            else:
+                # Returns index of highest Q-value
+                # q_table[current_state] -> Array of Q-values for possible
+                # actions.
+                # np.argmax() -> finds index of max value in array
+                action = np.argmax(q_table[current_state]) # Exploit; prob. 1-𝜀
+
+            # take action, observing new state/reward
+            # anv.step(action) -> (observation, reward, terminated, truncated, info)
+            next_state, reward, done, _booly, _empty_dict= env.step(action)
+            next_state = discrete(next_state, bins)
+                        
+            # UPdate Q-table
+            best_next_action = np.argmax(q_table[next_state])
+            td_target = reward + discount * q_table[next_state +
+                                                    (best_next_action, )] # ?
 
 
 
-if __name__ == "__main__":
-    # To see all environments in gymnasium
-#    gym.pprint_registry()
-    main()
+
+q_table, bins = Qtable()
+
+breakpoint()
+
+#def main():
+#    q_table, bins = Qtable()
+#    
+#    breakpoint()
+#
+#
+#if __name__ == "__main__":
+#    # To see all environments in gymnasium
+##    gym.pprint_registry()
+#    main()
 
 
 
