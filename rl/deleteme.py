@@ -42,6 +42,7 @@ def q_learning(q_table, bins, episodes=5000, discount=0.9, alpha=0.2,
 
             # Update Q-table
             best_next_action = np.argmax(q_table[next_state])
+            # Whjat's this about ?
             td_target = reward + discount * q_table[next_state + (best_next_action,)]
             td_error = td_target - q_table[state + (action,)]
             q_table[state + (action,)] += alpha * td_error

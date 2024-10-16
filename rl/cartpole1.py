@@ -138,7 +138,7 @@ def discrete(state, bins):
         bins: (list of ndarrays) discretized bins.
 
     OUTPUT:
-        (tuple) for making it hashable for indexing into multidimensional
+        indices: (tuple) for making it hashable for indexing into multidimensional
         (5-dimensional table, here: q_table.ndim) Q-table.
     """
     index = []
@@ -147,10 +147,12 @@ def discrete(state, bins):
         # Corresponding Indices of bins; discretization process
         index.append(np.digitize(state[i], bins[i])-1)
 
-    return tuple(index)
+    indices = tuple(index)
 
-def q_learning(q_table, bins, episodes=5000, discount=0.95, alpha=0.1,
-               timestep=100, epsilon=0.2):
+    return indices
+
+def q_learning(q_table, bins, episodes=5000, discount=0.9, alpha=0.1,
+               timestep=100, epsilon=0.2, epsilon_decay=0.05, epsion_min=0.01):
     """
     Learns iteratively, the optimal Q-value function using the Bellman
     equation via storing Q-values in the Q-table to be updated @ each time
@@ -171,6 +173,7 @@ def q_learning(q_table, bins, episodes=5000, discount=0.95, alpha=0.1,
     """
     # Initializations ?
     reward, steps = 0, 0
+    episode_rewards = []
 
     for episode in range(1, episodes+1):
         steps += 1
@@ -178,7 +181,7 @@ def q_learning(q_table, bins, episodes=5000, discount=0.95, alpha=0.1,
         initial_state, _ = env.reset() # numpy array, empty dict
         current_state = discrete(initial_state, bins)
 
-        score = 0
+        total_reward = 0
         done =  False
 
         for t in range(timestep):
@@ -196,18 +199,43 @@ def q_learning(q_table, bins, episodes=5000, discount=0.95, alpha=0.1,
                 # np.argmax() -> finds index of max value in array
                 action = np.argmax(q_table[current_state]) # Exploit; prob. 1-𝜀
 
-            # take action, observing new state/reward
             # anv.step(action) -> (observation, reward, terminated, truncated, info)
-            next_state, reward, done, _booly, _empty_dict= env.step(action)
-            next_state = discrete(next_state, bins)
-                        
-            # UPdate Q-table
-            best_next_action = np.argmax(q_table[next_state])
-            td_target = reward + discount * q_table[next_state +
-                                                    (best_next_action, )] # ?
+            # Executes chosen action, unpacking the return values
+            next_state, reward, done, booly, empty_dict= env.step(action)
+            # Discretizes new continuous state for indexing Qtable
+            proper_next_state = discrete(next_state, bins)
+            # finds action with highest Q-value in next state 
+            best_next_action = np.argmax(q_table[proper_next_state])
+            # TD (temporal difference target), estimating the total expected
+            # reward:= immediate reward + discounted best possible future
+            # reward...
+            # "the value of this state-action pair is what we got now, plus what we think we can get in the future, but we're less certain about the future so we discount it."
+            td_target = reward + discount * q_table[proper_next_state +
+                                                    (best_next_action, )]
+            td_error = td_target - q_table[current_state + (actions, )]
+            # Updates Q-value for current state-action pair
+            # moving Q-value closer to TD target by a fraction via 𝛼
+            q_table[current_state + (action, )] += alpha * td_error
 
+            # Update current state/reward
+            current_state = proper_next_state
+            total_reward += reward
 
+            # Check if episode ended
+            if done:
+                break
 
+        # Decay epsilon to reduce exploration over time
+        epsilon = max(0.01, epsilon * epsilon_decay, epsilon_min)
+        episode_rewards.append(total_reward)
+
+        # Output progress at every episode
+        if episode % timestep == 0:
+            ave_reward = np.mean(epsiode_rewards[-timestep:])
+
+    env.close()
+
+    return episode_rewards, q_table
 
 q_table, bins = Qtable()
 
