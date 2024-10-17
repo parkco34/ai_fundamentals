@@ -28,7 +28,7 @@ Assignment Tasks
 ================
 PART 1: 
 Tabular Methods with Discretization
--------------------------
+-----------------------------------------------------------
 1. State Space Discretization
 Objective: Convert the continuous state space into a finite set of discrete states. Instructions:
 • Define bins for each of the four state variables.
@@ -82,6 +82,7 @@ import time
 
 # CartPole environment
 env = gym.make("CartPole-v1")
+env.reset(seed=73) # Reproducability
 # Outputs the lower/upper bounds of observation space
 print(env.observation_space.low, "\n", env.observation_space.high) # |S|,|A(s)|
 
@@ -151,8 +152,8 @@ def discrete(state, bins):
 
     return indices
 
-def q_learning(q_table, bins, episodes=5000, discount=0.9, alpha=0.1,
-               timestep=100, epsilon=0.2, epsilon_decay=0.05, epsion_min=0.01):
+def q_learning(q_table, bins, episodes=5000, discount=0.9, alpha=0.2,
+               timestep=100, epsilon=0.2, epsilon_decay=0.05, epsilon_min=0.01):
     """
     Learns iteratively, the optimal Q-value function using the Bellman
     equation via storing Q-values in the Q-table to be updated @ each time
@@ -167,6 +168,8 @@ def q_learning(q_table, bins, episodes=5000, discount=0.9, alpha=0.1,
         alpha: (float) Learning rate
         timestep: (int) Interfval reporting training progress
         epsilon: Initial exploration rate
+        epsilon_decay: (float) ?
+        epsilon_min: (float) ?
 
     OUTPUT:
         (None)
@@ -190,7 +193,6 @@ def q_learning(q_table, bins, episodes=5000, discount=0.9, alpha=0.1,
                 # env.action_space -> All possible actions in environment
                 # sample() -> randomly selects an action via (left=0, right=1)
                 action = env.action_space.sample() # Explore w/ prob. 𝜀
-                print(f"Explore!\nValue")
 
             else:
                 # Returns index of highest Q-value
@@ -212,7 +214,7 @@ def q_learning(q_table, bins, episodes=5000, discount=0.9, alpha=0.1,
             # "the value of this state-action pair is what we got now, plus what we think we can get in the future, but we're less certain about the future so we discount it."
             td_target = reward + discount * q_table[proper_next_state +
                                                     (best_next_action, )]
-            td_error = td_target - q_table[current_state + (actions, )]
+            td_error = td_target - q_table[current_state + (action, )]
             # Updates Q-value for current state-action pair
             # moving Q-value closer to TD target by a fraction via 𝛼
             q_table[current_state + (action, )] += alpha * td_error
@@ -221,32 +223,80 @@ def q_learning(q_table, bins, episodes=5000, discount=0.9, alpha=0.1,
             current_state = proper_next_state
             total_reward += reward
 
-            # Check if episode ended
+            # Check if episode ended and if so, breakdance!
             if done:
                 break
 
         # Decay epsilon to reduce exploration over time
-        epsilon = max(0.01, epsilon * epsilon_decay, epsilon_min)
+        epsilon = max(epsilon * epsilon_decay, epsilon_min)
         episode_rewards.append(total_reward)
 
         # Output progress at every episode
         if episode % timestep == 0:
-            ave_reward = np.mean(epsiode_rewards[-timestep:])
+            avg_reward = np.mean(episode_rewards[-timestep:])
+            print(f"""Episode: {episode}, Average Reward: {avg_reward:.2f},
+                  Epsilon: {epsilon:.4f}""")
 
     env.close()
 
     return episode_rewards, q_table
 
+# 2.) Policy Iteration
+def policy_iteration(env, bins, discount=0.9, max_iters=10, eval_episodes=100):
+    """
+    Implements Approximate Policy Iteration via Monte Carlo Policy Evaluation.
+    ------------------------------------------------
+    INPUT:
+
+    OUTPUT:
+    """
+    state_shape = tuple(len(bins[i]) for i in range(len(bins)))
+    # Initialize random policy
+    policy = np.random.choice(env.action_space.n, size=state_size)
+    value_func = np.zeros(state_shape)
+
+    for iteration in range(max_iterations):
+        print("Policy Iteration {iteration+1}")
+
+        # Policy Evaluation
+        value_func = monte_carlo_eval(env, policy, bins, value_func, discount,
+                                     evaluation_episodes)
+
+        # Policy Improvement
+        policy_stable = True
+        for idx in np.ndindex(state_shape):
+            prev_action = policy[idx]
+            state = [bins[i][idx[i]] for i in range(len(idx))]
+            action_values = []
+
+            for action in range(env.action_space.n):
+                total_reward = 0.0
+                total_count = 0
+
+                # Sample transitions
+                for _ in range(5):
+                    env.reset()
+                    # ??????
+
+# Debugging portion:
 q_table, bins = Qtable()
+rewards, trained_q_table = q_learning(q_table, bins)
 
 breakpoint()
 
 #def main():
 #    q_table, bins = Qtable()
-#    
-#    breakpoint()
-#
-#
+#    # Training agent w/ Q-Learning
+#    rewards, trained_q_table = q_learning(q_table, bins)
+
+    # Plot rewards per episode
+#    plt.plot(rewards)
+#    plt.xlabel("Episode")
+#    plt.ylabel("Totl Reward")
+#    plt.title("Q-Learning: Total Reward per Episode")
+#    plt.show()
+
+
 #if __name__ == "__main__":
 #    # To see all environments in gymnasium
 ##    gym.pprint_registry()
