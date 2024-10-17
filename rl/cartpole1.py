@@ -579,29 +579,7 @@ def main():
 
 # =======================================
 
-# Debugging portion:
-#q_table, bins = Qtable()
-#rewards, trained_q_table = q_learning(q_table, bins)
-#
-#breakpoint()
-
-#def main():
-#    q_table, bins = Qtable()
-#    # Training agent w/ Q-Learning
-#    rewards, trained_q_table = q_learning(q_table, bins)
-
-    # Plot rewards per episode
-#    plt.plot(rewards)
-#    plt.xlabel("Episode")
-#    plt.ylabel("Totl Reward")
-#    plt.title("Q-Learning: Total Reward per Episode")
-#    plt.show()
-
-
-#if __name__ == "__main__":
-#    # To see all environments in gymnasium
-##    gym.pprint_registry()
-#    main()
-
+if __name__ == "__main__":
+    main()
 
 
