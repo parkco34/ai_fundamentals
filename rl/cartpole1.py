@@ -273,16 +273,317 @@ def policy_iteration(env, bins, discount=0.9, max_iters=10, eval_episodes=100):
                 total_reward = 0.0
                 total_count = 0
 
+            # ???????
+
+# ChatGPT ====================================== ?
+def policy_iteration(env, bins, discount=0.9, max_iterations=10, evaluation_episodes=100):
+    """
+    Implements Approximate Policy Iteration using Monte Carlo Policy Evaluation.
+
+    Parameters:
+    - env: Gym environment
+    - bins: Discretized bins
+    - discount: Discount factor
+    - max_iterations: Maximum number of policy improvement iterations
+    - evaluation_episodes: Number of episodes for policy evaluation
+
+    Returns:
+    - policy: Optimal policy
+    - value_func: Value function for the optimal policy
+    """
+    # Discretized state space
+    state_shape = tuple(len(bins[i]) for i in range(len(bins)))
+    # Initialize a random policy
+    policy = np.random.choice(env.action_space.n, size=state_shape)
+    # Initialize value function
+    value_func = np.zeros(state_shape)
+
+    for iteration in range(max_iterations):
+        print(f"Policy Iteration {iteration+1}")
+
+        # Policy Evaluation
+        value_func = monte_carlo_policy_evaluation(env, policy, bins,
+                                                   value_func, discount, evaluation_episodes)
+
+        # Policy Improvement
+        policy_stable = True
+        for idx in np.ndindex(state_shape):
+            old_action = policy[idx]
+            state = [bins[i][idx[i]] for i in range(len(idx))]
+            action_values = []
+
+            for action in range(env.action_space.n):
+                total_reward = 0.0
+                total_count = 0
+
                 # Sample transitions
-                for _ in range(5):
+                for _ in range(5):  # Sample a few times for each action
                     env.reset()
-                    # ??????
+                    # We can't set the state directly, so we skip states we can't reach
+                    # This is a limitation, so we might need to adjust our approach
+                    # Alternatively, we can consider the value function as is
+
+                    # Since we can't simulate from specific states, we use the current value function
+                    next_state, reward, done, _, _ = simulate_action(env, state, action)
+                    if next_state is not None:
+                        next_state_discrete = discrete(next_state, bins)
+                        total_reward += reward + discount * vaue_func[next_state_discrete]
+                        total_count += 1
+
+                if total_count > 0:
+                    action_value = total_reward / total_count
+                else:
+                    action_value = value_func[idx]  # Default to current value
+
+                action_values.append(action_value)
+
+            best_action = np.argmax(action_values)
+            policy[idx] = best_action
+
+            if old_action != best_action:
+                policy_stable = False
+
+        if policy_stable:
+            print("Policy converged.")
+            break
+
+    return policy, value_func
+
+def monte_carlo_policy_evaluation(env, policy, bins, value_func, discount, episodes):
+    """
+    Evaluates a policy using Monte Carlo sampling.
+
+    Parameters:
+    - env: Gym environment
+    - policy: Current policy
+    - bins: Discretized bins
+    - value_func: Current value function
+    - discount: Discount factor
+    - episodes: Number of episodes for evaluation
+
+    Returns:
+    - value_func: Updated value function
+    """
+    returns_sum = {}
+    returns_count = {}
+
+    for episode in range(episodes):
+        state_continuous, _ = env.reset()
+        state_discrete = discrete(state_continuous, bins)
+        episode_data = []
+        done = False
+
+        while not done:
+            action = policy[state_discrete]
+            next_state_continuous, reward, done, _, _ = env.step(action)
+            episode_data.append((state_discrete, reward))
+            state_discrete = discrete(next_state_continuous, bins)
+
+        G = 0
+        for state_discrete, reward in reversed(episode_data):
+            G = discount * G + reward
+            if state_discrete not in returns_sum:
+                returns_sum[state_discrete] = G
+                returns_count[state_discrete] = 1
+            else:
+                returns_sum[state_discrete] += G
+                returns_count[state_discrete] += 1
+            value_func[state_discrete] = returns_sum[state_discrete] / returns_count[state_discrete]
+
+    return value_func
+
+def simulate_action(env, state, action):
+    """
+    Simulates taking an action from a given state.
+
+    Parameters:
+    - env: Gym environment
+    - state: Continuous state
+    - action: Action to take
+
+    Returns:
+    - next_state: Next continuous state
+    - reward: Reward received
+    - done: Whether the episode is done
+    - info: Additional info
+    """
+    # Since we can't set the environment to a specific state, we can't simulate from it.
+    # This function is here for completeness but returns None.
+    return None, 0, True, {}
+
+def sarsa(q_table, bins, episodes=5000, discount=0.9, alpha=0.2,
+          timestep=100, epsilon=0.2, epsilon_decay=0.99, epsilon_min=0.01):
+    """
+    Implements the SARSA algorithm.
+
+    Parameters:
+    - q_table: Initialized Q-table
+    - bins: Discretized bins
+    - episodes: Number of episodes to train
+    - discount: Discount factor
+    - alpha: Learning rate
+    - timestep: Reporting interval
+    - epsilon: Initial exploration rate
+    - epsilon_decay: Decay rate for epsilon
+    - epsilon_min: Minimum epsilon value
+
+    Returns:
+    - episode_rewards: List of total rewards per episode
+    - q_table: Updated Q-table
+    """
+    episode_rewards = []
+
+    for episode in range(1, episodes + 1):
+        state_continuous, _ = env.reset()
+        current_state = discrete(state_continuous, bins)
+
+        # Choose action using epsilon-greedy policy
+        if np.random.random() < epsilon:
+            action = env.action_space.sample()
+        else:
+            action = np.argmax(q_table[current_state])
+
+        total_reward = 0
+        done = False
+
+        while not done:
+            next_state_continuous, reward, done, _, _ = env.step(action)
+            next_state = discrete(next_state_continuous, bins)
+
+            # Choose next action using epsilon-greedy policy
+            if np.random.random() < epsilon:
+                next_action = env.action_space.sample()
+            else:
+                next_action = np.argmax(q_table[next_state])
+
+            # Update Q-value
+            td_target = reward + discount * q_table[next_state + (next_action,)]
+            td_error = td_target - q_table[current_state + (action,)]
+            q_table[current_state + (action,)] += alpha * td_error
+
+            current_state = next_state
+            action = next_action
+            total_reward += reward
+
+            if done:
+                break
+
+        # Decay epsilon
+        epsilon = max(epsilon * epsilon_decay, epsilon_min)
+        episode_rewards.append(total_reward)
+
+        # Output progress at every episode
+        if episode % timestep == 0:
+            avg_reward = np.mean(episode_rewards[-timestep:])
+            print(f"Episode: {episode}, Average Reward: {avg_reward:.2f}, Epsilon: {epsilon:.4f}")
+
+    env.close()
+    return episode_rewards, q_table
+
+def monte_carlo_prediction(bins, episodes=5000, discount=0.9, epsilon=0.2,
+                           epsilon_decay=0.99, epsilon_min=0.01):
+    """
+    Implements Monte Carlo Prediction to estimate V(s).
+
+    Parameters:
+    - bins: Discretized bins
+    - episodes: Number of episodes to train
+    - discount: Discount factor
+    - epsilon: Initial exploration rate
+    - epsilon_decay: Decay rate for epsilon
+    - epsilon_min: Minimum epsilon value
+
+    Returns:
+    - value_func: Estimated value function
+    - episode_rewards: List of total rewards per episode
+    """
+    state_shape = tuple(len(bins[i]) for i in range(len(bins)))
+    value_func = np.zeros(state_shape)
+    returns_sum = {}
+    returns_count = {}
+    episode_rewards = []
+
+    for episode in range(1, episodes + 1):
+        state_continuous, _ = env.reset()
+        state_discrete = discrete(state_continuous, bins)
+        episode_data = []
+        total_reward = 0
+        done = False
+
+        while not done:
+            # Epsilon-greedy action selection
+            if np.random.random() < epsilon:
+                action = env.action_space.sample()
+            else:
+                # Since we don't have a policy, we can choose actions randomly
+                action = env.action_space.sample()
+
+            next_state_continuous, reward, done, _, _ = env.step(action)
+            next_state_discrete = discrete(next_state_continuous, bins)
+            episode_data.append((state_discrete, reward))
+            state_discrete = next_state_discrete
+            total_reward += reward
+
+        G = 0
+        visited_states = set()
+        for state_discrete, reward in reversed(episode_data):
+            G = discount * G + reward
+            if state_discrete not in visited_states:
+                visited_states.add(state_discrete)
+                if state_discrete not in returns_sum:
+                    returns_sum[state_discrete] = G
+                    returns_count[state_discrete] = 1
+                else:
+                    returns_sum[state_discrete] += G
+                    returns_count[state_discrete] += 1
+                value_func[state_discrete] = returns_sum[state_discrete] / returns_count[state_discrete]
+
+        # Decay epsilon
+        epsilon = max(epsilon * epsilon_decay, epsilon_min)
+        episode_rewards.append(total_reward)
+
+        if episode % 100 == 0:
+            avg_reward = np.mean(episode_rewards[-100:])
+            print(f"Episode: {episode}, Average Reward: {avg_reward:.2f}, Epsilon: {epsilon:.4f}")
+
+    env.close()
+    return value_func, episode_rewards
+
+def main():
+    q_table_q, bins = Qtable()
+    q_table_sarsa, _ = Qtable()
+
+    episodes = 5000
+
+    # Q-Learning
+    rewards_q_learning, trained_q_table_q = q_learning(
+        q_table_q, bins, episodes=episodes)
+
+    # SARSA
+    rewards_sarsa, trained_q_table_sarsa = sarsa(
+        q_table_sarsa, bins, episodes=episodes)
+
+    # Monte Carlo Prediction (Note: Only estimating V(s), not Q(s,a))
+    V_mc, rewards_mc = monte_carlo_prediction(
+        bins, episodes=episodes)
+
+    # Plotting the rewards
+    plt.plot(rewards_q_learning, label='Q-Learning')
+    plt.plot(rewards_sarsa, label='SARSA')
+    plt.plot(rewards_mc, label='Monte Carlo')
+    plt.xlabel('Episode')
+    plt.ylabel('Total Reward')
+    plt.title('Performance Comparison of Tabular Methods')
+    plt.legend()
+    plt.show()
+
+# =======================================
 
 # Debugging portion:
-q_table, bins = Qtable()
-rewards, trained_q_table = q_learning(q_table, bins)
-
-breakpoint()
+#q_table, bins = Qtable()
+#rewards, trained_q_table = q_learning(q_table, bins)
+#
+#breakpoint()
 
 #def main():
 #    q_table, bins = Qtable()
