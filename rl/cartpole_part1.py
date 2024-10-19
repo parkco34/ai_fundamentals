@@ -275,8 +275,22 @@ def policy_evaluation(policy, bins, value_func, discount=EXAMPLE_DISCOUNT,
                       alpha=EXAMPLE_ALPHA, episodes=EXAMPLE_EPISODES):
     """
     Policy Evaluation: Computing V_𝞹(s) for arbitrary 𝞹, using TD(0), a
+    model-free
     one-step bootstrapping, using only the immediate next state to udpate the
-    value estimate.  
+    value estimate, and 
+    ----------------------------------------------------
+    For each episode:
+
+    Reset Environment: Start from an initial state.
+    Discretize State: Convert continuous observations into discrete indices.
+    Step Through the Episode:
+        Action Selection: Follow the current policy ππ to choose actions.
+        Execute Action: Take the action, observe reward and next state.
+        Discretize Next State: Convert next continuous state to discrete indices.
+        TD(0) Update:
+        V(s)←V(s)+α[r+γV(s′)−V(s)]
+        V(s)←V(s)+α[r+γV(s′)−V(s)]
+        Transition to Next State: Update s←s′s←s′.
     ----------------------------------------------------
     INPUT:
         policy: (ndarray) Current policy mapping state to actions
