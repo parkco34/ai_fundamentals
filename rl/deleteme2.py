@@ -230,16 +230,16 @@ def main():
         q_table_sarsa, bins, episodes=episodes)
 
     # Plotting the rewards with moving average
-#    window_size = 37
-#
-#    plt.figure(figsize=(12, 8))
-#    plt.plot(moving_average(rewards_q_learning, window_size), label='Q-Learning')
-#    plt.plot(moving_average(rewards_sarsa, window_size), label='SARSA')
-#    plt.xlabel('Episode')
-#    plt.ylabel('Total Reward (Moving Average)')
-#    plt.title('Performance Comparison of Tabular Methods')
-#    plt.legend()
-#    plt.show()
+    window_size = 37
+
+    plt.figure(figsize=(12, 8))
+    plt.plot(moving_average(rewards_q_learning, window_size), label='Q-Learning')
+    plt.plot(moving_average(rewards_sarsa, window_size), label='SARSA')
+    plt.xlabel('Episode')
+    plt.ylabel('Total Reward (Moving Average)')
+    plt.title('Performance Comparison of Tabular Methods')
+    plt.legend()
+    plt.show()
 
 if __name__ == "__main__":
     main()

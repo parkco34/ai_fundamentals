@@ -274,7 +274,9 @@ def initialize_policy(state_space=len(env.observation_space.low),
 def policy_evaluation(policy, bins, value_func, discount=EXAMPLE_DISCOUNT,
                       alpha=EXAMPLE_ALPHA, episodes=EXAMPLE_EPISODES):
     """
-    Policy Evaluation: Computing V_𝞹(s) for arbitrary 𝞹.
+    Policy Evaluation: Computing V_𝞹(s) for arbitrary 𝞹, using TD(0), a
+    one-step bootstrapping, using only the immediate next state to udpate the
+    value estimate.  
     ----------------------------------------------------
     INPUT:
         policy: (ndarray) Current policy mapping state to actions
@@ -305,7 +307,6 @@ def policy_evaluation(policy, bins, value_func, discount=EXAMPLE_DISCOUNT,
             curren_state = next_state
 
     return value_func
-        
 
 def sarsa(env, episodes, alpha, discount, epsilon):
     pass
