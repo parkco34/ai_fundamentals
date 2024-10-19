@@ -79,6 +79,7 @@ import gymnasium as gym
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import itertools
 
 # Example values
 EXAMPLE_EPSILON = 1.0
@@ -289,7 +290,6 @@ def policy_evaluation(policy, bins, value_func, discount=EXAMPLE_DISCOUNT,
         Discretize Next State: Convert next continuous state to discrete indices.
         TD(0) Update:
         V(s)←V(s)+α[r+γV(s′)−V(s)]
-        V(s)←V(s)+α[r+γV(s′)−V(s)]
         Transition to Next State: Update s←s′s←s′.
     ----------------------------------------------------
     INPUT:
@@ -303,24 +303,144 @@ def policy_evaluation(policy, bins, value_func, discount=EXAMPLE_DISCOUNT,
     OUTPUT:
         value_func: (ndarray) Updated value function
     """
-    for episode in range(episodes):
+    for episode in range(epsiodes):
+        # Reset env for each episode
         continuous_state, _ = env.reset()
-        current_state = discrete(continuous_state, bins)
+        # Discretize state
+        current_state = discrete(cotinuous_state, bins)
         done = False
 
+        # Step thru episodes
         while not done:
+            # Select action
             action = policy[current_state]
-            next_state_continuous, reward, done, booly, empty_dict = \
+            # Execute
+            next_continuous_state, reward, done, booly, empty_dict = \
             env.step(action)
-            
-            # Update value function using TD(0) update
+            # Discretize
+            next_state = discrete(next_continuous_state, bins)
+
+            # TD(0) Update
             value_func[current_state] += alpha * (reward + discount *
                                                   value_func[next_state] -
                                                   value_func[current_state])
+            # Transition to next state
+            current_state = next_state
 
-            curren_state = next_state
+        return value_func
 
-    return value_func
+def policy_improvement(
+    initial_policy,
+    bins,
+    value_func,
+    action_space, 
+    bin_size,
+    dicount=EXAMPLE_DISCOUNT,
+    num_samples=EXAMPLE_NUM_SAMPLES):
+    """
+    Policy Improvement.
+    After estimating v_𝞹(s), update policy from 𝞹 to 𝞹' by making it GREEDY
+    w.r.t v_𝞹(s):
+    - Iterate over all discrete states
+    - Select best action
+    - Check for policy stabality
+    -----------------------------------
+    Action Value Estimation:
+
+    For each action aa, Q(s,a)Q(s,a) is approximated as:
+    Q(s,a)≈R(s,a)+γV(s′)
+    Q(s,a)≈R(s,a)+γV(s′)
+        Reward R(s,a)R(s,a): In CartPole, it's typically +1 per timestep.
+        Value V(s′)V(s′): Current estimate from Policy Evaluation.
+
+    Selecting Best Action:
+        np.argmax(action_values) selects the action with the highest estimated Q(s,a)Q(s,a).
+
+    Policy Update:
+        If the best action differs from the current policy's action, update the policy and flag that the policy has changed.
+    -----------------------------------
+    INPUT:
+        initial_policy: Current policy to update
+        value_func: (ndarray) 
+
+    OUTPUT:
+        policy, policy_stable: (tuple of ?)
+    """
+    policy = np.copy(initial_policy)
+    policy_stable = True
+
+    # Iterate over all discrete states using Cartesian Product ?
+    for state in itertools.product(range(bin_size),
+                                   repeat=len(env.observation_space.low)):
+        state = tuple(state)
+        prev_action = policy[state]
+        
+        action_values = np.zeros(action_space)
+        
+        for action in range(action_space):
+            # Approx. Q(s, a) using current value func
+            q_sa = 1 + discount * value_func[state]
+            action_values[action] = q_sa
+
+        # Choose best action
+        best_action = np.argmax(action_values)
+
+        if best_action != prev_action:
+            policy_stable = False
+            policy[state] = best_action
+
+    return policy, policy_stable
+
+def stochastic_policy_improvement(
+    initial_policy,
+    bins,
+    value_func,
+    bin_size,
+    action_space,
+    discount=EXAMPLE_DISCOUNT,
+    num_sample=EXAMPLE_NUM_SAMPLES
+):
+    """
+    HANDLING MULTIPLE OPTIMAL ACTIONS (TIES)
+    If multiple actions yield the same maximum Q(s,a)Q(s,a), the policy can remain 
+    stochastic by assigning probabilities to all optimal actions.
+    ----------------------------------------------------------
+    INPUT: ?
+
+    OUTPUT:
+    """
+    policy = np.copy(initial_policy)
+    policy_stable = True
+
+    # Iterate over all discrete states using Cartesian Product ?
+    for state in itertools.product(range(bin_size),
+                                   repeat=len(env.observation_space.low)):
+        state = tuple(state)
+        prev_action = policy[state]
+        
+        action_values = np.zeros(action_space)
+        
+        for action in range(action_space):
+            # Approx. Q(s, a) using current value func
+            q_sa = 1 + discount * value_func[state]
+            action_values[action] = q_sa
+        
+        max_q = np.max(action_values)
+        greedy_actions = np.where(action_values == max_q)[0]
+
+        if len(greedy_actions) == 1:
+            best_action = greedy_actions[0]
+
+        else:
+            # Assign equal prob. to all actions
+            best_action = np.random.choice(greedy_actions)
+
+        if best_action != prev_action:
+            policy_stable = False
+            policy[state] = best_action
+
+    return policy, stable_policy
+
 
 def sarsa(env, episodes, alpha, discount, epsilon):
     pass
