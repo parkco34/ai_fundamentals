@@ -76,6 +76,7 @@ Instructions:
 • Analyze the effects of hyperparameters and network architecture.
 """
 import gymnasium as gym
+from textwrap import dedent
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -91,7 +92,7 @@ EXAMPLE_TIMESTEP = 100
 EXAMPLE_BIN_SIZE = 30
 EXAMPLE_EPISODES = 5000
 EXAMPLE_EPSILON_MIN = 0.01
-
+EXAMPLE_NUM_SAMPLES = 5000 # ?
 
 # Set random seeds for reproducibility
 np.random.seed(73)
@@ -378,9 +379,9 @@ def policy_improvement(
         action_values = np.zeros(action_space)
         
         for action in range(action_space):
-            # Approx. Q(s, a) using current value func
-            q_sa = 1 + discount * value_func[state]
-            action_values[action] = q_sa
+            # Approx. Q(s, a) using current value func, where next state is
+            # assumed to be similar to current state... maybe a LIMITATION ?!
+            action_values[action] = 1 + discount * value_func[state]
 
         # Choose best action
         best_action = np.argmax(action_values)
@@ -413,6 +414,7 @@ def stochastic_policy_improvement(
     policy_stable = True
 
     # Iterate over all discrete states using Cartesian Product ?
+    # Generates all combinations of quintuples (0,0,0,0), (0,0,0,1), ..., (29,29,29,29)
     for state in itertools.product(range(bin_size),
                                    repeat=len(env.observation_space.low)):
         state = tuple(state)
@@ -426,8 +428,10 @@ def stochastic_policy_improvement(
             action_values[action] = q_sa
         
         max_q = np.max(action_values)
+        # Find all actions that achieve max. Q(s,a)
         greedy_actions = np.where(action_values == max_q)[0]
 
+        # Selecting greedy action randomly if there are TIES
         if len(greedy_actions) == 1:
             best_action = greedy_actions[0]
 
@@ -435,15 +439,99 @@ def stochastic_policy_improvement(
             # Assign equal prob. to all actions
             best_action = np.random.choice(greedy_actions)
 
+        # Test for convergence
         if best_action != prev_action:
             policy_stable = False
             policy[state] = best_action
 
     return policy, stable_policy
 
+def sarsa(
+    q_table,
+    bins,
+    episodes=EXAMPLE_EPISODES,
+    discount=EXAMPLE_DISCOUNT,
+    alpha=EXAMPLE_ALPHA,
+    timestep=EXAMPLE_TIMESTEP, 
+    epsilon=EXAMPLE_EPSILON,
+    epsilon_decay=EXAMPLE_EPSILON_DECAY,
+    epsilon_min=EXAMPLE_EPSILON_MIN
+):
+    """
+    SARSA
+    ---------------------------------------------
+    INPUT:
+        q_table
+        bins
+        episodes=EXAMPLE_EPISODES
+        discount=EXAMPLE_DISCOUNT
+        alpha=EXAMPLE_ALPHA
+        timestep=EXAMPLE_TIMESTEP 
+        epsilon=EXAMPLE_EPSILON
+        epsilon_decay=EXAMPLE_EPSILON_DECAY
+        epsilon_min=EXAMPLE_EPSILON_MIN
+    
+    OUTPUT:
+        episode_rewards: ()
+        q_table: (ndarray) Updated Q-table
+    """
+    episode_rewards = []
 
-def sarsa(env, episodes, alpha, discount, epsilon):
-    pass
+    for episode in range(1, episodes+1):
+        # Reset env; initialize state
+        state_continuous, _ = env.reset()
+        current_state = discrete(state_continuous, bins)
+        
+        # Choose action from state from Q using epsilon-greedy policy
+        if np.random.random() < epsilon:
+            action = env.action_space.sample()
+
+        else:
+            action = np.argmax(q_table[current_state])
+
+        total_reward = 0
+        done = False
+
+        # For each episode
+        while not done:
+            # Take action, obseving reward/state
+            next_continuous_state, reward, done, booly, empty_dict = \
+            env.step(aciton)
+            
+            # Choose next action using epsilon-greedy policy
+            if np.random.random() < epsilon:
+                next_action = env.action_space.sample()
+
+            else:
+                next_action = np.argmax(q_table[nexst_state])
+
+            # Update Q-value using SARSA update rule
+            td_target = reward + discount * q_table[next_state + (next_action, )]
+            td_error = td_target - q_table[current_state + (action, )]
+            q_table[current_state + (action, )] += alpha * td_error
+
+            # Update state/action
+            current_state = next_state
+            action = next_action
+            total_reward += reward
+
+        # Decay epsilon
+        epsilon = max(epsilon * epsilon_decay, epsilon_min)
+        episode_rewards.append(total_reward)
+
+        # Output progress
+        if episode % timestep == 0:
+            avg_reward = np.mean(episode_rewards[-timestep:])
+            print(dedent(
+f"""
+SARSA - Episode: {episode}, 
+Average Rewards: {avg_rewards:.2f},
+"""))
+        
+    env.close()
+
+    return episode_rewards, q_table
+
 
 def monte_carlo(env, episodes, discount):
     pass
