@@ -76,6 +76,8 @@ Instructions:
 • Analyze the effects of hyperparameters and network architecture.
 """
 import gymnasium as gym
+from tabulate import tabulate
+import csv
 from textwrap import dedent
 import numpy as np
 import matplotlib.pyplot as plt
@@ -93,6 +95,7 @@ EXAMPLE_BIN_SIZE = 30
 EXAMPLE_EPISODES = 5000
 EXAMPLE_EPSILON_MIN = 0.01
 EXAMPLE_NUM_SAMPLES = 5000
+EXAMPLE_MAX_STEPS = 500
 
 # Set random seeds for reproducibility
 np.random.seed(73)
@@ -173,8 +176,8 @@ def q_learning(
     episodes=EXAMPLE_EPISODES,
     discount=EXAMPLE_DISCOUNT,
     alpha=EXAMPLE_ALPHA,
-    timestep=EXAMPLE_TIMESTEP, epsilon=EXAMPLE_EPSILON,
-    epsilon_start=EXAMPLE_EPSILON,
+    timestep=EXAMPLE_TIMESTEP,
+    epsilon=EXAMPLE_EPSILON,
     epsilon_decay=EXAMPLE_EPSILON_DECAY,
     epsilon_min=EXAMPLE_EPSILON_MIN
 ):
@@ -246,7 +249,7 @@ def q_learning(
         # Output progress at every timestep
         if episode % timestep == 0:
             avg_reward = np.mean(episode_rewards[-timestep:])
-            print(f"Episode: {episode}, Average Reward: {avg_reward:.2f}, Epsilon: {epsilon:.4f}")
+            print(f"Q-Learning -> Episode: {episode}, Average Reward: {avg_reward:.2f}, Epsilon: {epsilon:.4f}")
 
     env.close()
 
@@ -305,7 +308,7 @@ def policy_evaluation(policy, bins, value_func, discount=EXAMPLE_DISCOUNT,
     OUTPUT:
         value_func: (ndarray) Updated value function
     """
-    for episode in range(epsiodes):
+    for episode in range(episodes):
         # Reset env for each episode
         continuous_state, _ = env.reset()
         # Discretize state
@@ -453,104 +456,13 @@ def sarsa(
     episodes=EXAMPLE_EPISODES,
     discount=EXAMPLE_DISCOUNT,
     alpha=EXAMPLE_ALPHA,
-    timestep=EXAMPLE_TIMESTEP, 
-    epsilon_start=EXAMPLE_EPSILON,
-    epsilon_end=EXAMPLE_EPSILON_MIN
-):
-    """
-    SARSA - State Action Reward State2 Action2
-    ---------------------------------------------
-    On-Policy Temporal Difference (TD) learning for estimating action-value
-    functions, using 
-    ---------------------------------------------
-    INPUT:
-        q_table: (ndarray) 
-        bins
-        episodes=EXAMPLE_EPISODES
-        discount=EXAMPLE_DISCOUNT
-        alpha=EXAMPLE_ALPHA
-        timestep=EXAMPLE_TIMESTEP 
-        epsilon_start=EXAMPLE_EPSILON
-        epsilon=EXAMPLE_EPSILON
-        epsilon_end=EXAMPLE_EPSILON_MIN
-    
-    OUTPUT:
-        episode_rewards: ()
-        q_table: (ndarray) Updated Q-table
-    """
-    episode_rewards = []
-    epsilon = epsilon_start
-
-    for episode in range(1, episodes+1):
-        # Reset env; initialize state
-        state_continuous, _ = env.reset()
-        current_state = discrete(state_continuous, bins)
-        
-        # Choose action from state from Q using epsilon-greedy policy
-        if np.random.random() < epsilon:
-            action = env.action_space.sample()
-
-        else:
-            action = np.argmax(q_table[current_state])
-
-        total_reward = 0
-        done = False
-
-        # For each episode
-        while not done:
-            # Take action, obseving reward/state
-            next_continuous_state, reward, done, booly, empty_dict = \
-            env.step(action)
-            next_state = discrete(next_continuous_state, bins)
-            
-            # Choose next action using epsilon-greedy policy
-            if np.random.random() < epsilon:
-                next_action = env.action_space.sample()
-
-            else:
-                next_action = np.argmax(q_table[next_state])
-
-            # Update Q-value using SARSA update rule
-            td_target = reward + discount * q_table[next_state + (next_action, )]
-            td_error = td_target - q_table[current_state + (action, )]
-            q_table[current_state + (action, )] += alpha * td_error
-
-            # Update state/action
-            current_state = next_state
-            action = next_action
-            total_reward += reward
-
-        # Decay epsilon: Linear decay
-#        epsilon = max(epsilon * epsilon_decay, epsilon_min)
-        epsilon = max(epsilon_end, epsilon_start - (epsilon_start -
-                                                     epsilon_end) * episode /
-                       epsilion_decay_episodes)
-        episode_rewards.append(total_reward)
-
-        # Output progress
-        if episode % timestep == 0:
-            avg_reward = np.mean(episode_rewards[-timestep:])
-
-            print(dedent(
-                f"""
-SARSA - Episode: {episode:5d}, Average Rewards: {avg_reward:6.2f}, Epsilon: {epsilon:.4f}
-            """))
-        
-    env.close()
-
-    return episode_rewards, q_table
-
-def improved_sarsa_delete(
-    q_table,
-    bins,
-    episodes=EXAMPLE_EPISODES,
-    discount=EXAMPLE_DISCOUNT,
-    alpha_start=EXAMPLE_ALPHA,
     timestep=EXAMPLE_TIMESTEP,
-    epsilon_start=EXAMPLE_EPSILON,
-    epsilon_decay=0.9995,  # Slower decay
+    epsilon=EXAMPLE_EPSILON,
+    epsilon_decay=EXAMPLE_EPSILON_DECAY,
     epsilon_min=EXAMPLE_EPSILON_MIN,
-    max_steps=500  # Maximum steps per episode
+    max_steps=EXAMPLE_MAX_STEPS,
+    output_file="sarsa_results.txt",
+    write_to_file=False
 ):
     """
     Improved SARSA - State Action Reward State Action
@@ -563,46 +475,58 @@ def improved_sarsa_delete(
         bins: (list of ndarrays) Discretized bins for state variables
         episodes: (int) Number of episodes to train
         discount: (float) Discount factor
-        alpha_start: (float) Initial learning rate
+        alpha: (float) Initial learning rate
         timestep: (int) Interval for reporting training progress
-        epsilon_start: (float) Initial exploration rate
+        epsilon: (float) Initial exploration rate
         epsilon_decay: (float) Rate at which epsilon decays
         epsilon_min: (float) Minimum value of epsilon
         max_steps: (int) Maximum number of steps per episode
+        output_file: (str) default: "sarsa_results.txt"
+        write_to_file: (bool) default: False
 
     OUTPUT:
         episode_rewards: (list) Total reward per episode
         q_table: (ndarray) Updated Q-table
+        Saves formatted table of results to output file
     """
     episode_rewards = []
-    epsilon = epsilon_start
-    alpha = alpha_start
+    epsilon = epsilon
+    alpha = alpha
+    table_data = []
+    headers = ["Episode", "Average Reward", "Epsilon", "Alpha"]
 
-    for episode in range(1, episodes + 1):
-        state_continuous, _ = env.reset()
-        current_state = discrete(state_continuous, bins)
+    for episode in range(1, episodes+1):
+        # Initialize environment
+        continuous_state, _ = env.reset()
+        # Convert continuous state space to discrete space
+        current_state = discrete(continuous_state, bins)
 
+        # Epsilon-greedy policy, otherwise take max index of q-tbale
         if np.random.random() < epsilon:
             action = env.action_space.sample()
+
         else:
             action = np.argmax(q_table[current_state])
 
-        total_reward = 0
+        total_reward, step = 0, 0
         done = False
-        step = 0
 
         while not done and step < max_steps:
-            next_continuous_state, reward, done, _, _ = env.step(action)
+            next_continuous_state, reward, done, booly, empty_dict = \
+            env.step(action)
+            
             next_state = discrete(next_continuous_state, bins)
 
+            # Epsilon-greedy
             if np.random.random() < epsilon:
                 next_action = env.action_space.sample()
+
             else:
                 next_action = np.argmax(q_table[next_state])
 
-            td_target = reward + discount * q_table[next_state + (next_action,)]
-            td_error = td_target - q_table[current_state + (action,)]
-            q_table[current_state + (action,)] += alpha * td_error
+            td_target = reward + discount * q_table[next_state + (next_action, )]
+            td_error = td_target - q_table[current_state + (action, )]
+            q_table[current_state + (action, )] += alpha * td_error
 
             current_state = next_state
             action = next_action
@@ -610,85 +534,245 @@ def improved_sarsa_delete(
             step += 1
 
         epsilon = max(epsilon * epsilon_decay, epsilon_min)
-        alpha = alpha_start * (1 - episode / episodes)  # Linear learning rate decay
+        alpha = max(alpha * (1 - episode / episodes), 0.01)
         episode_rewards.append(total_reward)
-
+        
         if episode % timestep == 0:
             avg_reward = np.mean(episode_rewards[-timestep:])
-            print(f"SARSA - Episode: {episode:5d}, Average Reward: {avg_reward:6.2f}, Epsilon: {epsilon:.4f}, Alpha: {alpha:.4f}")
+            table_data.append([episode, f"{avg_reward:.2f}", f"{epsilon:.4f}",
+                               f"{alpha:.4f}"])
+            print(f"Episode: {episode}, Avg Reward: {avg_reward:.2f}, Epsilon: {epsilon:.4f}, Alpha: {alpha:.4f}")
+    env.close()
+
+    # Create table and print
+    table = tabulate(table_data, headers=headers, tablefmt="grid")
+    print("\nFinal Results")
+    print(table)
+
+    # If user wants table outputted to file
+    if write_to_file:
+        # Save table to text file
+        with open(output_file, "w") as f:
+            f.write(table)
+
+        # Save data as CSV for importing
+        with open(output_file.replace(".txt", ".csv"), "w", newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(headers)
+            writer.writerows(table_data)
+
+        print(f"""Results saved to {output_file} and {output_file.replace('.txt',
+             '.csv')}""")
+
+    return episode_rewards, q_table
+
+def monte_carlo(
+    q_table,
+    bins,
+    episodes=EXAMPLE_EPISODES,
+    discount=EXAMPLE_DISCOUNT,
+    epsilon=EXAMPLE_EPSILON,
+    epsilon_decay=EXAMPLE_EPSILON_DECAY,
+    epsilon_min=EXAMPLE_EPSILON_MIN
+):
+    """
+    Monte Carlo method (first-visit) with exploring starts.
+    -------------------------------------------------
+    INPUT:
+
+    OUTPUT:
+    """
+    returns_sum, returns_count, episode_rewards = {}, {}, []
+
+    for episode in range(1, episodes+1):
+        continuous_state, _ = env.reset()
+        current_state = discrete(continuous_state, bins)
+        episode_memory = []
+        total_reward = 0
+        done = False
+
+        while not done:
+            # Epsilon-greedy
+            if np.random.random() < epsilon:
+                action = env.action_space.sample()
+
+            else:
+                action = np.argmax(q_table[current_state])
+
+            continuous_next_state, reward, done, booly, empty_dict = \
+            env.step(action)
+            next_state = discrete(continuous_next_state, bins)
+            episode_memory.append((current_state, action, reward))
+            total_reward += reward
+            current_state = next_state
+        
+        # Calculate returns, updatin Q-values
+        G = 0
+        states_visited = set()
+
+        for state, action, reward in reversed(episode_memory):
+            G = discount * G  + reward
+            sa = (state, action)
+
+            if sa not in states_visited:
+                states_visited.add(sa)
+
+                if sa not in returns_sum:
+                    returns_sum[sa] = 0.0
+                    returns_count[sa] = 0
+
+                returns_sum[sa] += G
+                returns_count[sa] += 1
+                q_table[state + (action, )] = (returns_sum[sa] /
+                returns_count[sa])
+
+        # Decay epsilon
+        epsilon = max(epsilon * epsilon_decay, epsilon_min)
+        episode_rewards.append(total_reward)
+
+        # Progress
+        if episode % EXAMPLE_TIMESTEP == 0:
+            avg_reward = np.mean(episode_rewards[-EXAMPLE_TIMESTEP:])
+            print(f"Monte Carlo -> Episode: {episode}, Avg Reward: {avg_reward:.2f}, Epsilon: {epsilon:.4f}")
 
     env.close()
 
     return episode_rewards, q_table
 
-def delete_sarsa(
-    q_table,
-    bins,
-    episodes=EXAMPLE_EPISODES,
-    discount=EXAMPLE_DISCOUNT,
-    alpha=EXAMPLE_ALPHA,
-    timestep=EXAMPLE_TIMESTEP, 
-    epsilon_start=EXAMPLE_EPSILON,
-    epsilon_decay=EXAMPLE_EPSILON_DECAY,
-    epsilon_min=EXAMPLE_EPSILON_MIN
+def performance_evaluation(rewards_list, algorithm_name):
+    """
+    Plots performance of RL algorithms.
+    """
+    plt.plot(rewards_list)
+    plt.title(f"Performance of {algorithm_name}")
+    plt.xlabel("Episodes")
+    plt.ylabel("Total Reward")
+    plt.show()
+
+def main():
+    # Initialize Q-table and bins
+    q_table, bins = Qtable(bin_size=EXAMPLE_BIN_SIZE)
+
+    # Q-Learning
+    q_learning_rewards, q_learning_q_table = q_learning(
+        q_table = np.copy(q_table),
+        bins = bins,
+        episodes = EXAMPLE_EPISODES,
+        discount = EXAMPLE_DISCOUNT,
+        alpha = EXAMPLE_ALPHA,
+        timestep = EXAMPLE_TIMESTEP,
+        epsilon = EXAMPLE_EPSILON,
+        epsilon_decay = EXAMPLE_EPSILON_DECAY,
+        epsilon_min = EXAMPLE_EPSILON_MIN
+    )
+    performance_evaluation(q_learning_rewards, "Q-Learning")
+
+    # SARSA
+    sarsa_rewards, sarsa_q_table = sarsa(
+        q_table = np.copy(q_table),
+        bins = bins,
+        episodes = EXAMPLE_EPISODES,
+        discount = EXAMPLE_DISCOUNT,
+        alpha = EXAMPLE_ALPHA,
+        timestep = EXAMPLE_TIMESTEP,
+        epsilon = EXAMPLE_EPSILON,
+        epsilon_decay = EXAMPLE_EPSILON_DECAY,
+        epsilon_min = EXAMPLE_EPSILON_MIN
+    )
+    performance_evaluation(sarsa_rewards, "SARSA")
+
+    # Monte Carlo
+    mc_rewards, mc_q_table = monte_carlo(
+        q_table = np.copy(q_table),
+        bins = bins,
+        episodes = EXAMPLE_EPISODES,
+        discount = EXAMPLE_DISCOUNT,
+        epsilon = EXAMPLE_EPSILON,
+        epsilon_decay = EXAMPLE_EPSILON_DECAY,
+        epsilon_min = EXAMPLE_EPSILON_MIN
+    )
+    performance_evaluation(mc_rewards, "Monte Carlo")
+
+"""
+PART 2
+"""
+
+# Initialize Parameters
+num_features = env.observation_space.shape[0] + 1
+theta = np.zeros(num_features)
+
+# Linear function approx
+def get_features(state, action):
+    """
+    Generate feature vector for a given state-action pair.
+    ----------------------------------------
+    INPUT:
+
+    OUTPUT;
+    """
+    features = np.concatenate((state, [action]))
+
+    return features
+
+def linear_q_learning(
+    theta,
+    episodes = EXAMPLE_EPISODES,
+    discount = EXAMPLE_DISCOUNT,
+    alpha = EXAMPLE_ALPHA,
+    epsilon = EXAMPLE_EPSILON,
+    epsilon_decay = EXAMPLE_EPSILON_DECAY,
+    epsilon_min = EXAMPLE_EPSILON_MIN
 ):
     """
-    SARSA - State Action Reward State Action
-    ----------------------------------------
-    On-Policy Temporal Difference (TD) learning for estimating action-value
-    functions.
-    
+    Linear Q-Learning
+    ------------------------------------
     INPUT:
-        q_table: (ndarray) Initial Q-table
-        bins: (list of ndarrays) Discretized bins for state variables
-        episodes: (int) Number of episodes to train
-        discount: (float) Discount factor
-        alpha: (float) Learning rate
-        timestep: (int) Interval for reporting training progress
-        epsilon_start: (float) Initial exploration rate
-        epsilon_decay: (float) Rate at which epsilon decays
-        epsilon_min: (float) Minimum value of epsilon
-    
+
     OUTPUT:
-        episode_rewards: (list) Total reward per episode
-        q_table: (ndarray) Updated Q-table
     """
     episode_rewards = []
-    epsilon = epsilon_start
 
-    for episode in range(1, episodes + 1):
-        # Reset environment and initialize state
-        state_continuous, _ = env.reset()
-        current_state = discrete(state_continuous, bins)
-        
-        # Choose initial action using epsilon-greedy policy
-        if np.random.random() < epsilon:
-            action = env.action_space.sample()
-        else:
-            action = np.argmax(q_table[current_state])
-
+    for epsiode in range(1, episodes+1):
+        state, _ = env.reset()
         total_reward = 0
         done = False
 
         while not done:
-            # Take action, observe reward and next state
-            next_continuous_state, reward, done, _, _ = env.step(action)
-            next_state = discrete(next_continuous_state, bins)
-            
-            # Choose next action using epsilon-greedy policy
+            # Epsilon-greedy
             if np.random.random() < epsilon:
-                next_action = env.action_space.sample()
+                action = env.action_space.sample()
+
             else:
-                next_action = np.argmax(q_table[next_state])
+                # Choose action with max Q-value
+                q_vals = []
+                
+                for act in range(env.action_space.n):
+                    features = get_features(state, act)
+                    q_value = np.dot(theta, features)
+                    q_vals.append(q_value)
 
-            # Update Q-value using SARSA update rule
-            td_target = reward + discount * q_table[next_state + (next_action,)]
-            td_error = td_target - q_table[current_state + (action,)]
-            q_table[current_state + (action,)] += alpha * td_error
+                action = np.argmax(q_vals)
 
-            # Update state and action
-            current_state = next_state
-            action = next_action
+            next_state, reward, done, booly, empty_dict = env.step(action)
+
+            # Compute TD target
+            next_q_vals = []
+            
+            for act in range(env.action_space.n):
+                next_features = get_features(state, act)
+                next_q_value = np.dot(theta, next_features)
+                next_q_vals.append(next_q_value)
+
+            td_target = reward + discount * np.max(next_q_vals)
+
+            # Compute TD error
+            current_features = get_features(state, action)
+            current_q_value = np.dot(theta, current_features)
+            td_error = td_target - current_q_value
+
+            # Update theta
+            theta += alpha * td_error * current_features
+            state = next_state
             total_reward += reward
 
         # Decay epsilon
@@ -697,72 +781,14 @@ def delete_sarsa(
 
         # Output progress
         if episode % timestep == 0:
-            avg_reward = np.mean(episode_rewards[-timestep:])
-            print(f"SARSA - Episode: {episode:5d}, Average Reward: {avg_reward:6.2f}, Epsilon: {epsilon:.4f}")
-    
+            avg_reward = np.mean(episode_rewards[-EXAMPLE_TIMESTEP:])
+            print(f"Linear Q-Learning -> Episode: {episode}, Average Reward: {avg_reward:.2f}, Epsilon: {epsilon:.4f}")
+
+
     env.close()
 
-    return episode_rewards, q_table
+    return epsiode_rewards, theta
 
-def monte_carlo(env, episodes, discount):
-    pass
 
-def performance_evalutation(rewaeds, algorithm_name):
-    pass
-
-def delete_main():
-    # Initialize Q-table and bins
-    q_table, bins = Qtable(bin_size=EXAMPLE_BIN_SIZE)
-
-    # Q-Learning
-    q_learning_rewards, q_learning_q_table = q_learning(
-        q_table=np.copy(q_table),
-        bins=bins,
-        episodes=EXAMPLE_EPISODES,
-        discount=EXAMPLE_DISCOUNT,
-        alpha=EXAMPLE_ALPHA,
-        timestep=EXAMPLE_TIMESTEP,
-        epsilon=EXAMPLE_EPSILON,
-        epsilon_decay=EXAMPLE_EPSILON_DECAY,
-        epsilon_min=EXAMPLE_EPSILON_MIN
-    )
-    performance_evaluation(q_learning_rewards, 'Q-Learning')
-
-    # SARSA
-    sarsa_rewards, sarsa_q_table = sarsa(
-        q_table=np.copy(q_table),
-        bins=bins,
-        episodes=EXAMPLE_EPISODES,
-        discount=EXAMPLE_DISCOUNT,
-        alpha=EXAMPLE_ALPHA,
-        timestep=EXAMPLE_TIMESTEP,
-        epsilon=EXAMPLE_EPSILON,
-        epsilon_decay=EXAMPLE_EPSILON_DECAY,
-        epsilon_min=EXAMPLE_EPSILON_MIN
-    )
-    performance_evaluation(sarsa_rewards, 'SARSA')
-
-    # Monte Carlo
-    monte_carlo_rewards, monte_carlo_q_table = monte_carlo(
-        q_table=np.copy(q_table),
-        bins=bins,
-        episodes=EXAMPLE_EPISODES,
-        discount=EXAMPLE_DISCOUNT,
-        epsilon=EXAMPLE_EPSILON,
-        epsilon_decay=EXAMPLE_EPSILON_DECAY,
-        epsilon_min=EXAMPLE_EPSILON_MIN
-    )
-    performance_evaluation(monte_carlo_rewards, 'Monte Carlo')
-
-    # Note: Policy Iteration may not be effective due to the limitations mentioned earlier.
-
-#    results = {
-#        "Policy Iteration":,
-#        "SARSA": ,
-#        "Q-Learning": ,
-#        "Monte Carlo":
-#    }
-
-q_table, bins = Qtable()
-thing = improved_sarsa_delete(q_table, bins)
-#breakpoint()
+if __name__ == "__main__":
+    main()
