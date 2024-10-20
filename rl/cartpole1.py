@@ -250,29 +250,7 @@ def policy_iteration(env, bins, discount=0.9, max_iters=10, eval_episodes=100):
 
     OUTPUT:
     """
-    state_shape = tuple(len(bins[i]) for i in range(len(bins)))
-    # Initialize random policy
-    policy = np.random.choice(env.action_space.n, size=state_size)
-    value_func = np.zeros(state_shape)
-
-    for iteration in range(max_iterations):
-        print("Policy Iteration {iteration+1}")
-
-        # Policy Evaluation
-        value_func = monte_carlo_eval(env, policy, bins, value_func, discount,
-                                     evaluation_episodes)
-
-        # Policy Improvement
-        policy_stable = True
-        for idx in np.ndindex(state_shape):
-            prev_action = policy[idx]
-            state = [bins[i][idx[i]] for i in range(len(idx))]
-            action_values = []
-
-            for action in range(env.action_space.n):
-                total_reward = 0.0
-                total_count = 0
-
+    pass
 
 
 
