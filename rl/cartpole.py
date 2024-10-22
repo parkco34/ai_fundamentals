@@ -76,20 +76,50 @@ Instructions:
 • Analyze the effects of hyperparameters and network architecture.
 """
 import gymnasium as gym
+from tabulate import tabulate
+import csv
+from textwrap import dedent
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import itertools
+# PART 2
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
+# Example values
+EXAMPLE_EPSILON = 1.0
+EXAMPLE_EPSILON_MIN = 0.01
+EXAMPLE_EPSILON_DECAY = 0.995
+EXAMPLE_DISCOUNT=0.9
+EXAMPLE_ALPHA=0.1
+EXAMPLE_TIMESTEP = 100
+EXAMPLE_BIN_SIZE = 30
+EXAMPLE_EPISODES = 5000
+EXAMPLE_EPSILON_MIN = 0.01
+EXAMPLE_NUM_SAMPLES = 5000
+EXAMPLE_MAX_STEPS = 500
+EXAMPLE_BIN_SIZE = 30
+# PART 2
+EXAMPLE_HIDDEN_UNITS = 64
+
+# Set random seeds for reproducibility
+np.random.seed(73)
 
 # CartPole environment
 env = gym.make("CartPole-v1")
-env.reset(seed=73) # Reproducability
+env.reset(seed=73)  # Reproducibility
 # Outputs the lower/upper bounds of observation space
-print(env.observation_space.low, "\n", env.observation_space.high) # |S|,|A(s)|
+print(env.observation_space.low, "\n", env.observation_space.high)  # |S|,|A(s)|
 
-def Qtable(state_space=len(env.observation_space.low), action_space=env.action_space.n, bin_size=30):
+def Qtable(state_space=len(env.observation_space.low),
+           action_space=env.action_space.n, bin_size=EXAMPLE_BIN_SIZE):
     """
-    Q-TABLE: Defined by the number of state and actions...
-    ------------------------------------------------------
+    Qtable: defined by number of states and actions...
+    Increasing the number of bins increases memory space needed exponentially and takes
+    longer to run, whereas too few bins results in sacrificing performance.
+    ----------------------------------------------------------------
     Each element Q[i,j,k,l,m] represents the Q-value for:
         Cart position in bin i
         Cart velocity in bin j
@@ -107,150 +137,159 @@ def Qtable(state_space=len(env.observation_space.low), action_space=env.action_s
         bin_size: (int); default: 30
 
     OUTPUT:
-        q_table, bins: (tuple of ndarrays ?, list of ndarryas)
+        q_table, bins: (tuple of ndarrays ?, list of ndarrays)
     """
-    # Ranges for each of the state variables, where they're evenly spaced
-    # intervals
+    # Ranges for state variables
     bins = [
-        # Cart position (in meters)
+        # Cart position
         np.linspace(-4.8, 4.8, bin_size),
-        # Cart velocity
-        np.linspace(-4, 4, bin_size),
+        # Carrt velocity
+        np.linspace(-3, 3, bin_size),
         # Pole position
         np.linspace(-0.418, 0.418, bin_size),
-        # Pole angular velocity (in radians/second)
+        # Pole velocity
         np.linspace(-4, 4, bin_size)
     ]
 
-    # [bin_size] * state_space -> creates list of bin_size repeated state_space
-    # times, and w/ action dimension (+ [action_space]), becoming: [30, 30, 30, 30, 2]
-    # initializes Q-table w/ random value tween -1 and 1
-    q_table = np.random.uniform(low=-1, high=1, size=[bin_size] * state_space
-                             + [action_space])
+    # Initialize Q-table with zeros
+    # [bin_size] * state_space + [action_space] == [30]*4 + [2] == [30, 30, 30,
+    # 30, 2]
+    q_table = np.zeros([bin_size] * state_space + [action_space])
 
-    return q_table, bins # q_table.ndim == 5, list of 4 np arrays
+    return q_table, bins
 
-def discrete(state, bins):
+def discretize(state, bins):
     """
-    Discretizes continuous space
-    ----------------------------
+    DISCRETIZES CONTINUOUS SPACE by mapping each continuous state to a
+    discrete bin index.
+    Loops thru each each state variable, clipping state value within bin range
+    to ensure the state value falls within range.
+    HOW ================================================================
+        min(state[i], bins[i][-1]): This ensures that state[i] does not exceed the maximum bin edge. 
+        If state[i] is greater than bins[i][-1] (the last bin edge), it is set to bins[i][-1].
+        max(..., bins[i][0]): This ensures that state[i] is not less than the minimum bin edge. 
+        If state[i] is less than bins[i][0] (the first bin edge), it is set to bins[i][0].
+    ================================================================
+    ------------------------------------------------------------------
     INPUT:
-        state: (int) Continuous state space.
+        state: (array) Continuous state space.
         bins: (list of ndarrays) discretized bins.
 
     OUTPUT:
         indices: (tuple) for making it hashable for indexing into multidimensional
         (5-dimensional table, here: q_table.ndim) Q-table.
     """
-    index = []
+    indices = []
 
     for i in range(len(state)):
-        # Corresponding Indices of bins; discretization process
-        index.append(np.digitize(state[i], bins[i])-1)
+        # Max(min(state_value, last bin interval), first bin interval)
+        # Ensuring state values are within bins range
+        value = max(min(state[i], bins[i][-1]), bins[i][0])
+        # Corresponding indices of bins; discretization process
+        # Adjusts index to start at 0 by subtracting 1
+        indices.append(np.digitize(value, bins[i]) - 1)
 
-    indices = tuple(index)
+    return tuple(indices)
 
-    return indices
-
-def q_learning(q_table, bins, episodes=5000, discount=0.9, alpha=0.2,
-               timestep=100, epsilon=0.2, epsilon_decay=0.05, epsilon_min=0.01):
+def q_learning(
+    q_table,
+    bins,
+    episodes=EXAMPLE_EPISODES,
+    discount=EXAMPLE_DISCOUNT,
+    alpha=EXAMPLE_ALPHA,
+    timestep=EXAMPLE_TIMESTEP,
+    epsilon=EXAMPLE_EPSILON,
+    epsilon_decay=EXAMPLE_EPSILON_DECAY,
+    epsilon_min=EXAMPLE_EPSILON_MIN
+):
     """
-    Learns iteratively, the optimal Q-value function using the Bellman
-    equation via storing Q-values in the Q-table to be updated @ each time
-    step.
-    ------------------------------------------------------------
+    Learns iteratively, the optimal Q-value function using the Bellman equation
+    via storing Q-values in the Q-table to be updated @ each timestep.
+    --------------------------------------------------------
     INPUT:
         q_table: (np.arrays) initialized Q-table
-        bins: (list of np.arrays) Discretized bins for state variables 
+        bins: (list of np.arrays) Discretized bins for state variables
         episodes: (int) Number of episodes to train over
         discount: (float) Discount factor determining importance of future
             rewards
         alpha: (float) Learning rate
-        timestep: (int) Interfval reporting training progress
+        timestep: (int) Interval reporting training progress
         epsilon: Initial exploration rate
-        epsilon_decay: (float) ?
-        epsilon_min: (float) ?
+        epsilon_decay: (float) Rate at which epsilon decays
+        epsilon_min: (float) Minimum value of epsilon
 
     OUTPUT:
-        (None)
+        episode_rewards: (list) Total reward per episode
+        q_table: (np.array) Updated Q-table
     """
-    # Initializations ?
-    reward, steps = 0, 0
     episode_rewards = []
 
-    for episode in range(1, episodes+1):
-        steps += 1
-        # Initialize indices for Q-table
-        initial_state, _ = env.reset() # numpy array, empty dict
-        current_state = discrete(initial_state, bins)
+    # Iniitialize indices for Q-table
+    continuous_state, _ = env.reset()
+    current_state = discrete(continuous_state, bins)
 
-        total_reward = 0
-        done =  False
+    total_reward = 0
+    done = False
 
-        for t in range(timestep):
-            # Epsilon-greedy action selection
-            if np.random.random() < epsilon:
-                # env.action_space -> All possible actions in environment
-                # sample() -> randomly selects an action via (left=0, right=1)
-                action = env.action_space.sample() # Explore w/ prob. 𝜀
+    while not done:
+        # Epsilon-greedy action selection for EXPLORATION
+        if np.random.random() < epsilon:
+            action = env.action_space.sample()
 
-            else:
-                # Returns index of highest Q-value
-                # q_table[current_state] -> Array of Q-values for possible
-                # actions.
-                # np.argmax() -> finds index of max value in array
-                action = np.argmax(q_table[current_state]) # Exploit; prob. 1-𝜀
+        else:
+            # EXPLOITATION via choosing action max Q-value
+            action = np.argmax(q_table[current_state])
 
-            # anv.step(action) -> (observation, reward, terminated, truncated, info)
-            # Executes chosen action, unpacking the return values
-            next_state, reward, done, booly, empty_dict= env.step(action)
-            # Discretizes new continuous state for indexing Qtable
-            proper_next_state = discrete(next_state, bins)
-            # finds action with highest Q-value in next state 
-            best_next_action = np.argmax(q_table[proper_next_state])
-            # TD (temporal difference target), estimating the total expected
-            # reward:= immediate reward + discounted best possible future
-            # reward...
-            # "the value of this state-action pair is what we got now, plus what we think we can get in the future, but we're less certain about the future so we discount it."
-            td_target = reward + discount * q_table[proper_next_state +
-                                                    (best_next_action, )]
-            td_error = td_target - q_table[current_state + (action, )]
-            # Updates Q-value for current state-action pair
-            # moving Q-value closer to TD target by a fraction via 𝛼
-            q_table[current_state + (action, )] += alpha * td_error
+        # Execute chosen action
+        next_continuous_state, reward, done, booly, empty_dict = env.step(action)
+        next_state = discrete(next_continuous_state, bins)
 
-            # Update current state/reward
-            current_state = proper_next_state
-            total_reward += reward
+        # Find action with highest Q-value in next state
+        best_next_action = np.argmax(q_table[next_state])
+        # TD target
+        td_target = reward + dicount * q_table[next_state + (best_next_action, )]
+        td_error = td_target - q_table[current_state + (action, )]
+        # Update Q-value
+        q_table[current_state + (action, )] += alpha * td_error
 
-            # Check if episode ended and if so, breakdance!
-            if done:
-                break
+        # Update current state and total reward
+        current_state = next_state
+        total_reward += reward
 
-        # Decay epsilon to reduce exploration over time
-        epsilon = max(epsilon * epsilon_decay, epsilon_min)
+        # Epsilon decay to reduce exploration over time
+        if epsilon < epsilon_min:
+            epsilon *= epsilon_decay
+
+        else:
+            epsilon = epsilon_min
+
         episode_rewards.append(total_reward)
 
-        # Output progress at every episode
+        # Output progress at every timestep
         if episode % timestep == 0:
             avg_reward = np.mean(episode_rewards[-timestep:])
-            print(f"""Episode: {episode}, Average Reward: {avg_reward:.2f},
-                  Epsilon: {epsilon:.4f}""")
+            print(f"Q-Learning -> Episode: {episode}, Average Reward: {avg_reward:.2f}, Epsilon: {epsilon:.4f}")
 
-    env.close()
+            env.close()
 
-    return episode_rewards, q_table
+            return episode_rewards, q_table
 
-# 2.) Policy Iteration
-def policy_iteration(env, bins, discount=0.9, max_iters=10, eval_episodes=100):
+def initialize_policy_and_value(bin_size=EXAMPLE_BIN_SIZE,
+                                state_space=len(env.observation_space.low),
+                                action_space=env.action_space.n):
     """
-    Implements Approximate Policy Iteration via Monte Carlo Policy Evaluation.
-    ------------------------------------------------
-    INPUT:
 
-    OUTPUT:
+    """
+    policy_shape = [bin_size] * state_space
+    policy = np.random.choice(action_space, size=policy_shape)
+
+    # Initialize value function
+    value_function = np.zeros(policy_shape)
+
+    return policy, value_function
+
+def policy_evaluation(policy, bins, value_func, theta=1e-5):
+    """
+    
     """
     pass
-
-
-

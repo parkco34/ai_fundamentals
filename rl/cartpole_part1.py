@@ -402,60 +402,6 @@ def policy_improvement(
 
     return policy, policy_stable
 
-def stochastic_policy_improvement(
-    initial_policy,
-    bins,
-    value_func,
-    bin_size,
-    action_space,
-    discount=EXAMPLE_DISCOUNT,
-    num_sample=EXAMPLE_NUM_SAMPLES
-):
-    """
-    HANDLING MULTIPLE OPTIMAL ACTIONS (TIES)
-    If multiple actions yield the same maximum Q(s,a)Q(s,a), the policy can remain 
-    stochastic by assigning probabilities to all optimal actions.
-    ----------------------------------------------------------
-    INPUT: ?
-
-    OUTPUT:
-    """
-    policy = np.copy(initial_policy)
-    policy_stable = True
-
-    # Iterate over all discrete states using Cartesian Product ?
-    # Generates all combinations of quintuples (0,0,0,0), (0,0,0,1), ..., (29,29,29,29)
-    for state in itertools.product(range(bin_size),
-                                   repeat=len(env.observation_space.low)):
-        state = tuple(state)
-        prev_action = policy[state]
-        
-        action_values = np.zeros(action_space)
-        
-        for action in range(action_space):
-            # Approx. Q(s, a) using current value func
-            q_sa = 1 + discount * value_func[state]
-            action_values[action] = q_sa
-        
-        max_q = np.max(action_values)
-        # Find all actions that achieve max. Q(s,a)
-        greedy_actions = np.where(action_values == max_q)[0]
-
-        # Selecting greedy action randomly if there are TIES
-        if len(greedy_actions) == 1:
-            best_action = greedy_actions[0]
-
-        else:
-            # Assign equal prob. to all actions
-            best_action = np.random.choice(greedy_actions)
-
-        # Test for convergence
-        if best_action != prev_action:
-            policy_stable = False
-            policy[state] = best_action
-
-    return policy, stable_policy
-
 def sarsa(
     q_table,
     bins,
