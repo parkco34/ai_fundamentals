@@ -325,6 +325,7 @@ def policy_evaluation(policy, bins, value_func, discount=EXAMPLE_DISCOUNT,
         while not done:
             # Select action
             action = policy[current_state]
+            breakpoint()
             # Execute
             next_continuous_state, reward, done, booly, empty_dict = \
             env.step(action)
@@ -337,6 +338,7 @@ def policy_evaluation(policy, bins, value_func, discount=EXAMPLE_DISCOUNT,
                                                   value_func[current_state])
             # Transition to next state
             current_state = next_state
+        breakpoint()
 
         return value_func
 
@@ -721,44 +723,44 @@ def main():
     q_table, bins = Qtable(bin_size=EXAMPLE_BIN_SIZE)
 
     # Q-Learning
-    q_learning_rewards, q_learning_q_table = q_learning(
-        q_table = np.copy(q_table),
-        bins = bins,
-        episodes = EXAMPLE_EPISODES,
-        discount = EXAMPLE_DISCOUNT,
-        alpha = EXAMPLE_ALPHA,
-        timestep = EXAMPLE_TIMESTEP,
-        epsilon = EXAMPLE_EPSILON,
-        epsilon_decay = EXAMPLE_EPSILON_DECAY,
-        epsilon_min = EXAMPLE_EPSILON_MIN
-    )
-    performance_evaluation(q_learning_rewards, "Q-Learning")
-
-    # SARSA
-    sarsa_rewards, sarsa_q_table = sarsa(
-        q_table = np.copy(q_table),
-        bins = bins,
-        episodes = EXAMPLE_EPISODES,
-        discount = EXAMPLE_DISCOUNT,
-        alpha = EXAMPLE_ALPHA,
-        timestep = EXAMPLE_TIMESTEP,
-        epsilon = EXAMPLE_EPSILON,
-        epsilon_decay = EXAMPLE_EPSILON_DECAY,
-        epsilon_min = EXAMPLE_EPSILON_MIN
-    )
-    performance_evaluation(sarsa_rewards, "SARSA")
-
-    # Monte Carlo
-    mc_rewards, mc_q_table = monte_carlo(
-        q_table = np.copy(q_table),
-        bins = bins,
-        episodes = EXAMPLE_EPISODES,
-        discount = EXAMPLE_DISCOUNT,
-        epsilon = EXAMPLE_EPSILON,
-        epsilon_decay = EXAMPLE_EPSILON_DECAY,
-        epsilon_min = EXAMPLE_EPSILON_MIN
-    )
-    performance_evaluation(mc_rewards, "Monte Carlo")
+#    q_learning_rewards, q_learning_q_table = q_learning(
+#        q_table = np.copy(q_table),
+#        bins = bins,
+#        episodes = EXAMPLE_EPISODES,
+#        discount = EXAMPLE_DISCOUNT,
+#        alpha = EXAMPLE_ALPHA,
+#        timestep = EXAMPLE_TIMESTEP,
+#        epsilon = EXAMPLE_EPSILON,
+#        epsilon_decay = EXAMPLE_EPSILON_DECAY,
+#        epsilon_min = EXAMPLE_EPSILON_MIN
+#    )
+#    performance_evaluation(q_learning_rewards, "Q-Learning")
+#
+#    # SARSA
+#    sarsa_rewards, sarsa_q_table = sarsa(
+#        q_table = np.copy(q_table),
+#        bins = bins,
+#        episodes = EXAMPLE_EPISODES,
+#        discount = EXAMPLE_DISCOUNT,
+#        alpha = EXAMPLE_ALPHA,
+#        timestep = EXAMPLE_TIMESTEP,
+#        epsilon = EXAMPLE_EPSILON,
+#        epsilon_decay = EXAMPLE_EPSILON_DECAY,
+#        epsilon_min = EXAMPLE_EPSILON_MIN
+#    )
+#    performance_evaluation(sarsa_rewards, "SARSA")
+#
+#    # Monte Carlo
+#    mc_rewards, mc_q_table = monte_carlo(
+#        q_table = np.copy(q_table),
+#        bins = bins,
+#        episodes = EXAMPLE_EPISODES,
+#        discount = EXAMPLE_DISCOUNT,
+#        epsilon = EXAMPLE_EPSILON,
+#        epsilon_decay = EXAMPLE_EPSILON_DECAY,
+#        epsilon_min = EXAMPLE_EPSILON_MIN
+#    )
+#    performance_evaluation(mc_rewards, "Monte Carlo")
 
     """
     PART 2 ========================================================

@@ -215,7 +215,13 @@ def initialize_policy_and_value(bin_size=EXAMPLE_BIN_SIZE,
 
     return policy, value_function
 
-def policy_evaluation(policy, bins, value_func, discount=EXAMPLE_DISCOUNT, alpha=EXAMPLE_ALPHA, episodes=EXAMPLE_EPISODES):
+def policy_evaluation(
+    policy, 
+    bins, 
+    value_func, 
+    discount=EXAMPLE_DISCOUNT, 
+    alpha=EXAMPLE_ALPHA, 
+    episodes=EXAMPLE_EPISODES):
     """
     Policy Evaluation.
     --------------------------------------------------
@@ -230,24 +236,29 @@ def policy_evaluation(policy, bins, value_func, discount=EXAMPLE_DISCOUNT, alpha
     """
     for episode in range(episodes):
         continuous_state, _ = env.reset()
+        current_state = discretize(continuous_state, bins)
         done = False
 
         while not done:
-            current_state = discretize(continuous_state, bins)
             # ? Incorrect way to assign action
-            action = policy[current_state]
-            next_continuous_state, reward, done, booly, empty_dict = \
+            action = int(policy[current_state])
+            continuous_next_state, reward, done, booly, empty_dict = \
             env.step(action)
             next_state = discretize(continuous_next_state, bins)
 
-            # Value function update
+            # Value function update: TD(0) update
             value_func[current_state] += alpha * (
                 reward +
                 discount * value_func[next_state] - value_func[current_state]
             )
+            # Update current state
             current_state = next_state
 
-        return value_func
+            # Check for failed episode
+            if done and reward == 0:
+                value_func[current_state] = -1
+
+    return value_func
             
 
 def q_learning(
@@ -364,4 +375,7 @@ def q_learning(
 q_table, bins = Qtable()
 policy, value_func = initialize_policy_and_value()
 thing = policy_evaluation(policy, bins, value_func)
-breakpoint()
+
+
+
+#breakpoint()
