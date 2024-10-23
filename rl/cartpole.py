@@ -90,7 +90,7 @@ import torch.optim as optim
 
 # Example values
 EXAMPLE_EPSILON = 1.0
-EXAMPLE_EPSILON_MIN = 0.01
+EXAMPLE_EPSILON_MIN = 0.05
 EXAMPLE_EPSILON_DECAY = 0.995
 EXAMPLE_DISCOUNT=0.9
 EXAMPLE_ALPHA=0.1
@@ -100,7 +100,6 @@ EXAMPLE_EPISODES = 5000
 EXAMPLE_EPSILON_MIN = 0.01
 EXAMPLE_NUM_SAMPLES = 5000
 EXAMPLE_MAX_STEPS = 500
-EXAMPLE_BIN_SIZE = 30
 # PART 2
 EXAMPLE_HIDDEN_UNITS = 64
 
@@ -191,6 +190,66 @@ def discretize(state, bins):
 
     return tuple(indices)
 
+def initialize_policy_and_value(bin_size=EXAMPLE_BIN_SIZE,
+                                state_space=len(env.observation_space.low),
+                                action_space=env.action_space.n):
+    """
+    Initial Policy and Value Function.
+    --------------------------------------------------
+    INPUT:
+        bin_size: (int) Num of bins
+        state_space: (int)
+        action_space: (int)
+
+    OUTPUT:
+        policy, value_function: (np.ndarray, np.dnarray)
+    """
+    policy_shape = [bin_size] * state_space
+    # Initialize randomly
+#    policy = np.random.choice(action_space, size=policy_shape)
+    # Initialize with zeros
+    policy = np.zeros(policy_shape)
+
+    # Initialize value function
+    value_function = np.zeros(policy_shape)
+
+    return policy, value_function
+
+def policy_evaluation(policy, bins, value_func, discount=EXAMPLE_DISCOUNT, alpha=EXAMPLE_ALPHA, episodes=EXAMPLE_EPISODES):
+    """
+    Policy Evaluation.
+    --------------------------------------------------
+    INPUT:
+        policy: (np.ndarray)
+        bins: (list of np.ndarrays)
+        value_func: (np.ndarray)
+        episodes: (int)
+
+    OUTPUT:
+        value_func: (np.ndarray)
+    """
+    for episode in range(episodes):
+        continuous_state, _ = env.reset()
+        done = False
+
+        while not done:
+            current_state = discretize(continuous_state, bins)
+            # ? Incorrect way to assign action
+            action = policy[current_state]
+            next_continuous_state, reward, done, booly, empty_dict = \
+            env.step(action)
+            next_state = discretize(continuous_next_state, bins)
+
+            # Value function update
+            value_func[current_state] += alpha * (
+                reward +
+                discount * value_func[next_state] - value_func[current_state]
+            )
+            current_state = next_state
+
+        return value_func
+            
+
 def q_learning(
     q_table,
     bins,
@@ -200,11 +259,23 @@ def q_learning(
     timestep=EXAMPLE_TIMESTEP,
     epsilon=EXAMPLE_EPSILON,
     epsilon_decay=EXAMPLE_EPSILON_DECAY,
-    epsilon_min=EXAMPLE_EPSILON_MIN
+    epsilon_min=EXAMPLE_EPSILON_MIN,
+    performance_window=100, # Num of episodes to consider for performance
+    epsilon_increase=0.1 # Amount to increase epsilon when performance drops
 ):
     """
     Learns iteratively, the optimal Q-value function using the Bellman equation
     via storing Q-values in the Q-table to be updated @ each timestep.
+    ------------------
+    ADAPTIVE EPSILON:
+    ------------------
+        -> Everytime timestep episodes (every EXAMPLE_TIMESTEP episode), the
+        function checks if recent average reward over the last
+        performance_window episodes is less than avg reward of previous
+        performance_window episodes.
+        
+        -> If performance drop is detected, epsion increased by
+        epsilon_increase (max=1.0 to ensure valid probabaility).
     --------------------------------------------------------
     INPUT:
         q_table: (np.arrays) initialized Q-table
@@ -223,41 +294,43 @@ def q_learning(
         q_table: (np.array) Updated Q-table
     """
     episode_rewards = []
+    recent_avg_rewards = []
+    
+    for episode in range(episodes):
+        # Iniitialize indices for Q-table
+        continuous_state, _ = env.reset()
+        current_state = discretize(continuous_state, bins)
 
-    # Iniitialize indices for Q-table
-    continuous_state, _ = env.reset()
-    current_state = discrete(continuous_state, bins)
+        total_reward = 0
+        done = False
 
-    total_reward = 0
-    done = False
+        while not done:
+            # Epsilon-greedy action selection for EXPLORATION
+            if np.random.random() < epsilon:
+                action = env.action_space.sample()
 
-    while not done:
-        # Epsilon-greedy action selection for EXPLORATION
-        if np.random.random() < epsilon:
-            action = env.action_space.sample()
+            else:
+                # EXPLOITATION via choosing action max Q-value
+                action = np.argmax(q_table[current_state])
 
-        else:
-            # EXPLOITATION via choosing action max Q-value
-            action = np.argmax(q_table[current_state])
+            # Execute chosen action
+            next_continuous_state, reward, done, booly, empty_dict = env.step(action)
+            next_state = discretize(next_continuous_state, bins)
 
-        # Execute chosen action
-        next_continuous_state, reward, done, booly, empty_dict = env.step(action)
-        next_state = discrete(next_continuous_state, bins)
+            # Find action with highest Q-value in next state
+            best_next_action = np.argmax(q_table[next_state])
+            # TD target
+            td_target = reward + discount * q_table[next_state + (best_next_action, )]
+            td_error = td_target - q_table[current_state + (action, )]
+            # Update Q-value
+            q_table[current_state + (action, )] += alpha * td_error
 
-        # Find action with highest Q-value in next state
-        best_next_action = np.argmax(q_table[next_state])
-        # TD target
-        td_target = reward + dicount * q_table[next_state + (best_next_action, )]
-        td_error = td_target - q_table[current_state + (action, )]
-        # Update Q-value
-        q_table[current_state + (action, )] += alpha * td_error
-
-        # Update current state and total reward
-        current_state = next_state
-        total_reward += reward
+            # Update current state and total reward
+            current_state = next_state
+            total_reward += reward
 
         # Epsilon decay to reduce exploration over time
-        if epsilon < epsilon_min:
+        if epsilon > epsilon_min:
             epsilon *= epsilon_decay
 
         else:
@@ -265,31 +338,30 @@ def q_learning(
 
         episode_rewards.append(total_reward)
 
+        # Adaptive Epsilon IMplementation
+        # track performance
+        if episode % timestep == 0 and episode >= performance_window:
+            recent_avg_reward = np.mean(episode_rewards[-performance_window:])
+            previous_avg_reward = \
+            np.mean(episode_rewards[-2*performance_window:-performance_window])
+
+            # If performance drops, increase epsilon slightly
+            if recent_avg_reward < previous_avg_reward:
+                epsilon = min(epsilon + epsilon_increase, 1.0)
+                print(f"Performance dropped. Increasing epsilon to {epsilon:.4f}")
+                
         # Output progress at every timestep
         if episode % timestep == 0:
             avg_reward = np.mean(episode_rewards[-timestep:])
             print(f"Q-Learning -> Episode: {episode}, Average Reward: {avg_reward:.2f}, Epsilon: {epsilon:.4f}")
 
-            env.close()
+    env.close()
 
-            return episode_rewards, q_table
+    return episode_rewards, q_table
 
-def initialize_policy_and_value(bin_size=EXAMPLE_BIN_SIZE,
-                                state_space=len(env.observation_space.low),
-                                action_space=env.action_space.n):
-    """
 
-    """
-    policy_shape = [bin_size] * state_space
-    policy = np.random.choice(action_space, size=policy_shape)
-
-    # Initialize value function
-    value_function = np.zeros(policy_shape)
-
-    return policy, value_function
-
-def policy_evaluation(policy, bins, value_func, theta=1e-5):
-    """
-    
-    """
-    pass
+# Example implementation
+q_table, bins = Qtable()
+policy, value_func = initialize_policy_and_value()
+thing = policy_evaluation(policy, bins, value_func)
+breakpoint()
