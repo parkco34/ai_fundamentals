@@ -721,6 +721,8 @@ def linear_q_learning(
 def main():
     # Initialize Q-table and bins
     q_table, bins = Qtable(bin_size=EXAMPLE_BIN_SIZE)
+    policy, value_func = init
+    thing = policy_evaluation(policy, bins, value_func)
 
     # Q-Learning
 #    q_learning_rewards, q_learning_q_table = q_learning(
