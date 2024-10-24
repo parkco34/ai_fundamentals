@@ -348,9 +348,9 @@ def policy_improvement(
     initial_policy,
     bins,
     value_func,
-    action_space, 
-    bin_size,
-    dicount=EXAMPLE_DISCOUNT,
+    action_space=env.action_space.n, 
+    bin_size=EXAMPLE_BIN_SIZE,
+    discount=EXAMPLE_DISCOUNT,
     num_samples=EXAMPLE_NUM_SAMPLES):
     """
     Policy Improvement.
@@ -381,30 +381,7 @@ def policy_improvement(
     OUTPUT:
         policy, policy_stable: (tuple of ?)
     """
-    policy = np.copy(initial_policy)
-    policy_stable = True
-
-    # Iterate over all discrete states using Cartesian Product ?
-    for state in itertools.product(range(bin_size),
-                                   repeat=len(env.observation_space.low)):
-        state = tuple(state)
-        prev_action = policy[state]
-        
-        action_values = np.zeros(action_space)
-        
-        for action in range(action_space):
-            # Approx. Q(s, a) using current value func, where next state is
-            # assumed to be similar to current state... maybe a LIMITATION ?!
-            action_values[action] = 1 + discount * value_func[state]
-
-        # Choose best action
-        best_action = np.argmax(action_values)
-
-        if best_action != prev_action:
-            policy_stable = False
-            policy[state] = best_action
-
-    return policy, policy_stable
+    pass
 
 def sarsa(
     q_table,
@@ -726,9 +703,9 @@ def main():
     policy, value_func = initialize_policy_and_value()
     # Policy Evaluation
     value_func = policy_evaluation(policy, bins, value_func)
-    # Policy imrpovement
-
-
+    # Policy imrpovement --> ALL ZEROS !! ?
+    better_policy, stable = policy_improvement(policy, bins, value_func)
+    breakpoint()
 
 
     # Q-Learning
