@@ -208,7 +208,7 @@ def initialize_policy_and_value(bin_size=EXAMPLE_BIN_SIZE,
     # Initialize randomly
 #    policy = np.random.choice(action_space, size=policy_shape)
     # Initialize with zeros
-    policy = np.zeros(policy_shape)
+    policy = np.random.choice(action_space, size=policy_shape)
 
     # Initialize value function
     value_function = np.zeros(policy_shape)
@@ -241,9 +241,9 @@ def policy_evaluation(
 
         while not done:
             # ? Incorrect way to assign action
-            action = int(policy[current_state])
+            action = policy[current_state]
             continuous_next_state, reward, done, booly, empty_dict = \
-            env.step(action)
+                env.step(action)
             next_state = discretize(continuous_next_state, bins)
 
             # Value function update: TD(0) update
@@ -251,6 +251,7 @@ def policy_evaluation(
                 reward +
                 discount * value_func[next_state] - value_func[current_state]
             )
+
             # Update current state
             current_state = next_state
 
@@ -259,7 +260,6 @@ def policy_evaluation(
                 value_func[current_state] = -1
 
     return value_func
-            
 
 def q_learning(
     q_table,

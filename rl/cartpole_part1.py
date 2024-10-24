@@ -261,11 +261,11 @@ def q_learning(
 
     return episode_rewards, q_table
 
-def initialize_policy(state_space=len(env.observation_space.low),
+def initialize_policy_and_value(state_space=len(env.observation_space.low),
                       action_space=env.action_space.n,
                       bin_size=EXAMPLE_BIN_SIZE):
     """
-    Initializes Policy, randomly.
+    Initializes Policy, randomly
     --------------------------------
     INPUT:
         state_space: (int)
@@ -273,15 +273,19 @@ def initialize_policy(state_space=len(env.observation_space.low),
         bin_size: (int)
 
     OUTPUT:
-        policy: (ndarray) Policy table mapping each discrete state to action.
+        (policy, value_func): (tuple of np.ndarray) Policy table mapping each discrete state to action.
          - Multi-dimensional array where each element represents a state,
                               and the value is a randomly chosen action for that state.
                               The shape of this array is [bin_size, bin_size, bin_size, bin_size],
                               one dimension for each state variable.
     """
-    policy = np.random.choice(action_space, size=[bin_size] * state_space)
+    policy_shape = [bin_size] * state_space
+    # Random policy
+    policy = np.random.choice(action_space, size=policy_shape)
+    # Initialize value function
+    value_func = np.zeros(policy_shape)
 
-    return policy
+    return policy, value_func
 
 def policy_evaluation(policy, bins, value_func, discount=EXAMPLE_DISCOUNT,
                       alpha=EXAMPLE_ALPHA, episodes=EXAMPLE_EPISODES):
@@ -318,17 +322,16 @@ def policy_evaluation(policy, bins, value_func, discount=EXAMPLE_DISCOUNT,
         # Reset env for each episode
         continuous_state, _ = env.reset()
         # Discretize state
-        current_state = discrete(cotinuous_state, bins)
+        current_state = discrete(continuous_state, bins)
         done = False
 
         # Step thru episodes
         while not done:
             # Select action
             action = policy[current_state]
-            breakpoint()
             # Execute
             next_continuous_state, reward, done, booly, empty_dict = \
-            env.step(action)
+                env.step(action)
             # Discretize
             next_state = discrete(next_continuous_state, bins)
 
@@ -338,7 +341,6 @@ def policy_evaluation(policy, bins, value_func, discount=EXAMPLE_DISCOUNT,
                                                   value_func[current_state])
             # Transition to next state
             current_state = next_state
-        breakpoint()
 
         return value_func
 
@@ -721,8 +723,13 @@ def linear_q_learning(
 def main():
     # Initialize Q-table and bins
     q_table, bins = Qtable(bin_size=EXAMPLE_BIN_SIZE)
-    policy, value_func = init
-    thing = policy_evaluation(policy, bins, value_func)
+    policy, value_func = initialize_policy_and_value()
+    # Policy Evaluation
+    value_func = policy_evaluation(policy, bins, value_func)
+    # Policy imrpovement
+
+
+
 
     # Q-Learning
 #    q_learning_rewards, q_learning_q_table = q_learning(
