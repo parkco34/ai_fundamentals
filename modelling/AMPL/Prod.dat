@@ -1,0 +1,21 @@
+# Data file
+set P := bands, coils;
+set R := wtime;
+
+param c := 
+bands 250
+coils 300;
+
+param d :=
+bands 6000
+coils 4000;
+
+param t :=
+bands, wtime 0.005
+coils, wtime 0.00714286;
+
+param a := 
+wtime 40;
+
+
+

@@ -261,6 +261,12 @@ def policy_evaluation(
 
     return value_func
 
+def policy_improvement():
+    """
+
+    """
+    pass
+
 def q_learning(
     q_table,
     bins,

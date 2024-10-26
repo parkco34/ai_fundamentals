@@ -1,0 +1,36 @@
+# Mill locations
+set MILLS := GARY CLEV PITT;
+
+# Plant locations
+set PLANTS := FRA DET LAN WIN STL FRE LAF;
+
+# Products
+set PRODUCTS := bars coils plates;
+
+# Hours required per ton for each product at each mill
+param HoursPerTon:  bars coils plates :=
+    GARY 0.25 0.35 0.40
+    CLEV 0.35 0.30 0.45
+    PITT 0.20 0.25 0.30;
+
+# Cost per ton for each product at each mill
+param Cost: bars coils plates :=
+    GARY 100 150 200
+    CLEV 120 160 210
+    PITT 110 140 190;
+
+# Demand (tons) at each plant for each product
+param Demand: bars coils plates :=
+    FRA 300 500 600
+    DET 200 400 500
+    LAN 100 200 300
+    WIN 150 250 350
+    STL 250 350 450
+    FRE 180 280 380
+    LAF 170 270 370;
+
+# Available working hours at each mill
+param AvailableHours :=
+    GARY 800
+    CLEV 900
+    PITT 950;
