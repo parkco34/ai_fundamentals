@@ -8,6 +8,8 @@ import pandas as pd
 
 # Set random seed
 np.random.seed(73)
+# Number of iterations
+NUM_ITERATIONS = 100
 
 # Load dataset
 iris = load_iris()
@@ -31,6 +33,21 @@ params = {
     "min_samples_split": [2, 3, 4, 5, 6, 7, 8, 9, 10],
     "criteria": ["gini", "entropy"]
 }
+
+random_search = RandomizedSearchCV(
+    dt,
+    param_distributions=params,
+    n_iter=NUM_ITERATIONS,
+    cv=5,
+    random_state=73,
+    n_jobs=-1
+)
+
+# Fitting
+random_search.fit(X_train, y_train)
+
+# Output best hyperparameters and accuracy
+print(f"\nBest Cross-validation Score: {random_search.best_score_:.4f}")
 
 
 
