@@ -450,8 +450,178 @@ Let me break down the purpose and real-world significance of this assignment:
    - Business Analytics: Understanding feature importance
    - Quality Assurance: Error analysis
 
-Would you like me to:
-1. Provide more real-world examples?
-2. Explain how this relates to a specific industry?
-3. Show how these concepts apply to other types of problems?
-4. Break down any specific part in more detail?
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+from textwrap import dedent
+import numpy as np
+from sklearn.datasets import load_iris, load_boston
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.metrics import (
+    accuracy_score, precision_score, recall_score, f1_score,
+    confusion_matrix, mean_squared_error
+)
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Initial CONSTANTS
+RANDOM_STATE = 73
+TEST_SIZE = 0.2
+
+# Set random seed
+np.random.seed(RANDOM_STATE)
+
+def load_and_split_data():
+    """
+    Loads both classification (iris) and regression (boston) datasets and splits them
+    into training and testing sets.
+    """
+    # Classification data
+    iris = load_iris()
+    X_cls, y_cls = iris.data, iris.target
+    X_cls_train, X_cls_test, y_cls_train, y_cls_test = train_test_split(
+        X_cls, y_cls, test_size=TEST_SIZE, random_state=RANDOM_STATE
+    )
+    
+    # Regression data
+    boston = load_boston()
+    X_reg, y_reg = boston.data, boston.target
+    X_reg_train, X_reg_test, y_reg_train, y_reg_test = train_test_split(
+        X_reg, y_reg, test_size=TEST_SIZE, random_state=RANDOM_STATE
+    )
+    
+    return (X_cls_train, X_cls_test, y_cls_train, y_cls_test,
+            X_reg_train, X_reg_test, y_reg_train, y_reg_test,
+            iris, boston)
+
+def analyze_classification_results(y_true, y_pred, class_names):
+    """
+    Performs comprehensive classification analysis including confusion matrix
+    and various metrics.
+    """
+    # Calculate confusion matrix
+    cm = confusion_matrix(y_true, y_pred)
+    
+    # Calculate metrics
+    accuracy = accuracy_score(y_true, y_pred)
+    precision = precision_score(y_true, y_pred, average='weighted')
+    recall = recall_score(y_true, y_pred, average='weighted')
+    f1 = f1_score(y_true, y_pred, average='weighted')
+    
+    print("\nClassification Metrics:")
+    print("="*50)
+    print(f"Accuracy: {accuracy:.4f}")
+    print(f"Precision: {precision:.4f}")
+    print(f"Recall: {recall:.4f}")
+    print(f"F1 Score: {f1:.4f}")
+    
+    print("\nConfusion Matrix:")
+    print("-"*50)
+    print("True Positives, False Positives, False Negatives for each class:")
+    for i in range(len(class_names)):
+        tp = cm[i, i]
+        fp = np.sum(cm[:, i]) - tp
+        fn = np.sum(cm[i, :]) - tp
+        print(f"\nClass {class_names[i]}:")
+        print(f"True Positives: {tp}")
+        print(f"False Positives: {fp}")
+        print(f"False Negatives: {fn}")
+    
+    # Visualize confusion matrix
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, fmt='d', xticklabels=class_names,
+                yticklabels=class_names)
+    plt.title("Confusion Matrix")
+    plt.xlabel("Predicted")
+    plt.ylabel("True")
+    plt.show()
+    
+    return accuracy, precision, recall, f1
+
+def train_and_evaluate_regression(X_train, X_test, y_train, y_test, feature_names):
+    """
+    Trains and evaluates a Decision Tree Regression model.
+    """
+    # Initialize and train regression model
+    dt_reg = DecisionTreeRegressor(random_state=RANDOM_STATE)
+    dt_reg.fit(X_train, y_train)
+    
+    # Make predictions
+    y_pred = dt_reg.predict(X_test)
+    
+    # Calculate MSE
+    mse = mean_squared_error(y_test, y_pred)
+    rmse = np.sqrt(mse)
+    
+    print("\nRegression Metrics:")
+    print("="*50)
+    print(f"Mean Squared Error: {mse:.4f}")
+    print(f"Root Mean Squared Error: {rmse:.4f}")
+    
+    # Feature importance analysis
+    feature_importance = pd.DataFrame({
+        'feature': feature_names,
+        'importance': dt_reg.feature_importances_
+    })
+    print("\nFeature Importances (Regression):")
+    print(feature_importance.sort_values('importance', ascending=False))
+    
+    # Visualize actual vs predicted values
+    plt.figure(figsize=(8, 6))
+    plt.scatter(y_test, y_pred, alpha=0.5)
+    plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'r--')
+    plt.xlabel("Actual Values")
+    plt.ylabel("Predicted Values")
+    plt.title("Actual vs Predicted Values (Regression)")
+    plt.show()
+    
+    return mse, rmse
+
+def compare_models(cls_metrics, reg_metrics):
+    """
+    Compares and discusses the performance of classification and regression models.
+    """
+    print("\nModel Comparison and Discussion:")
+    print("="*50)
+    print("Classification Model Performance:")
+    print(f"- Accuracy: {cls_metrics[0]:.4f}")
+    print(f"- Precision: {cls_metrics[1]:.4f}")
+    print(f"- Recall: {cls_metrics[2]:.4f}")
+    print(f"- F1 Score: {cls_metrics[3]:.4f}")
+    
+    print("\nRegression Model Performance:")
+    print(f"- MSE: {reg_metrics[0]:.4f}")
+    print(f"- RMSE: {reg_metrics[1]:.4f}")
+    
+    print("\nDiscussion:")
+    print("-"*50)
+    print("1. Classification Model:")
+    print("   - The model's performance can be evaluated through its accuracy and F1-score")
+    print("   - High precision/recall indicates good balance between false positives and negatives")
+    
+    print("\n2. Regression Model:")
+    print("   - RMSE provides error metric in same units as target variable")
+    print("   - Lower RMSE indicates better model performance")
+    
+def main():
+    # Load and split data
+    (X_cls_train, X_cls_test, y_cls_train, y_cls_test,
+     X_reg_train, X_reg_test, y_reg_train, y_reg_test,
+     iris, boston) = load_and_split_data()
+    
+    # Classification analysis
+    best_model = analyze_best_model(X_cls_train, y_cls_train, params)
+    y_cls_pred = best_model.predict(X_cls_test)
+    cls_metrics = analyze_classification_results(y_cls_test, y_cls_pred, 
+                                              iris.target_names)
+    
+    # Regression analysis
+    reg_metrics = train_and_evaluate_regression(X_reg_train, X_reg_test,
+                                              y_reg_train, y_reg_test,
+                                              boston.feature_names)
+    
+    # Compare models
+    compare_models(cls_metrics, reg_metrics)
+
+if __name__ == "__main__":
+    main()
