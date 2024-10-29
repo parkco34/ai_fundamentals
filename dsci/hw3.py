@@ -1,10 +1,52 @@
 #!/usr/bin/env python
+"""
+Part 1: Decision Trees (DT)- 4pts. each task
+To complete the following tasks on DTs, you can use Python and libraries such as scikit-learn to
+implement your code.
+Task 1: Hyperparameter Tuning (Random Search)
+1. Load the Iris dataset.
+2. Split the data into training and testing sets.
+3. Implement a DT classiWier.
+4. Perform a Random Search to Wind the best hyperparameters for the DT classiWier. Search for
+hyperparameters like max depth, min samples split, min samples leaf, and criterion. HInt: Use the
+RandomizedSearchCV function from scikit-learn.
+5. Print the best hyperparameters and the model’s accuracy with these hyperparameters.
+Task 2: Error Analysis
+1. After training the DT model with the best hyperparameters from Task 1, use this model to make
+predictions on the test data.
+2. Identify and print the indices of misclassiWied instances (where the true class is not equal to the
+predicted class).
+Task 3: Confusion Matrix
+1. Calculate the confusion matrix for the model’s predictions on the test data.
+2. Print the confusion matrix values (True Positives, True Negatives, False Positives, False
+Negatives).
+Note: The following Tasks 4 and 5 were not taught extensively in class for DTs. However, the
+concepts were covered in liner regression, so I’d like you to give these a try w.r.t. DTs.
+Task 4: Regression with DTs
+1. Load a dataset suitable for regression (e.g., the Boston housing dataset from scikit-learn).
+2. Split the dataset into training and testing sets.
+3. Implement a DT regression model.
+4. Train the model on the training data.
+5. Calculate and print the mean squared error (MSE) on the testing data to assess the model’s
+performance.
+Task 5: Metrics Comparison
+1. Compare the performance of the DT classiWier from Task 1 and the DT regression model from
+Task 4.
+2. Calculate and print relevant evaluation metrics for the classiWier (e.g., accuracy, precision, recall,
+F1-score) and the regression model (e.g., MSE).
+3. Discuss the results, including which model performed better and why.
+"""
 from textwrap import dedent
+import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.datasets import load_iris
+from sklearn.datasets import load_iris, fetch_california_housing
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.metrics import (
+    accuracy_score, precision_score, recall_score, f1_score, confusion_matrix,
+    mean_squared_error
+)
+import seaborn as sns
 import pandas as pd
 
 # initiai CONSTANTS
@@ -22,7 +64,7 @@ np.random.seed(RANDOM_STATE)
 # y: Species of flower, 0, 1, or 2
 def load_split_data():
     """
-    Loads both classification (iris) and regression (boston) datasets and
+    Loads both classification (iris) and regression (california) datasets and
     splits them.
     """
     # Classification data
@@ -35,13 +77,15 @@ def load_split_data():
                                                                         y_cls, test_size=TEST_SIZE)
 
     # Regression data
-    boston = load_boston()
-    X_reg, y_reg = boston.data, boston.target
-    X_reg_train, X_reg_test, y_reg_train, y_reg_test = train_test_split()
+    california = fetch_california_housing()
+    X_reg, y_reg = california.data, california.target
+    X_reg_train, X_reg_test, y_reg_train, y_reg_test = train_test_split(X_reg,
+                                                                       y_reg,
+                                                                        test_size=TEST_SIZE)
 
-    return (X_cls_train, X_cls_test, y_cls_train, y_cls_train, y_cls_test,
+    return (X_cls_train, X_cls_test, y_cls_train, y_cls_test,
             X_reg_train, X_reg_test, y_reg_train, y_reg_test,
-            iris, boston)
+            iris, california)
 
 # Define parameter dist. for Random Search
 # "max_depth": Determines how deep the tree goes, with None meaning no limit.
@@ -99,9 +143,12 @@ def analyze_classification_results(y_true, y_pred, class_names):
     Performs classification analysis including Confusion Matrix.
     ------------------------------------------------------
     INPUT:
-        y_true: (np.ndarray) 
+        y_true: (np.ndarray) Training data
+        y_train: (np.ndarray) Training labels
+        params: (dict) Hyperparamters
 
     OUTPUT:
+        best_model: ()
     """
     # Confusion matrix
     cm =  confusion_matrix(y_true, y_pred)
@@ -201,7 +248,7 @@ def compare_models(cls_metrics, reg_metrics):
     print(f"- Accuracy: {cls_metrics[0]:.4f}")
     print(f"- Precision: {cls_metrics[1]:.4f}")
     print(f"- Recall: {cls_metrics[2]:.4f}")
-    print(f"- F1 Score: {mls_metrics[3]:.4f}")
+    print(f"- F1 Score: {cls_metrics[3]:.4f}")
 
     print("\nRegressionn Model Performance")
     print(f"- MSE: {reg_metrics[0]:.4f}")
@@ -209,23 +256,15 @@ def compare_models(cls_metrics, reg_metrics):
 
     print("-"*50)
     print("1. Classification Model:")
-    print("\tModel's performance can be evaluated thru its accuracy and
-          F1-Score")
-    print("\t-High precision/recall indicates good balance betweenfalse
-          positives and negatives")
+    print("""\cmodel's performance can be evaluated thru its accuracy and
+          f1-score""")
+    print("""\t-High precision/recall indicates good balance betweenfalse
+          positives and negatives""")
     print("\n\n2. Regression Model:")
     print("\t- RMSE provides error metric in same units as target variable")
     print("\t- Lower RMSE indicates better model performance")
 
-def main():
-    # Load split data
-    (X_cls_train, X_cls_test, y_cls_train, y_cls_test, X_reg_train, X_reg_test,
-    y_reg_train, y_reg_test, iris, boston) = load_and_split_data()
-
-    # Classification analysis
-    best_model = best_model.predict(X_cls_test)
-
-def analyze_best_model(X_train, y_train, params):
+def analyze_best_model(X_train, y_train, params, iris):
     """
     Analyzes best model, outputting best parameters, cross-validatoin score,
     and model.
@@ -262,7 +301,7 @@ def analyze_best_model(X_train, y_train, params):
 
     return best_model
 
-def error_analysis(best_model, X_test, y_test):
+def error_analysis(best_model, X_test, y_test, iris):
     """
     Takes model, test data, and true labels to make predictions and identify
     misclassified samples
@@ -271,6 +310,7 @@ def error_analysis(best_model, X_test, y_test):
         best_model: (Fitted DecisionTreeClassifier)
         X_test: (np.ndarray) Test features
         y_test: (np.ndarray) True test labels
+        iris: () Iris dataset object
 
     OUTPUT:
         misclassified_indices: (np.ndarray) Indices of misclassified samples
@@ -317,7 +357,7 @@ dedent("""
 
     return misclassified_indices
 
-def visualization(X_test, y_test, y_pred, misclassified_indices):
+def visualization(X_test, y_test, y_pred, misclassified_indices, iris):
     """
     Creates visualziations of the results anf misclassification.
     ---------------------------------------------------------
@@ -325,6 +365,7 @@ def visualization(X_test, y_test, y_pred, misclassified_indices):
         X_test: (np.ndarray) Test data
         y_test: (np.ndarray) Test labels
         misclassified_indices: (np.ndarray) Indices of misclassified samples
+        iris: () Iris dataset object
 
     OUTPUT:
         None
@@ -360,8 +401,24 @@ def visualization(X_test, y_test, y_pred, misclassified_indices):
         plt.show()
 
 def main():
-    best_model = analyze_best_model(X_train, y_train, params)
-    misclassified_indices = error_analysis(best_model, X_test, y_test)
-    
+    # Load split data
+    (X_cls_train, X_cls_test, y_cls_train, y_cls_test, X_reg_train, X_reg_test,
+    y_reg_train, y_reg_test, iris, california) = load_split_data()
+
+    # Classification analysis
+    best_model = analyze_best_model(X_cls_train, y_cls_train, params, iris)
+    y_cls_prediction = best_model.predict(X_cls_test)
+    cls_metrics = analyze_classification_results(y_cls_test, y_cls_prediction,
+                                                iris.target_names)
+
+    # Regression Analysis
+    reg_metrics = train_evaluate_regression(X_reg_train, X_reg_test,
+                                            y_reg_train, y_reg_test,
+                                            california.feature_names)
+
+    # Compare models
+    compare_models(cls_metrics, reg_metrics)
+
+
 if __name__ == "__main__":
     main()

@@ -1,3 +1,4 @@
+#PART1 ======================================================
 Here's a structured plan to implement the code efficiently:
 
 1. Setup Phase
@@ -622,6 +623,184 @@ def main():
     
     # Compare models
     compare_models(cls_metrics, reg_metrics)
+
+if __name__ == "__main__":
+    main()
+
+
+#PART2 ======================================================
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+import numpy as np
+from sklearn.model_selection import RandomizedSearchCV
+from scipy.stats import uniform, loguniform
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+def implement_linear_svm(X_train, X_test, y_train, y_test):
+    """
+    Implements and evaluates a Linear SVM classifier.
+    
+    Returns:
+        tuple: (model, accuracy, predictions)
+    """
+    # Initialize Linear SVM
+    linear_svm = SVC(kernel='linear', random_state=RANDOM_STATE)
+    
+    # Train model
+    linear_svm.fit(X_train, y_train)
+    
+    # Make predictions
+    y_pred = linear_svm.predict(X_test)
+    
+    # Calculate accuracy
+    accuracy = accuracy_score(y_test, y_pred)
+    print("\nLinear SVM Results:")
+    print("="*50)
+    print(f"Accuracy: {accuracy:.4f}")
+    
+    return linear_svm, accuracy, y_pred
+
+def implement_rbf_svm(X_train, X_test, y_train, y_test):
+    """
+    Implements and evaluates an SVM classifier with RBF kernel.
+    
+    Returns:
+        tuple: (model, accuracy, predictions)
+    """
+    # Initialize RBF SVM
+    rbf_svm = SVC(kernel='rbf', random_state=RANDOM_STATE)
+    
+    # Train model
+    rbf_svm.fit(X_train, y_train)
+    
+    # Make predictions
+    y_pred = rbf_svm.predict(X_test)
+    
+    # Calculate accuracy
+    accuracy = accuracy_score(y_test, y_pred)
+    print("\nRBF SVM Results:")
+    print("="*50)
+    print(f"Accuracy: {accuracy:.4f}")
+    
+    return rbf_svm, accuracy, y_pred
+
+def tune_rbf_svm(X_train, X_test, y_train, y_test):
+    """
+    Performs hyperparameter tuning for SVM with RBF kernel using RandomizedSearchCV.
+    
+    Returns:
+        tuple: (best_model, best_params, accuracy, predictions)
+    """
+    # Parameter distribution for random search
+    param_dist = {
+        'C': loguniform(1e-3, 1e3),
+        'gamma': loguniform(1e-4, 1e1),
+    }
+    
+    # Initialize base model
+    base_model = SVC(kernel='rbf', random_state=RANDOM_STATE)
+    
+    # Initialize random search
+    random_search = RandomizedSearchCV(
+        estimator=base_model,
+        param_distributions=param_dist,
+        n_iter=100,
+        cv=5,
+        scoring='accuracy',
+        n_jobs=-1,
+        random_state=RANDOM_STATE,
+        verbose=1
+    )
+    
+    # Perform random search
+    random_search.fit(X_train, y_train)
+    
+    # Get best model and parameters
+    best_model = random_search.best_estimator_
+    best_params = random_search.best_params_
+    
+    # Make predictions with best model
+    y_pred = best_model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    
+    print("\nTuned RBF SVM Results:")
+    print("="*50)
+    print(f"Best Parameters: {best_params}")
+    print(f"Best Cross-validation Score: {random_search.best_score_:.4f}")
+    print(f"Test Accuracy: {accuracy:.4f}")
+    
+    return best_model, best_params, accuracy, y_pred
+
+def compare_models(models_data, y_test, iris):
+    """
+    Compares performance metrics of different SVM models.
+    
+    Args:
+        models_data: dict with model names as keys and (predictions, accuracy) as values
+    """
+    metrics = {}
+    
+    for model_name, (y_pred, _) in models_data.items():
+        metrics[model_name] = {
+            'Accuracy': accuracy_score(y_test, y_pred),
+            'Precision': precision_score(y_test, y_pred, average='weighted'),
+            'Recall': recall_score(y_test, y_pred, average='weighted'),
+            'F1-score': f1_score(y_test, y_pred, average='weighted')
+        }
+    
+    # Create comparison DataFrame
+    comparison_df = pd.DataFrame(metrics).round(4)
+    
+    print("\nModel Comparison:")
+    print("="*50)
+    print(comparison_df)
+    
+    # Visualize confusion matrices
+    fig, axes = plt.subplots(1, len(models_data), figsize=(15, 5))
+    for i, (model_name, (y_pred, _)) in enumerate(models_data.items()):
+        cm = confusion_matrix(y_test, y_pred)
+        sns.heatmap(cm, annot=True, fmt='d', ax=axes[i], 
+                   xticklabels=iris.target_names,
+                   yticklabels=iris.target_names)
+        axes[i].set_title(f'{model_name}\nConfusion Matrix')
+        axes[i].set_xlabel('Predicted')
+        axes[i].set_ylabel('True')
+    
+    plt.tight_layout()
+    plt.show()
+    
+    return comparison_df
+
+def main():
+    # Load and split data
+    (X_cls_train, X_cls_test, y_cls_train, y_cls_test, _, _, _, _, 
+     iris, _) = load_split_data()
+    
+    # Task 1: Linear SVM
+    linear_model, linear_acc, linear_pred = implement_linear_svm(
+        X_cls_train, X_cls_test, y_cls_train, y_cls_test
+    )
+    
+    # Task 2: RBF SVM
+    rbf_model, rbf_acc, rbf_pred = implement_rbf_svm(
+        X_cls_train, X_cls_test, y_cls_train, y_cls_test
+    )
+    
+    # Task 3: Tuned RBF SVM
+    tuned_model, best_params, tuned_acc, tuned_pred = tune_rbf_svm(
+        X_cls_train, X_cls_test, y_cls_train, y_cls_test
+    )
+    
+    # Task 4: Compare models
+    models_data = {
+        'Linear SVM': (linear_pred, linear_acc),
+        'RBF SVM': (rbf_pred, rbf_acc),
+        'Tuned RBF SVM': (tuned_pred, tuned_acc)
+    }
+    
+    comparison_df = compare_models(models_data, y_cls_test, iris)
 
 if __name__ == "__main__":
     main()
