@@ -20,13 +20,28 @@ np.random.seed(RANDOM_STATE)
 # X: Flower measurements -> sepal length, sepal width, petal length, petal width for
 # 120 flowers
 # y: Species of flower, 0, 1, or 2
-iris = load_iris()
-X, y = iris.data, iris.target
+def load_split_data():
+    """
+    Loads both classification (iris) and regression (boston) datasets and
+    splits them.
+    """
+    # Classification data
+    iris = load_iris()
+    X_cls, y_cls = iris.data, iris.target
 
+    # Hyperparameter grid setup +++++++++++++++++++++++++++++++++++++++
+    # Split data
+    X_cls_train, X_cls_test, y_cls_train, y_cls_test = train_test_split(X_cls,
+                                                                        y_cls, test_size=TEST_SIZE)
 
-# Hyperparameter grid setup +++++++++++++++++++++++++++++++++++++++
-# Split data
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=TEST_SIZE)
+    # Regression data
+    boston = load_boston()
+    X_reg, y_reg = boston.data, boston.target
+    X_reg_train, X_reg_test, y_reg_train, y_reg_test = train_test_split()
+
+    return (X_cls_train, X_cls_test, y_cls_train, y_cls_train, y_cls_test,
+            X_reg_train, X_reg_test, y_reg_train, y_reg_test,
+            iris, boston)
 
 # Define parameter dist. for Random Search
 # "max_depth": Determines how deep the tree goes, with None meaning no limit.
@@ -78,6 +93,137 @@ def perform_random_search(X_train, y_train, params):
     random_search.fit(X_train, y_train)
 
     return random_search
+
+def analyze_classification_results(y_true, y_pred, class_names):
+    """
+    Performs classification analysis including Confusion Matrix.
+    ------------------------------------------------------
+    INPUT:
+        y_true: (np.ndarray) 
+
+    OUTPUT:
+    """
+    # Confusion matrix
+    cm =  confusion_matrix(y_true, y_pred)
+
+    # Metrics
+    accuracy = accuracy_score(y_true, y_pred)
+    precision = precision_score(y_true, y_pred, average="weighted")
+    recall = recall_score(y_true, y_pred, average="weighted")
+    f1 = f1_score(y_true, y_pred, average="weighted")
+
+    print("\nClassification Metrics")
+    print("="*50)
+    print(f"Accuracy: {accuracy:.4f}")
+    print(f"Precision: {precision:.4f}")
+    print(f"Recall: {recall:.4f}")
+    print(f"F1 Score: {f1:.4f}")
+
+    print("\nConfusion Matrix:")
+    print("-"*50)
+    print("True Positives, False Positives, False Negatives for each class:")
+    for i in range(len(class_names)):
+        tp = cm[i, i]
+        fp = np.sum(cm[:, i]) - tp
+        fn = np.sum(cm[i, :]) - tp
+        print(f"\nClass {class_names[i]}:")
+        print(f"True Positives: {tp}")
+        print(f"False Negatives: {fn}")
+
+    # Visualize confusion matrix
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, fmt="d", xticklabels=class_names,
+                yticklabels=class_names)
+    plt.title("Confusion Matrix")
+    plt.xlabel("Predicted")
+    plt.ylabel("True")
+    plt.show()
+
+    return accuracy, precision, recall, f1
+
+def train_evaluate_regression(X_train, X_test, y_train, y_test, feature_names):
+    """
+    Trains and evaluates Decision Tree Regression model.
+    --------------------------------------------------------
+    INPUT:
+
+    OUTPUT:
+    """
+    # Initialize stutf
+    dt_reg = DecisionTreeRegressor(random_state=RANDOM_STATE)
+    dt_reg.fit(X_train, y_train)
+
+    # Predict
+    y_pred = dt_reg.predict(X_test)
+
+    # MSE
+    mse = mean_squared_error(y_test, y_pred)
+    rmse = np.sqrt(mse)
+
+    print("\nRegression Metrics:")
+    print("="*50)
+    print(f"Mean Sqaured Error: {mse:.4f}")
+    print(f"Root Mean Squared Error: {rmse:.4f}")
+
+    # Feature Importance Analysis
+    feature_importance = pd.DataFrame({
+        "feature": feature_names,
+        "importance": dt_reg.feature_importances_
+    })
+    print("\nFeature Importances (Regression):")
+    print(feature_importance.sort_values("importance", ascending=False))
+    
+    # Visualize actual vs predicted values
+    plt.figure(figsize=(8, 6))
+    plt.scatter(y_test, y_pred, alpha=0.5)
+    plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], "r--")
+    plt.xlabel("Actual Values")
+    plt.ylabel("Predicted Values")
+    plt.title("Actual vs Predicted Values (Regression)")
+    plt.show()
+
+    return mse, rmse
+
+def compare_models(cls_metrics, reg_metrics):
+    """
+    Compares performance of classification and regression models.
+    --------------------------------------------------------
+    INPUT:
+        cls_metrics: ()
+        reg_metrics: ()
+
+    OUTPUT:
+        
+    """
+    print("\nModdel Comparison")
+    print("="*50)
+    print("Classification Model Peformance")
+    print(f"- Accuracy: {cls_metrics[0]:.4f}")
+    print(f"- Precision: {cls_metrics[1]:.4f}")
+    print(f"- Recall: {cls_metrics[2]:.4f}")
+    print(f"- F1 Score: {mls_metrics[3]:.4f}")
+
+    print("\nRegressionn Model Performance")
+    print(f"- MSE: {reg_metrics[0]:.4f}")
+    print(f"- RMSE: {reg_metrics[1]:.4f}")
+
+    print("-"*50)
+    print("1. Classification Model:")
+    print("\tModel's performance can be evaluated thru its accuracy and
+          F1-Score")
+    print("\t-High precision/recall indicates good balance betweenfalse
+          positives and negatives")
+    print("\n\n2. Regression Model:")
+    print("\t- RMSE provides error metric in same units as target variable")
+    print("\t- Lower RMSE indicates better model performance")
+
+def main():
+    # Load split data
+    (X_cls_train, X_cls_test, y_cls_train, y_cls_test, X_reg_train, X_reg_test,
+    y_reg_train, y_reg_test, iris, boston) = load_and_split_data()
+
+    # Classification analysis
+    best_model = best_model.predict(X_cls_test)
 
 def analyze_best_model(X_train, y_train, params):
     """
