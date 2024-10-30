@@ -278,7 +278,7 @@ def analyze_best_model(X_train, y_train, params, iris):
     """
     random_search = perform_random_search(X_train, y_train, params)
     print("\nModel Analysis Results")
-    print("_"*50)
+    print("-"*50)
     #Access parameters
     print(f"Best parameters: {random_search.best_params_}")
     # Best score
@@ -300,6 +300,28 @@ def analyze_best_model(X_train, y_train, params, iris):
           {feature_importance.sort_values('importance', ascending=False)}""")
 
     return best_model
+
+def error_analysis(best_model, X_test, y_test, iris):
+    """
+    Analyzes misclassified instances from the decision tree model.
+    ------------------------------------------------------------
+    INPUT:
+
+    OUTPUT:
+    """
+    # Predictions
+    y_prediction = best_model.predict(X_test)
+
+    # Find misclassified instances
+    misclassified_mask = y_test != y_prediction
+    misclassified_indices = np.where(misclassified_mask)[0]
+
+    print("\nError Analysis Results: ")
+    print("-"*50)
+    print(f"Number of misclassified instances: {len(misclassified_indices)}")
+    print(f"Test set accuracy: {accuracy_score(y_test, y_prediction):.4f}")
+
+    # ?
 
 def error_analysis(best_model, X_test, y_test, iris):
     """
@@ -405,8 +427,9 @@ def main():
     (X_cls_train, X_cls_test, y_cls_train, y_cls_test, X_reg_train, X_reg_test,
     y_reg_train, y_reg_test, iris, california) = load_split_data()
 
+    # Task 1 ====================================================
     # Classification analysis
-    best_model = analyze_best_model(X_cls_train, y_cls_train, params, iris)
+    best_cls_model = analyze_best_model(X_cls_train, y_cls_train, params, iris)
     y_cls_prediction = best_model.predict(X_cls_test)
     cls_metrics = analyze_classification_results(y_cls_test, y_cls_prediction,
                                                 iris.target_names)
