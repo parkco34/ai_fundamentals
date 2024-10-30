@@ -54,6 +54,24 @@ RANDOM_STATE = 73
 # Feature data used to train 80% since test_size=0.2
 TEST_SIZE = 0.2
 
+# Define parameter dist. for Random Search
+# "max_depth": Determines how deep the tree goes, with None meaning no limit.
+# The smaller the value, the simpler the tree, less likely to overfit
+# Larger values risk overfitting.
+# "min_sample_split" -> Number of sample to split node w/ higher values meaning 
+# "min_sample_leaf" -> Samples required at each leaf node w/ higher values for
+# better balanced trees
+# Criterion -> Quality of split, where Gini measures probability of incorrect
+# classification and Entropy measuress info gain
+PARAMS = {
+    "max_depth": range(1, 21),
+    # Min samples needed to split 2-20
+    "min_samples_split": range(2, 21), 
+    # leaf node: (1-10)
+    "min_samples_leaf": range(1, 11),
+    "criterion": ["gini", "entropy"]
+}
+
 # Set random seed
 np.random.seed(RANDOM_STATE)
 
@@ -87,24 +105,6 @@ def load_split_data():
             X_reg_train, X_reg_test, y_reg_train, y_reg_test,
             iris, california)
 
-# Define parameter dist. for Random Search
-# "max_depth": Determines how deep the tree goes, with None meaning no limit.
-# The smaller the value, the simpler the tree, less likely to overfit
-# Larger values risk overfitting.
-# "min_sample_split" -> Number of sample to split node w/ higher values meaning 
-# "min_sample_leaf" -> Samples required at each leaf node w/ higher values for
-# better balanced trees
-# Criterion -> Quality of split, where Gini measures probability of incorrect
-# classification and Entropy measuress info gain
-params = {
-    "max_depth": range(1, 21),
-    # Min samples needed to split 2-20
-    "min_samples_split": range(2, 21), 
-    # leaf node: (1-10)
-    "min_samples_leaf": range(1, 11),
-    "criterion": ["gini", "entropy"]
-}
-
 # Random Search
 def perform_random_search(X_train, y_train, params):
     """
@@ -125,7 +125,7 @@ def perform_random_search(X_train, y_train, params):
     # Random Search
     random_search = RandomizedSearchCV(
         estimator=dt,
-        param_distributions=params,
+        param_distributions=PARAMS,
         n_iter=100, # For good coverage ?
         cv=5, # 5-fold cross-validation
         scoring="accuracy",
@@ -140,18 +140,14 @@ def perform_random_search(X_train, y_train, params):
 
 def analyze_classification_results(y_true, y_pred, class_names):
     """
-    Performs classification analysis including Confusion Matrix.
-    ------------------------------------------------------
+    Performs classification analysis including the Confusion matrix.
+    -------------------------------------------------------------------
     INPUT:
-        y_true: (np.ndarray) Training data
-        y_train: (np.ndarray) Training labels
-        params: (dict) Hyperparamters
 
     OUTPUT:
-        best_model: ()
     """
     # Confusion matrix
-    cm =  confusion_matrix(y_true, y_pred)
+    cm = confusion_matrix(y_true, y_pred)
 
     # Metrics
     accuracy = accuracy_score(y_true, y_pred)
@@ -159,25 +155,42 @@ def analyze_classification_results(y_true, y_pred, class_names):
     recall = recall_score(y_true, y_pred, average="weighted")
     f1 = f1_score(y_true, y_pred, average="weighted")
 
-    print("\nClassification Metrics")
+    print("\nClassification Metrics: ")
     print("="*50)
     print(f"Accuracy: {accuracy:.4f}")
     print(f"Precision: {precision:.4f}")
-    print(f"Recall: {recall:.4f}")
-    print(f"F1 Score: {f1:.4f}")
+    print(f"F1-SCore: {f1:.4f}")
 
-    print("\nConfusion Matrix:")
+    print("\nConfusion Matrix Analysis: ")
     print("-"*50)
-    print("True Positives, False Positives, False Negatives for each class:")
-    for i in range(len(class_names)):
+    print("Metrics for each class ")
+    
+    n_classes = len(class_names)
+    for i in range(n_classes):
+        # True positives: Correct predictions current class
         tp = cm[i, i]
+        # False positives: Other classes predicted as current class
         fp = np.sum(cm[:, i]) - tp
+        # False Negatives: Current class predicted as other classes
         fn = np.sum(cm[i, :]) - tp
-        print(f"\nClass {class_names[i]}:")
-        print(f"True Positives: {tp}")
-        print(f"False Negatives: {fn}")
+        # True Negatives: Correct predictions for all other classes
+        tn = np.sum(cm) - (tp + fp + fn)
 
-    # Visualize confusion matrix
+        print("\nClass {class_names[i]}:")
+        print(f"True Positives (TP): {tp} - Correctly predicted {class_names[i]}")
+        print(f"""True Negatives (TN): {tn} - Correctly predicted other classes""")
+        print(f"""False Positives (FP): {fp} - Incorrectly predicted
+              {class_names[i]}""")
+        print(f"""Fales Negatives (FN): {fn} - {class_names[i]} Incorrectly
+              predicted other classes""")
+
+        # Class-specific metrics
+        sensitivity = tp / (tp + fn) if (tp + fn) > 0 else 0
+        specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
+        print(f"Sensitivity (TPR): {sensitivity:.4f}")
+        print(f"Specificity (TNR): {specificity:.4f}")
+
+    # Visualization
     plt.figure(figsize=(8, 6))
     sns.heatmap(cm, annot=True, fmt="d", xticklabels=class_names,
                 yticklabels=class_names)
@@ -193,8 +206,15 @@ def train_evaluate_regression(X_train, X_test, y_train, y_test, feature_names):
     Trains and evaluates Decision Tree Regression model.
     --------------------------------------------------------
     INPUT:
+        X_train: (np.ndarray) Training Data
+        X_test: (np.ndarray) Test data
+        y_train: (np.ndarray) Training labels
+        y_test: (np.ndarray) True test labels
+        feature_names: ()
 
     OUTPUT:
+        mse: ()
+        rmse: ()
     """
     # Initialize stutf
     dt_reg = DecisionTreeRegressor(random_state=RANDOM_STATE)
@@ -229,9 +249,10 @@ def train_evaluate_regression(X_train, X_test, y_train, y_test, feature_names):
     plt.title("Actual vs Predicted Values (Regression)")
     plt.show()
 
-    return mse, rmse
+    return (mse, rmse), dt_reg
 
-def compare_models(cls_metrics, reg_metrics):
+def compare_models(cls_metrics, reg_metrics, cls_model, reg_model, iris,
+                   california, X_reg_test, y_reg_test):
     """
     Compares performance of classification and regression models.
     --------------------------------------------------------
@@ -240,29 +261,59 @@ def compare_models(cls_metrics, reg_metrics):
         reg_metrics: ()
 
     OUTPUT:
-        
     """
-    print("\nModdel Comparison")
+    print("\nModel Comparison")
     print("="*50)
-    print("Classification Model Peformance")
+
+    # Classification metrics
+    print("Classification Model Performance")
     print(f"- Accuracy: {cls_metrics[0]:.4f}")
     print(f"- Precision: {cls_metrics[1]:.4f}")
     print(f"- Recall: {cls_metrics[2]:.4f}")
     print(f"- F1 Score: {cls_metrics[3]:.4f}")
 
-    print("\nRegressionn Model Performance")
+    # Feature importance for classification with error handling
+    try:
+        cls_importance = pd.DataFrame({
+            "feature": list(iris.feature_names),  # Convert to list explicitly
+            "importance": list(cls_model.feature_importances_)
+        })
+        cls_importance = cls_importance.sort_values("importance", ascending=False)
+        print("\nTop Classification Features:")
+        print(cls_importance)
+    except ValueError as e:
+        print(f"\nError creating classification importance DataFrame: {e}")
+        print("Feature names:", iris.feature_names)
+        print("Feature importances:", cls_model.feature_importances_)
+
+    # Regression metrics
+    print("\nRegression Model Performance (California Housing)")
+    print("="*50)
     print(f"- MSE: {reg_metrics[0]:.4f}")
     print(f"- RMSE: {reg_metrics[1]:.4f}")
+    print(f"R^2 Score: {reg_model.score(X_reg_test, y_reg_test):.4f}")
 
-    print("-"*50)
-    print("1. Classification Model:")
-    print("""\cmodel's performance can be evaluated thru its accuracy and
-          f1-score""")
-    print("""\t-High precision/recall indicates good balance betweenfalse
-          positives and negatives""")
-    print("\n\n2. Regression Model:")
-    print("\t- RMSE provides error metric in same units as target variable")
-    print("\t- Lower RMSE indicates better model performance")
+    # Feature importance for regression with error handling
+    try:
+        reg_importance = pd.DataFrame({
+            "feature": list(california.feature_names),  # Convert to list explicitly
+            "importance": list(reg_model.feature_importances_)
+        })
+        reg_importance = reg_importance.sort_values("importance", ascending=False)
+        print("\nTop Regression Features:")
+        print(reg_importance)
+    except ValueError as e:
+        print(f"\nError creating regression importance DataFrame: {e}")
+        print("Feature names:", california.feature_names)
+        print("Feature importances:", reg_model.feature_importances_)
+
+    print("\n1. Classification Model:")
+    print("- Model's performance evaluated through accuracy and f1-score")
+    print("- High precision/recall indicates good balance between false positives and negatives")
+
+    print("\n2. Regression Model:")
+    print("- RMSE provides error metric in same units as target variable")
+    print("- Lower RMSE indicates better model performance")
 
 def analyze_best_model(X_train, y_train, params, iris):
     """
@@ -274,9 +325,9 @@ def analyze_best_model(X_train, y_train, params, iris):
         y_train: (np.ndarray) Training labels
 
     OUTPUT:
-        best_model: 
+        best_model: ()
     """
-    random_search = perform_random_search(X_train, y_train, params)
+    random_search = perform_random_search(X_train, y_train, PARAMS)
     print("\nModel Analysis Results")
     print("-"*50)
     #Access parameters
@@ -301,7 +352,7 @@ def analyze_best_model(X_train, y_train, params, iris):
 
     return best_model
 
-def error_analysis(best_model, X_test, y_test, iris):
+def error_analysis2(best_model, X_test, y_test, iris):
     """
     Analyzes misclassified instances from the decision tree model.
     ------------------------------------------------------------
@@ -321,9 +372,37 @@ def error_analysis(best_model, X_test, y_test, iris):
     print(f"Number of misclassified instances: {len(misclassified_indices)}")
     print(f"Test set accuracy: {accuracy_score(y_test, y_prediction):.4f}")
 
-    # ?
+    if len(misclassified_indices) > 0:
+        print("\nMisclassified Instances: ")
 
-def error_analysis(best_model, X_test, y_test, iris):
+        for idx in misclassified_indices:
+            print(f"\nIndex: {idx}")
+            print(f"True Class: {iris.target_names[y_test[idx]]}")
+            print(f"Predicted class: {iris.target_names[y_prediction[idx]]}")
+            print("Feature: ")
+
+            for feature_name, value in zip(iris.feature_names, X_test[idx]):
+                print(f"\t{feature_name}: {value:.2f}")
+
+                # Decision path
+                path = best_model.decision_path([X_test[idx]])
+
+                print("\nDecision path for features: ")
+
+                for node_id in path.indices:
+                    
+                    if (node_id < len(best_model.tree_.feature) and
+                    # -2 indicates leaf
+                    best_model.tree_.feature[node_id] != -2):
+                        feature = \
+                        iris.feature_names[best_model.tree_.feature[node_id]] 
+                        threshold = best_model.tree_.threshold[node_id]
+                        print(f"""Split on {feature} at threshold
+                              {threshold:.2f}""")
+
+        return misclassified_indices
+
+def error_analysis1(best_model, X_test, y_test, iris):
     """
     Takes model, test data, and true labels to make predictions and identify
     misclassified samples
@@ -427,20 +506,33 @@ def main():
     (X_cls_train, X_cls_test, y_cls_train, y_cls_test, X_reg_train, X_reg_test,
     y_reg_train, y_reg_test, iris, california) = load_split_data()
 
-    # Task 1 ====================================================
+    # Task 1: Best classification model ==============================
     # Classification analysis
-    best_cls_model = analyze_best_model(X_cls_train, y_cls_train, params, iris)
-    y_cls_prediction = best_model.predict(X_cls_test)
-    cls_metrics = analyze_classification_results(y_cls_test, y_cls_prediction,
-                                                iris.target_names)
+    best_cls_model = analyze_best_model(X_cls_train, y_cls_train, PARAMS, iris)
 
-    # Regression Analysis
-    reg_metrics = train_evaluate_regression(X_reg_train, X_reg_test,
-                                            y_reg_train, y_reg_test,
-                                            california.feature_names)
+    # Task 2: Error Analysis ============================== 
+    misclassified_indices = error_analysis2(best_cls_model, X_cls_test, y_cls_test, iris)
 
-    # Compare models
-    compare_models(cls_metrics, reg_metrics)
+    # Task 3: Confusion Matrix ==============================
+    cls_prediction = best_cls_model.predict(X_cls_test)
+    cls_metrics = analyze_classification_results(y_cls_test, cls_prediction,
+                                                 iris.target_names)
+
+    # Task 4: Train/evaluate regression model==============================
+    reg_metrics, reg_model = train_evaluate_regression(X_reg_train, X_reg_test,
+                                                      y_reg_train, y_reg_test,
+                                                      california.feature_names)
+    
+    # Task 5: Compare Models ==============================
+    cls_metrics = (
+        accuracy_score(y_cls_test, cls_prediction),
+        precision_score(y_cls_test, cls_prediction, average="weighted"),
+        recall_score(y_cls_test, cls_prediction, average="weighted"),
+        f1_score(y_cls_test, cls_prediction, average="weighted")
+    )
+
+    compare_models(cls_metrics, reg_metrics, best_cls_model, reg_model, iris,
+                  california, X_reg_test, y_reg_test) 
 
 
 if __name__ == "__main__":
