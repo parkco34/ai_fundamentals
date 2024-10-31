@@ -56,6 +56,7 @@ TEST_SIZE = 0.2
 # Set random seed
 np.random.seed(RANDOM_STATE)
 
+
 # Hyperparameters
 def define_params(max_depth=range(1, 21), min_samples_split=range(2, 21),
                   min_samples_leaf=range(1, 11),
@@ -123,7 +124,6 @@ def load_split_data():
     # Split data
     X_cls_train, X_cls_test, y_cls_train, y_cls_test = train_test_split(X_cls,
                                                                         y_cls, test_size=TEST_SIZE)
-    breakpoint()
 
     # Regression data
     california = fetch_california_housing()
