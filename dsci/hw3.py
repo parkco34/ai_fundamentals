@@ -176,7 +176,7 @@ def analyze_classification_results(y_true, y_pred, class_names):
         # True Negatives: Correct predictions for all other classes
         tn = np.sum(cm) - (tp + fp + fn)
 
-        print("\nClass {class_names[i]}:")
+        print(f"\nClass {class_names[i]}:")
         print(f"True Positives (TP): {tp} - Correctly predicted {class_names[i]}")
         print(f"""True Negatives (TN): {tn} - Correctly predicted other classes""")
         print(f"""False Positives (FP): {fp} - Incorrectly predicted
