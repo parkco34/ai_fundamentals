@@ -53,37 +53,67 @@ import pandas as pd
 RANDOM_STATE = 73
 # Feature data used to train 80% since test_size=0.2
 TEST_SIZE = 0.2
-
-# Define parameter dist. for Random Search
-# "max_depth": Determines how deep the tree goes, with None meaning no limit.
-# The smaller the value, the simpler the tree, less likely to overfit
-# Larger values risk overfitting.
-# "min_sample_split" -> Number of sample to split node w/ higher values meaning 
-# "min_sample_leaf" -> Samples required at each leaf node w/ higher values for
-# better balanced trees
-# Criterion -> Quality of split, where Gini measures probability of incorrect
-# classification and Entropy measuress info gain
-PARAMS = {
-    "max_depth": range(1, 21),
-    # Min samples needed to split 2-20
-    "min_samples_split": range(2, 21), 
-    # leaf node: (1-10)
-    "min_samples_leaf": range(1, 11),
-    "criterion": ["gini", "entropy"]
-}
-
 # Set random seed
 np.random.seed(RANDOM_STATE)
 
+# Hyperparameters
+def define_params(max_depth=range(1, 21), min_samples_split=range(2, 21),
+                  min_samples_leaf=range(1, 11),
+                  criteria="gini"):
+    """
+    Defines parameter distribution for Random Search for the Decision Tree.
+    ---------------------------------------------------------------
+    "max_depth" -> Determine show deep the tree goes, with Noen meaning
+    there's no limit.  The smaller the value, the simpler the tree; less
+    likely to overfit.
+        - Computational costs increases exponentially with increase in max
+        depth.
+
+    "min_samples_split"-> Number of samples to split node w/ higher values
+    meaning, the more sample per split, model is less likely to create
+    splits based on noise in the training data. 
+        - 2 is needed for split, and a maximum of 20 since, 20/150 ~ 13% (150
+        samples) where common practice is splitting between 1% - 15%.
+
+    "min_samples_leaf" -> Samples required at each leaf node w/ higher values
+     creating more robust predictions (averaging over more samples), which
+     helps prevent overfitting, and controls what happens AFTER the split.
+        - min of 1: Highest granularity (more detailed decision boundaries)
+        - max of 10: 50 samples per class, where 10 ~ 20% of each class.
+
+    "criterion" -> 
+        Gini: Probability of incorrect classifications 
+            - Computationally more efficient
+            - Range between 0 and 1, isolating more frequent class in branch
+        Entropy: Information needed to encode class distribution
+            - Creates more balanced trees
+            - Range between 0 and log2(n_classes)
+    """
+    return {"max_depth": max_depth, "min_samples_split": min_samples_split,
+            "min_samples_leaf": min_samples_leaf, "criterion": criteria}
+
 # TASK 1: =======================================================
 # Load dataset
-# X: Flower measurements -> sepal length, sepal width, petal length, petal width for
-# 120 flowers
-# y: Species of flower, 0, 1, or 2
 def load_split_data():
     """
     Loads both classification (iris) and regression (california) datasets and
     splits them.
+    ------------------------------------------------------------
+    X_cls: Features (sepal length, sepal width, petal length, petal width)
+            y_cls: Target Labels (species of the iris flower: 0, 1, or 2)
+    X_reg: Features (median income, house age)
+    y_reg: Target variable (median house value)
+    Data split according to the TEST_SIZE, which is 20% of the data for
+    testing.
+    ------------------------------------------------------------
+    INPUT:
+        None
+
+    OUTPUT:
+        (X_cls_train, X_cls_test, y_cls_train, y_cls_test,
+        X_reg_train, X_reg_test, y_reg_train, y_reg_test,
+        iris, california): (tuple) All trainiing and test sets for both
+        datasets, along with original dataset objects.
     """
     # Classification data
     iris = load_iris()
@@ -93,6 +123,7 @@ def load_split_data():
     # Split data
     X_cls_train, X_cls_test, y_cls_train, y_cls_test = train_test_split(X_cls,
                                                                         y_cls, test_size=TEST_SIZE)
+    breakpoint()
 
     # Regression data
     california = fetch_california_housing()

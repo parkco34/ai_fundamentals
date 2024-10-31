@@ -1,0 +1,82 @@
+DSCI 633 Foundations of Data Science
+Rochester Institute of Technology
+Fall 2024
+Homework 3
+Due Date: Wednesday, 10/27/2024, 11:59 pm.
+Total : 40 points
+Instructions
+Coding
+1. Implement all coding in Google colab. Link: https://colab.research.google.com/
+2. Once the colab notebook has been created, share it with the instructor as editors, Prof. Nidhi
+Rastogi (nxrvse@rit.edu), and the Teaching Assistant, Bharadwaj Sharma Kasturi
+(bk5953@rit.edu).
+Grading Criteria
+1. 0 points if the code does not run for Part 1. 0 points if the code does not run for Part 2.
+2. Individual points for each part are given with the description.
+3. -5 pts from the total on failure to share the colab with the instructor and/or TA as editors.
+Part 1: Decision Trees (DT)- 4pts. each task
+To complete the following tasks on DTs, you can use Python and libraries such as scikit-learn to
+implement your code.
+Task 1: Hyperparameter Tuning (Random Search)
+1. Load the Iris dataset.
+2. Split the data into training and testing sets.
+3. Implement a DT classiWier.
+4. Perform a Random Search to Wind the best hyperparameters for the DT classiWier. Search for
+hyperparameters like max depth, min samples split, min samples leaf, and criterion. HInt: Use the
+RandomizedSearchCV function from scikit-learn.
+5. Print the best hyperparameters and the model’s accuracy with these hyperparameters.
+Task 2: Error Analysis
+1. After training the DT model with the best hyperparameters from Task 1, use this model to make
+predictions on the test data.
+2. Identify and print the indices of misclassiWied instances (where the true class is not equal to the
+predicted class).
+Task 3: Confusion Matrix
+1. Calculate the confusion matrix for the model’s predictions on the test data.
+2. Print the confusion matrix values (True Positives, True Negatives, False Positives, False
+Negatives).
+Note: The following Tasks 4 and 5 were not taught extensively in class for DTs. However, the
+concepts were covered in liner regression, so I’d like you to give these a try w.r.t. DTs.
+Task 4: Regression with DTs
+1. Load a dataset suitable for regression (e.g., the Boston housing dataset from scikit-learn).
+2. Split the dataset into training and testing sets.
+3. Implement a DT regression model.
+4. Train the model on the training data.
+5. Calculate and print the mean squared error (MSE) on the testing data to assess the model’s
+performance.
+Task 5: Metrics Comparison
+1. Compare the performance of the DT classiWier from Task 1 and the DT regression model from
+Task 4.
+2. Calculate and print relevant evaluation metrics for the classiWier (e.g., accuracy, precision, recall,
+F1-score) and the regression model (e.g., MSE).
+3. Discuss the results, including which model performed better and why.
+Submission
+Please submit your code and results in a well-documented colab. Although there are no points for this,
+write explanations for the results and any insights gained from the analysis.
+Part 2: Support Vector Machine (SVM) - Linear and w/ RBF Kernel.
+5pts. each task
+Please complete the following tasks to explore Linear Support Vector Machines (LSVM) and Support
+Vector Machines (SVM) with an RBF kernel. You can use Python and libraries such as scikit-learn to
+implement and demonstrate your work.
+2
+Task 1: Linear Support Vector Machine (LSVM)
+1. Load the Iris dataset.
+2. Split the data into training and testing sets.
+3. Implement a Linear Support Vector Machine (SVM) classiWier using scikit-learn.
+4. Train the LSVM model on the training data.
+5. Evaluate the LSVM model’s performance on the test data and report accuracy.
+Task 2: Support Vector Machine (SVM) with RBF Kernel
+1. Load the Iris dataset.
+2. Split the data into training and testing sets.
+3. Implement a Support Vector Machine (SVM) classiWier with an RBF kernel using scikit-learn.
+4. Train the SVM model with the RBF kernel on the training data.
+5. Evaluate the SVM model’s performance on the test data and report accuracy.
+Task 3: Hyperparameter Tuning for SVM with RBF Kernel
+1. Perform hyperparameter tuning for the SVM with an RBF kernel. Search for optimal values of
+hyperparameters such as C and γ using Random Search.
+2. Report the best hyperparameters for the SVM with the RBF kernel.
+3. Train a new SVM model with the best hyperparameters and evaluate its performance on the test
+data.
+Task 4: Metrics Comparison
+1. Calculate and compare relevant evaluation metrics (e.g., accuracy, precision, recall, F1-score) for
+the LSVM from Task 1 and the SVM with an RBF kernel from Task 2.
+2. Not graded: Discuss the differences in performance and characteristics between these models.
