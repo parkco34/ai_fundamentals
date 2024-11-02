@@ -1,35 +1,45 @@
 #!/usr/bin/env python
 """
-Part 1: Decision Trees (DT)- 4pts. each task
-To complete the following tasks on DTs, you can use Python and libraries such as scikit-learn to
-implement your code.
+------------------------
+Part 1: 
+Decision Trees (DT)
+------------------------
 Task 1: Hyperparameter Tuning (Random Search)
+========================
 1. Load the Iris dataset.
 2. Split the data into training and testing sets.
 3. Implement a DT classiWier.
-4. Perform a Random Search to Wind the best hyperparameters for the DT classiWier. Search for
+4. Perform a Random Search to find the best hyperparameters for the DT classiWier. Search for
 hyperparameters like max depth, min samples split, min samples leaf, and criterion. HInt: Use the
 RandomizedSearchCV function from scikit-learn.
 5. Print the best hyperparameters and the model’s accuracy with these hyperparameters.
+
 Task 2: Error Analysis
+========================
 1. After training the DT model with the best hyperparameters from Task 1, use this model to make
 predictions on the test data.
 2. Identify and print the indices of misclassiWied instances (where the true class is not equal to the
 predicted class).
+
 Task 3: Confusion Matrix
+========================
 1. Calculate the confusion matrix for the model’s predictions on the test data.
 2. Print the confusion matrix values (True Positives, True Negatives, False Positives, False
 Negatives).
 Note: The following Tasks 4 and 5 were not taught extensively in class for DTs. However, the
 concepts were covered in liner regression, so I’d like you to give these a try w.r.t. DTs.
+
 Task 4: Regression with DTs
+========================
 1. Load a dataset suitable for regression (e.g., the Boston housing dataset from scikit-learn).
 2. Split the dataset into training and testing sets.
 3. Implement a DT regression model.
 4. Train the model on the training data.
 5. Calculate and print the mean squared error (MSE) on the testing data to assess the model’s
 performance.
+
 Task 5: Metrics Comparison
+========================
 1. Compare the performance of the DT classiWier from Task 1 and the DT regression model from
 Task 4.
 2. Calculate and print relevant evaluation metrics for the classiWier (e.g., accuracy, precision, recall,
@@ -57,10 +67,11 @@ TEST_SIZE = 0.2
 np.random.seed(RANDOM_STATE)
 
 
+
 # Hyperparameters
 def define_params(max_depth=range(1, 21), min_samples_split=range(2, 21),
                   min_samples_leaf=range(1, 11),
-                  criteria="gini"):
+                  criterion=["gini", "entropy"]):
     """
     Defines parameter distribution for Random Search for the Decision Tree.
     ---------------------------------------------------------------
@@ -82,16 +93,20 @@ def define_params(max_depth=range(1, 21), min_samples_split=range(2, 21),
         - min of 1: Highest granularity (more detailed decision boundaries)
         - max of 10: 50 samples per class, where 10 ~ 20% of each class.
 
-    "criterion" -> 
+    "criterion" -> criteria=False (False: "gini", ,True: "entropy")
         Gini: Probability of incorrect classifications 
             - Computationally more efficient
             - Range between 0 and 1, isolating more frequent class in branch
         Entropy: Information needed to encode class distribution
             - Creates more balanced trees
             - Range between 0 and log2(n_classes)
+    ----------------------------------------------------------------
+    INPUT: Fill these in?
+        
+    OUTPUT:
     """
     return {"max_depth": max_depth, "min_samples_split": min_samples_split,
-            "min_samples_leaf": min_samples_leaf, "criterion": criteria}
+            "min_samples_leaf": min_samples_leaf, "criterion": criterion}
 
 # TASK 1: =======================================================
 # Load dataset
@@ -123,7 +138,10 @@ def load_split_data():
     # Hyperparameter grid setup +++++++++++++++++++++++++++++++++++++++
     # Split data
     X_cls_train, X_cls_test, y_cls_train, y_cls_test = train_test_split(X_cls,
-                                                                        y_cls, test_size=TEST_SIZE)
+                                                                        y_cls,
+                                                                        test_size=TEST_SIZE,
+                                                                        # Reproducibility
+                                                                       random_state=RANDOM_STATE)
 
     # Regression data
     california = fetch_california_housing()
@@ -139,7 +157,7 @@ def load_split_data():
 # Random Search
 def perform_random_search(X_train, y_train, params):
     """
-    Implements RandomizedSearchCV to find optimal parameters for a Deciosion
+    Implements RandomizedSearchCV to find optimal parameters for a Decision
     Tree Classifier, which is more efficient than GridSearchCV since samples
     random combinations rather than trying every possible combination.
     ------------------------------------------------------------
@@ -156,7 +174,7 @@ def perform_random_search(X_train, y_train, params):
     # Random Search
     random_search = RandomizedSearchCV(
         estimator=dt,
-        param_distributions=PARAMS,
+        param_distributions=params,
         n_iter=100, # For good coverage ?
         cv=5, # 5-fold cross-validation
         scoring="accuracy",
@@ -228,7 +246,7 @@ def analyze_classification_results(y_true, y_pred, class_names):
     plt.title("Confusion Matrix")
     plt.xlabel("Predicted")
     plt.ylabel("True")
-    plt.show()
+#    plt.show() ?
 
     return accuracy, precision, recall, f1
 
@@ -278,7 +296,7 @@ def train_evaluate_regression(X_train, X_test, y_train, y_test, feature_names):
     plt.xlabel("Actual Values")
     plt.ylabel("Predicted Values")
     plt.title("Actual vs Predicted Values (Regression)")
-    plt.show()
+#    plt.show() ?
 
     return (mse, rmse), dt_reg
 
@@ -346,7 +364,7 @@ def compare_models(cls_metrics, reg_metrics, cls_model, reg_model, iris,
     print("- RMSE provides error metric in same units as target variable")
     print("- Lower RMSE indicates better model performance")
 
-def analyze_best_model(X_train, y_train, params, iris):
+def analyze_best_model(X_train, y_train, iris, params):
     """
     Analyzes best model, outputting best parameters, cross-validatoin score,
     and model.
@@ -358,7 +376,7 @@ def analyze_best_model(X_train, y_train, params, iris):
     OUTPUT:
         best_model: ()
     """
-    random_search = perform_random_search(X_train, y_train, PARAMS)
+    random_search = perform_random_search(X_train, y_train, params)
     print("\nModel Analysis Results")
     print("-"*50)
     #Access parameters
@@ -516,7 +534,7 @@ def visualization(X_test, y_test, y_pred, misclassified_indices, iris):
     plt.title("Confusion Matrix")
     plt.xlabel("Predicted")
     plt.ylabel("True")
-    plt.show()
+#    plt.show() ?
 
     # Plot misclassified instances
     if len(misclassified_indices) > 0:
@@ -530,16 +548,17 @@ def visualization(X_test, y_test, y_pred, misclassified_indices, iris):
         plt.ylabel(iris.feature_names[1])
         plt.legend()
         plt.title("Misclassified Instances")
-        plt.show()
+#        plt.show() ?
 
 def main():
-    # Load split data
+    # Load split data and get hyperparameters
     (X_cls_train, X_cls_test, y_cls_train, y_cls_test, X_reg_train, X_reg_test,
     y_reg_train, y_reg_test, iris, california) = load_split_data()
+    params = define_params() # Using default values
 
     # Task 1: Best classification model ==============================
     # Classification analysis
-    best_cls_model = analyze_best_model(X_cls_train, y_cls_train, PARAMS, iris)
+    best_cls_model = analyze_best_model(X_cls_train, y_cls_train, iris, params)
 
     # Task 2: Error Analysis ============================== 
     misclassified_indices = error_analysis2(best_cls_model, X_cls_test, y_cls_test, iris)
@@ -564,6 +583,9 @@ def main():
 
     compare_models(cls_metrics, reg_metrics, best_cls_model, reg_model, iris,
                   california, X_reg_test, y_reg_test) 
+
+    # Experimentation ... DELETE ??
+    breakpoint()
 
 
 if __name__ == "__main__":
