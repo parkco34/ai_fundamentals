@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """
+Random Search for Hyper-Parameter Optimization
 ------------------------
 Part 1: 
 Decision Trees (DT)
@@ -74,6 +75,13 @@ def define_params(max_depth=range(1, 21), min_samples_split=range(2, 21),
                   criterion=["gini", "entropy"]):
     """
     Defines parameter distribution for Random Search for the Decision Tree.
+    parameter_distribution = {
+        n_estimators: [], # Number of trees
+        max_features: [], # Number of features to consider for best split
+        max_depth: [], # Minimum samples required to split node
+        min_samples_split: [], # Minumum samples required at each leaf node
+        
+    }
     ---------------------------------------------------------------
     "max_depth" -> Determine show deep the tree goes, with Noen meaning
     there's no limit.  The smaller the value, the simpler the tree; less
