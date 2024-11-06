@@ -37,4 +37,3 @@ x = {(i, j): LpVariable(f"x_{i}_{j}", lowBound=0, cat="Continuous") for i in
 
 
 
-

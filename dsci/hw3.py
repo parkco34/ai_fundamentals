@@ -109,9 +109,14 @@ def define_params(max_depth=range(1, 21), min_samples_split=range(2, 21),
             - Creates more balanced trees
             - Range between 0 and log2(n_classes)
     ----------------------------------------------------------------
-    INPUT: Fill these in?
+    INPUT:  
+        max_depth: (list)
+        min_samples_split: (list)
+        min_samples_leaf: (list)
+        criterion: (list) Gini (default) or Entropy
         
-    OUTPUT:
+    OUTPUT: 
+        params: (dict) 
     """
     return {"max_depth": max_depth, "min_samples_split": min_samples_split,
             "min_samples_leaf": min_samples_leaf, "criterion": criterion}
@@ -174,13 +179,14 @@ def perform_random_search(X_train, y_train, params):
         y_train: (np.ndarray) Training labels
         params: (dict) Hyperparameters
 
-    OUTPUT: 
+    OUTPUT: ()
     """
     # Initializae base classifier
     dt = DecisionTreeClassifier(random_state=RANDOM_STATE)
     
     # Random Search
     random_search = RandomizedSearchCV(
+        # Model and hyperparameter space
         estimator=dt,
         param_distributions=params,
         n_iter=100, # For good coverage ?
@@ -558,43 +564,56 @@ def visualization(X_test, y_test, y_pred, misclassified_indices, iris):
         plt.title("Misclassified Instances")
 #        plt.show() ?
 
-def main():
-    # Load split data and get hyperparameters
-    (X_cls_train, X_cls_test, y_cls_train, y_cls_test, X_reg_train, X_reg_test,
-    y_reg_train, y_reg_test, iris, california) = load_split_data()
-    params = define_params() # Using default values
-
-    # Task 1: Best classification model ==============================
-    # Classification analysis
-    best_cls_model = analyze_best_model(X_cls_train, y_cls_train, iris, params)
-
-    # Task 2: Error Analysis ============================== 
-    misclassified_indices = error_analysis2(best_cls_model, X_cls_test, y_cls_test, iris)
-
-    # Task 3: Confusion Matrix ==============================
-    cls_prediction = best_cls_model.predict(X_cls_test)
-    cls_metrics = analyze_classification_results(y_cls_test, cls_prediction,
-                                                 iris.target_names)
-
-    # Task 4: Train/evaluate regression model==============================
-    reg_metrics, reg_model = train_evaluate_regression(X_reg_train, X_reg_test,
-                                                      y_reg_train, y_reg_test,
-                                                      california.feature_names)
-    
-    # Task 5: Compare Models ==============================
-    cls_metrics = (
-        accuracy_score(y_cls_test, cls_prediction),
-        precision_score(y_cls_test, cls_prediction, average="weighted"),
-        recall_score(y_cls_test, cls_prediction, average="weighted"),
-        f1_score(y_cls_test, cls_prediction, average="weighted")
-    )
-
-    compare_models(cls_metrics, reg_metrics, best_cls_model, reg_model, iris,
-                  california, X_reg_test, y_reg_test) 
-
-    # Experimentation ... DELETE ??
-    breakpoint()
 
 
-if __name__ == "__main__":
-    main()
+iris = load_iris()
+X_cls, y_cls = iris.data, iris.target
+X_cls_train, X_cls_test, y_cls_train, y_cls_test = train_test_split(X_cls, y_cls,
+        test_size=TEST_SIZE,
+        # Reproducibility
+        random_state=RANDOM_STATE)
+
+params = define_params()
+rs = perform_random_search(X_cls_train, y_cls_train, params)
+breakpoint()
+
+#def main():
+#    # Load split data and get hyperparameters
+#    (X_cls_train, X_cls_test, y_cls_train, y_cls_test, X_reg_train, X_reg_test,
+#    y_reg_train, y_reg_test, iris, california) = load_split_data()
+#    params = define_params() # Using default values
+#
+#    # Task 1: Best classification model ==============================
+#    # Classification analysis
+#    best_cls_model = analyze_best_model(X_cls_train, y_cls_train, iris, params)
+#
+#    # Task 2: Error Analysis ============================== 
+#    misclassified_indices = error_analysis2(best_cls_model, X_cls_test, y_cls_test, iris)
+#
+#    # Task 3: Confusion Matrix ==============================
+#    cls_prediction = best_cls_model.predict(X_cls_test)
+#    cls_metrics = analyze_classification_results(y_cls_test, cls_prediction,
+#                                                 iris.target_names)
+#
+#    # Task 4: Train/evaluate regression model==============================
+#    reg_metrics, reg_model = train_evaluate_regression(X_reg_train, X_reg_test,
+#                                                      y_reg_train, y_reg_test,
+#                                                      california.feature_names)
+#    
+#    # Task 5: Compare Models ==============================
+#    cls_metrics = (
+#        accuracy_score(y_cls_test, cls_prediction),
+#        precision_score(y_cls_test, cls_prediction, average="weighted"),
+#        recall_score(y_cls_test, cls_prediction, average="weighted"),
+#        f1_score(y_cls_test, cls_prediction, average="weighted")
+#    )
+#
+#    compare_models(cls_metrics, reg_metrics, best_cls_model, reg_model, iris,
+#                  california, X_reg_test, y_reg_test) 
+#
+#    # Experimentation ... DELETE ??
+#    breakpoint()
+#
+#
+#if __name__ == "__main__":
+#    main()
