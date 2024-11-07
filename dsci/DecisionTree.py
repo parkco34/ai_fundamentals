@@ -2,6 +2,19 @@
 from collections import Counter
 from math import log2
 
+def get_unique_values(feature):
+    """
+    Gets the unique values of feature while preserving the order.
+    -------------------------------------------------------------
+    INPUT:
+        feature: (list)
+
+    OUTPUT:
+        unique_values: (list)
+    """
+    return list(dict.fromkeys(feature))
+
+
 class Node:
     """
     Node class for decision  tree
@@ -80,8 +93,18 @@ class DecisionTree:
     def best_split(self, X, y):
         """
         Finds best split for node by going through all unique feature values,
-        using them as thresholds.  For each feature, for each threshold, the
-        data is split into right and left branches, where we'll 
+        using them as thresholds.  For each feature, for each threshold value, the
+        data is split into right and left branches.  The impurity is then
+        calculated between parent and the two child nodes.  Following this, the
+        information gain is determined how much the impurity is reduced from
+        the split, where we keep track of the best information gain.
+        -----------------------------------------------------------
+        INPUT:
+            X: (list) Training data
+            y: (list) Target labels
+
+        OUTPUT:
+            best_feature, best_threshold: (tuple of floats) 
         """
         best_gain = -1
         best_feature, best_threshold = None, None
@@ -114,6 +137,51 @@ class DecisionTree:
                         best_threshold = threshold
 
         return best_feature, best_threshold
+
+    def build_tree(self, X, y, depth):
+        """
+        Recursively builds tree.
+        --------------------------------------------------------
+        INPUT:
+
+        OUTPUT:
+
+        """
+        # Get shape values for iteration and classes
+        n_samples, n_features = len(X), len(X[0])
+        n_classes = len(get_unique_values(y))
+
+        # Create a leaf node if stopping criteria are met
+        if (
+            self.max_depth is not None 
+            and depth >= self.max_depth 
+            or n_samples < self.min_samples_split 
+            or n_samples < 2 * self.min_samples_leaf
+            or n_classes == 1
+        ):
+            
+            return leaf
+        
+        # Find best split
+        best_feature, best_threshold = self.best_split(X, y)
+
+        # If no valid split found, create a leaf node
+        if best_feature is None:
+            leaf = Node()
+            leaf.is_leaf = True
+            leaf.value = Counter(y).most_common(1)[0][0]
+
+            return leaf
+
+        # Split data
+        left_mask = X[:, best_feature] <= best_threshold
+        right_mask = ~left_mask
+
+        # REcusively build left and right subtrees
+        node.left = self.build_tree(X[lef_mask], y[left_mask], depth+1)
+        node.right = self.build_tree(X[right_mask], y[right_mask], depth+1)
+
+        return node
 
     def fit(self, X, y):
         """
