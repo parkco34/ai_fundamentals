@@ -17,9 +17,9 @@ class Node:
 class DecisionTree:
 
     def __init__(
-        self, 
-        max_depth=None, 
-        min_samples_split=2, 
+        self,
+        max_depth=None,
+        min_samples_split=2,
         min_samples_leaf=1,
         criterion="gini"
     ):
@@ -43,7 +43,7 @@ class DecisionTree:
         # Class Probabilities
         counter = Counter(y)
         probabilities = [count / len(y) for count in counter.values()]
-       
+
         if self.criterion == "gini":
             # Gini Impurity
             return 1 - sum(p**2 for p in probabilities)
@@ -57,7 +57,7 @@ class DecisionTree:
         Calculates information gain for a split
         --------------------------------------------
         INPUT:
-            parent: (list) 
+            parent: (list)
             left_child: (list)
             right_child: (list)
 
@@ -83,13 +83,37 @@ class DecisionTree:
         using them as thresholds.  For each feature, for each threshold, the
         data is split into right and left branches, where we'll 
         """
+        best_gain = -1
+        best_feature, best_threshold = None, None
+
         if isinstance(X, list):
-            # Correspomding rows and columns
+            # Corresponding rows and columns
             n_samples, n_features = len(X), len(X[0])
 
             for feature in range(n_features):
                 # Get unique values for feature
+                thresholds = np.unique(X[:, feature])
 
+                for threshold in thresholds:
+                    # Split data
+                    left_mask = X[:, feature] <= threshold
+                    right_mask = ~left_mask
+
+                    # Skip if split doesn't meet min samples
+                    if (sum(left_mask) < self.min_samples_leaf or
+                    sum(right_mask) < self.min_samples_leaf):
+                        continue
+
+                    # Calculate information gain
+                    gain = self.info_gain(y, y[left_mask], y[right_mask])
+
+                    # update best split
+                    if gain > best_gain:
+                        best_gain = gain
+                        best_feature = feature
+                        best_threshold = threshold
+
+        return best_feature, best_threshold
 
     def fit(self, X, y):
         """
@@ -120,10 +144,12 @@ class DecisionTree:
         Calculate gini impurity.
         ---------------------------------------------
         INPUT:
-            y: 
+            y:
 
         OUTPUT:
 
         """
         pass
+
+
 
