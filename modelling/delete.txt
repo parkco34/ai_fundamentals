@@ -1,0 +1,321 @@
+USER               PID  %CPU %MEM      VSZ    RSS   TT  STAT STARTED      TIME COMMAND
+whitney            661  94.6  6.3 436809440 528080   ??  S     4:37PM 380:52.31 /Applications/Firefox.app/Contents/MacOS/firefox
+root             13893  82.4  0.5 426956544  43440   ??  Rs   11:42AM   0:01.34 /usr/libexec/mobileassetd
+whitney            860  60.6  3.6 413079456 300304   ??  R     4:37PM 265:32.20 /Applications/Firefox.app/Contents/MacOS/plugin-container.app/Contents/MacOS/plugin-container -isForBrowser -prefsLen 49405 -prefMapSize 267433 -jsInitLen 234660 -sbStartup -sbAppPath /Applications/Firefox.app -sbLevel 3 -parentBuildID 20241103194048 -greomni /Applications/Firefox.app/Contents/Resources/omni.ja -appomni /Applications/Firefox.app/Contents/Resources/browser/omni.ja -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/whitney/Library/Application Support/Firefox/Profiles/5af7kewk.default-release {9b1bcba3-2f64-4908-9c00-47ec8e5748d3} 661 gecko-crash-server-pipe.661 org.mozilla.machname.1508745350 3 tab
+root               524  19.4  0.1 426969360   9312   ??  Us    4:37PM   0:09.98 /usr/libexec/storagekitd
+root             13901  18.3  0.1 426918432   5776   ??  Ss   11:42AM   0:00.19 /System/Library/PrivateFrameworks/MobileSoftwareUpdate.framework/Versions/A/XPCServices/com.apple.MobileSoftwareUpdate.CleanupPreparePathService.xpc/Contents/MacOS/com.apple.MobileSoftwareUpdate.CleanupPreparePathService
+root             13904  11.9  0.1 426914400   5792   ??  Us   11:42AM   0:00.05 /System/Library/CoreServices/TimeMachine/backupd-helper -launchd
+_softwareupdate  13895   8.7  0.2 426952464  15552   ??  Ss   11:42AM   0:00.32 /System/Library/CoreServices/Software Update.app/Contents/Resources/softwareupdated
+_softwareupdate  13899   8.6  0.2 426952480  12880   ??  Ss   11:42AM   0:00.19 /System/Library/PrivateFrameworks/MobileSoftwareUpdate.framework/Support/softwareupdated
+whitney           1793   7.8  0.9 412298656  78608   ??  R     4:39PM  11:55.46 /Users/whitney/Applications/iTerm.app/Contents/MacOS/iTerm2
+whitney            677   7.1  0.3 412016688  27584   ??  S     4:37PM   0:26.86 /System/Library/CoreServices/Finder.app/Contents/MacOS/Finder
+root             13905   6.8  0.0 410600864   2928   ??  U    11:42AM   0:00.04 /sbin/mount_apfs -o nobrowse -n /dev/disk3s1 /System/Volumes/Update/mnt1
+root               357   6.6  0.1 426948432   5440   ??  Ss    4:37PM   0:07.20 /usr/libexec/diskarbitrationd
+root               331   5.7  0.1 426923328   5424   ??  Ss    4:37PM   0:36.32 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/FSEvents.framework/Versions/A/Support/fseventsd
+root               567   5.3  0.4 417021984  34512   ??  Rs    4:37PM  23:53.61 /System/Library/Frameworks/CoreServices.framework/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+root               354   4.1  0.2 427002528  18928   ??  Ss    4:37PM   9:50.28 /System/Library/Frameworks/CoreServices.framework/Frameworks/Metadata.framework/Support/mds
+root                 1   3.9  0.2 426853088  13952   ??  Ss    4:37PM   1:51.26 /sbin/launchd
+whitney           9461   2.8  0.6 1624189664  49760   ??  S     8:20AM   3:48.62 /Applications/Spotify.app/Contents/Frameworks/Spotify Helper (Renderer).app/Contents/MacOS/Spotify Helper (Renderer) --type=renderer --string-annotations --start-stack-profiler --user-data-dir=/Users/whitney/Library/Caches/com.spotify.client --log-severity=disable --user-agent-product=Chrome/129.0.6668.90 Spotify/1.2.49.439 --autoplay-policy=no-user-gesture-required --lang=en --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=7 --time-ticks-at-unix-epoch=-1731060013338538 --launch-time-ticks=12020487667 --shared-files --field-trial-handle=1718379636,r,6877780368178570082,1802971610453177551,262144 --disable-features=BackForwardCache,PartitionAllocDanglingPtr,PartitionAllocUnretainedDanglingPtr --variations-seed-version --seatbelt-client=156
+root             13900   2.2  0.1 426950544   9808   ??  Ss   11:42AM   0:00.06 /System/Library/CoreServices/ManagedClient.app/Contents/MacOS/ManagedClient
+root               365   1.9  0.1 426955360   9104   ??  Ss    4:37PM   1:05.15 /usr/libexec/opendirectoryd
+root             13898   1.7  0.1 426953088  11328   ??  Ss   11:42AM   0:00.07 /usr/libexec/mdmclient daemon
+root               327   1.5  0.1 426998752  11888   ??  Ss    4:37PM   1:16.82 /usr/libexec/logd
+root               425   1.4  0.1 426951792   7296   ??  Ss    4:37PM   0:03.06 /System/Library/Frameworks/Security.framework/Versions/A/XPCServices/authd.xpc/Contents/MacOS/authd
+_windowserver      397   1.4  0.5 412963840  40480   ??  Rs    4:37PM  19:22.25 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer -daemon
+whitney          13897   1.3  0.2 426956080  14752   ??  S    11:42AM   0:00.09 /usr/libexec/neagent
+root             13902   1.2  0.0 426912704   2992   ??  Ss   11:42AM   0:00.03 /usr/libexec/smd
+root               367   1.2  0.2 427030016  12592   ??  Ss    4:37PM   0:11.65 /System/Library/PrivateFrameworks/ApplePushService.framework/apsd
+root             13894   1.2  0.1 426951072   8000   ??  Ss   11:42AM   0:00.14 /usr/libexec/nesessionmanager
+root               399   1.0  0.1 426917632   4576   ??  Ss    4:37PM   0:26.59 /usr/sbin/cfprefsd daemon
+whitney            621   0.9  0.1 426977488  12496   ??  S     4:37PM   1:47.21 /System/Library/PrivateFrameworks/FileProvider.framework/Support/fileproviderd
+root               406   0.9  0.1 426934176   5696   ??  Ss    4:37PM   0:02.47 /System/Library/CoreServices/coreservicesd
+whitney          13149   0.9  0.2 411248400  18224   ??  S    11:26AM   0:02.03 /System/Library/CoreServices/Siri.app/Contents/MacOS/Siri launchd
+root               385   0.9  0.1 426951024   5504   ??  Ss    4:37PM   0:00.47 /System/Library/PrivateFrameworks/GenerationalStorage.framework/Versions/A/Support/revisiond
+whitney            670   0.9  0.1 426951472   6752   ??  S     4:37PM   0:00.95 /System/Library/CoreServices/sharedfilelistd
+_trustd           1357   0.8  0.1 426954768   8784   ??  Ss    4:37PM   0:26.72 /usr/libexec/trustd
+whitney            723   0.7  0.1 410694256   6624   ??  S     4:37PM   0:00.60 /System/Library/Frameworks/InputMethodKit.framework/Resources/imklaunchagent
+root               390   0.6  0.0 426911712   2928   ??  Ss    4:37PM   0:18.90 /usr/sbin/notifyd
+whitney            843   0.6  0.1 411552096  10320   ??  S     4:37PM   0:01.50 /System/Library/CoreServices/TextInputMenuAgent.app/Contents/MacOS/TextInputMenuAgent
+root             13836   0.6  0.1 426945552   6576   ??  Ss   11:41AM   0:00.12 /usr/libexec/nehelper
+root               440   0.6  0.0 426915696   3360   ??  Ss    4:37PM   2:43.44 /usr/libexec/apfsd
+whitney            672   0.6  0.1 426949968   5984   ??  S     4:37PM   0:02.23 /System/Library/Frameworks/ApplicationServices.framework/Frameworks/ATS.framework/Support/fontd
+root             13896   0.6  0.1 426950560   7024   ??  Ss   11:42AM   0:00.08 /System/Library/Frameworks/SystemExtensions.framework/Versions/A/Helpers/sysextd
+whitney          13210   0.5  0.2 427106208  17344   ??  S    11:28AM   0:00.17 /System/Library/CoreServices/CoreLocationAgent.app/Contents/MacOS/CoreLocationAgent
+whitney            834   0.4  0.0 426944480   3648   ??  S     4:37PM   0:00.16 /System/Library/Image Capture/Support/icdd
+whitney            400   0.4  0.2 412007312  13920   ??  Ss    4:37PM   0:18.67 /System/Library/CoreServices/loginwindow.app/Contents/MacOS/loginwindow console
+root               681   0.4  0.1 426927952   9504   ??  Ss    4:37PM   0:08.86 /usr/sbin/filecoordinationd
+postgres          4169   0.4  0.1 426960208   5792   ??  S     4:55PM   0:00.50 /usr/libexec/lsd
+_locationd         373   0.4  0.2 426982960  18096   ??  Ss    4:37PM   1:10.59 /usr/libexec/locationd
+whitney            639   0.4  0.2 427350224  16256   ??  S     4:37PM   0:30.70 /usr/libexec/sharingd
+whitney            674   0.3  0.1 411420368   9856   ??  S     4:37PM   0:01.87 /System/Library/CoreServices/SystemUIServer.app/Contents/MacOS/SystemUIServer
+root               376   0.3  0.0 426912592   2432   ??  Ss    4:37PM   0:00.10 autofsd
+whitney          11083   0.3  0.1 427095968  11280   ??  S    10:29AM   0:00.42 /System/Library/PrivateFrameworks/CommerceKit.framework/Versions/A/Resources/storeuid.app/Contents/MacOS/storeuid
+root               329   0.3  0.1 426951920   9280   ??  Ss    4:37PM   0:06.83 /usr/libexec/UserEventAgent (System)
+whitney            732   0.3  0.2 426957216  17264   ??  S     4:37PM   0:08.12 /System/Library/PrivateFrameworks/IMCore.framework/imagent.app/Contents/MacOS/imagent
+_distnote          380   0.2  0.0 426916096   2960   ??  Ss    4:37PM   0:05.07 /usr/sbin/distnoted daemon
+root               403   0.2  0.2 426959504  13232   ??  Ss    4:37PM   0:04.54 /usr/libexec/lsd runAsRoot
+root               536   0.2  0.0 426919904   4032   ??  Ss    4:37PM   0:00.17 /System/Library/CoreServices/Software Update.app/Contents/Resources/suhelperd
+whitney           9014   0.2  0.2 426979360  17152   ??  S     9:58PM   0:11.70 /usr/libexec/searchpartyuseragent
+whitney            580   0.2  0.2 411783568  16512   ??  R     4:37PM   0:33.16 /System/Library/CoreServices/WindowManager.app/Contents/MacOS/WindowManager
+whitney           9456   0.1  0.2 444808336  16416   ??  S     8:20AM   0:05.59 /Applications/Spotify.app/Contents/Frameworks/Spotify Helper (GPU).app/Contents/MacOS/Spotify Helper (GPU) --type=gpu-process --string-annotations --start-stack-profiler --user-data-dir=/Users/whitney/Library/Caches/com.spotify.client --log-severity=disable --user-agent-product=Chrome/129.0.6668.90 Spotify/1.2.49.439 --gpu-preferences=UAAAAAAAAAAgAAAEAAAAAAAAAAAAAAAAAABgAAEAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAIAAAAAAAAAAgAAAAAAAAA --shared-files --field-trial-handle=1718379636,r,6877780368178570082,1802971610453177551,262144 --disable-features=BackForwardCache,PartitionAllocDanglingPtr,PartitionAllocUnretainedDanglingPtr --variations-seed-version --seatbelt-client=18
+root               350   0.1  0.0 426912688   2320   ??  Ss    4:37PM   0:00.67 /usr/libexec/watchdogd
+whitney          11403   0.1  0.7 415381312  60688   ??  S    10:37AM   1:32.53 /Applications/Microsoft Excel.app/Contents/MacOS/Microsoft Excel
+root               386   0.1  0.0 426912608   1600   ??  Ss    4:37PM   0:00.08 /usr/sbin/KernelEventAgent
+whitney          12113   0.1  0.0 426916256   3616   ??  S    10:58AM   0:03.34 /System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/XPCServices/com.apple.hiservices-xpcservice.xpc/Contents/MacOS/com.apple.hiservices-xpcservice
+whitney            563   0.1  0.0 426916096   3616   ??  S     4:37PM   0:09.08 /usr/sbin/distnoted agent
+whitney            585   0.1  0.1 426960768  10800   ??  S     4:37PM   0:07.42 /usr/libexec/lsd
+whitney            671   0.1  0.2 411832144  17872   ??  S     4:37PM   0:08.85 /System/Library/CoreServices/Dock.app/Contents/MacOS/Dock
+whitney          11787   0.0  0.1 426957200  10176   ??  S    10:48AM   0:00.80 /System/Library/PrivateFrameworks/StatusKit.framework/StatusKitAgent
+whitney          11727   0.0  0.1 411735248   5440 s002  S+   10:47AM   0:05.02 vim petroleum.py
+whitney          11679   0.0  0.1 426959632   8224   ??  S    10:47AM   0:04.92 /System/Library/PrivateFrameworks/TCC.framework/Support/tccd
+whitney          11416   0.0  0.1 427180800   7664   ??  Ss   10:37AM   0:00.23 /System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.Networking.xpc/Contents/MacOS/com.apple.WebKit.Networking
+whitney          11413   0.0  0.0 499042400   1136   ??  Ss   10:37AM   0:01.41 /System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.WebContent.xpc/Contents/MacOS/com.apple.WebKit.WebContent
+whitney          11412   0.0  0.1 427270848   7664   ??  Ss   10:37AM   0:00.89 /System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.GPU.xpc/Contents/MacOS/com.apple.WebKit.GPU
+whitney          11394   0.0  0.7 412845184  56064   ??  S    10:37AM   0:05.70 /Applications/Firefox.app/Contents/MacOS/plugin-container.app/Contents/MacOS/plugin-container -isForBrowser -prefsLen 39816 -prefMapSize 267433 -jsInitLen 234660 -sbStartup -sbAppPath /Applications/Firefox.app -sbLevel 3 -parentBuildID 20241103194048 -greomni /Applications/Firefox.app/Contents/Resources/omni.ja -appomni /Applications/Firefox.app/Contents/Resources/browser/omni.ja -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/whitney/Library/Application Support/Firefox/Profiles/5af7kewk.default-release {455d3e1b-0611-4830-af7b-3caec7592764} 661 gecko-crash-server-pipe.661 org.mozilla.machname.919791747 97 tab
+whitney          11131   0.0  0.1 426960768  11888   ??  S    10:30AM   0:01.16 /System/Library/PrivateFrameworks/PassKitCore.framework/passd
+whitney          11074   0.0  0.1 431346720   9824   ??  S    10:29AM   0:01.52 /System/Library/PrivateFrameworks/AppStoreComponents.framework/Support/appstorecomponentsd
+whitney          10719   0.0  1.3 413103552 111440   ??  S    10:20AM   0:12.57 /Applications/Firefox.app/Contents/MacOS/plugin-container.app/Contents/MacOS/plugin-container -isForBrowser -prefsLen 39816 -prefMapSize 267433 -jsInitLen 234660 -sbStartup -sbAppPath /Applications/Firefox.app -sbLevel 3 -parentBuildID 20241103194048 -greomni /Applications/Firefox.app/Contents/Resources/omni.ja -appomni /Applications/Firefox.app/Contents/Resources/browser/omni.ja -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/whitney/Library/Application Support/Firefox/Profiles/5af7kewk.default-release {d1325128-eef6-4f8f-9f9b-1c82f0029a87} 661 gecko-crash-server-pipe.661 org.mozilla.machname.1584472486 91 tab
+root             10537   0.0  0.1 426949888   6736   ??  Ss   10:07AM   0:02.34 /usr/libexec/audioanalyticsd
+whitney           9936   0.0  0.5 412899552  44928   ??  S     9:16AM   0:04.54 /Applications/Firefox.app/Contents/MacOS/plugin-container.app/Contents/MacOS/plugin-container -isForBrowser -prefsLen 39816 -prefMapSize 267433 -jsInitLen 234660 -sbStartup -sbAppPath /Applications/Firefox.app -sbLevel 3 -parentBuildID 20241103194048 -greomni /Applications/Firefox.app/Contents/Resources/omni.ja -appomni /Applications/Firefox.app/Contents/Resources/browser/omni.ja -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/whitney/Library/Application Support/Firefox/Profiles/5af7kewk.default-release {1815a185-92fb-4e04-9795-c3a4d5cc58bf} 661 gecko-crash-server-pipe.661 org.mozilla.machname.1219130348 84 tab
+whitney           9818   0.0  0.3 411964752  24160   ??  S     8:50AM   0:02.85 /System/Applications/Stocks.app/Contents/MacOS/Stocks
+whitney           9471   0.0  0.1 478633360   6784   ??  S     8:20AM   0:01.15 /Applications/Spotify.app/Contents/Frameworks/Spotify Helper.app/Contents/MacOS/Spotify Helper --type=utility --utility-sub-type=media.mojom.CdmServiceBroker --lang=en --service-sandbox-type=cdm --use-mock-keychain --string-annotations --user-data-dir=/Users/whitney/Library/Caches/com.spotify.client --log-severity=disable --user-agent-product=Chrome/129.0.6668.90 Spotify/1.2.49.439 --shared-files --field-trial-handle=1718379636,r,6877780368178570082,1802971610453177551,262144 --disable-features=BackForwardCache,PartitionAllocDanglingPtr,PartitionAllocUnretainedDanglingPtr --variations-seed-version --seatbelt-client=144
+whitney           9467   0.0  0.1 444749888  10192   ??  S     8:20AM   0:01.25 /Applications/Spotify.app/Contents/Frameworks/Spotify Helper.app/Contents/MacOS/Spotify Helper --type=utility --utility-sub-type=audio.mojom.AudioService --lang=en --service-sandbox-type=audio --use-mock-keychain --message-loop-type-ui --string-annotations --user-data-dir=/Users/whitney/Library/Caches/com.spotify.client --log-severity=disable --user-agent-product=Chrome/129.0.6668.90 Spotify/1.2.49.439 --shared-files --field-trial-handle=1718379636,r,6877780368178570082,1802971610453177551,262144 --disable-features=BackForwardCache,PartitionAllocDanglingPtr,PartitionAllocUnretainedDanglingPtr --variations-seed-version --seatbelt-client=138
+whitney           9459   0.0  0.1 444632816   8208   ??  S     8:20AM   0:00.70 /Applications/Spotify.app/Contents/Frameworks/Spotify Helper.app/Contents/MacOS/Spotify Helper --type=utility --utility-sub-type=storage.mojom.StorageService --lang=en --service-sandbox-type=service --use-mock-keychain --string-annotations --user-data-dir=/Users/whitney/Library/Caches/com.spotify.client --log-severity=disable --user-agent-product=Chrome/129.0.6668.90 Spotify/1.2.49.439 --shared-files --field-trial-handle=1718379636,r,6877780368178570082,1802971610453177551,262144 --disable-features=BackForwardCache,PartitionAllocDanglingPtr,PartitionAllocUnretainedDanglingPtr --variations-seed-version --seatbelt-client=32
+whitney           9457   0.0  0.3 444672448  22464   ??  S     8:20AM   0:06.30 /Applications/Spotify.app/Contents/Frameworks/Spotify Helper.app/Contents/MacOS/Spotify Helper --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en --service-sandbox-type=network --use-mock-keychain --string-annotations --start-stack-profiler --user-data-dir=/Users/whitney/Library/Caches/com.spotify.client --log-severity=disable --user-agent-product=Chrome/129.0.6668.90 Spotify/1.2.49.439 --shared-files --field-trial-handle=1718379636,r,6877780368178570082,1802971610453177551,262144 --disable-features=BackForwardCache,PartitionAllocDanglingPtr,PartitionAllocUnretainedDanglingPtr --variations-seed-version --seatbelt-client=29
+whitney           9453   0.0  0.0 444494592   3104   ??  S     8:20AM   0:00.07 /Applications/Spotify.app/Contents/Frameworks/Spotify Helper.app/Contents/MacOS/Spotify Helper --monitor-self-annotation=ptype=crashpad-handler --type=crashpad-handler --max-uploads=5 --max-db-size=20 --max-db-age=5 --database=/Users/whitney/Library/Caches/com.spotify.client --url=https://crashdump.spotify.com:443/ --annotation=platform=macosarm64 --annotation=product=spotify --annotation=version=1.2.49.439 --handshake-fd=6
+whitney           9451   0.0  1.0 445385904  83408   ??  S     8:20AM   2:26.02 /Applications/Spotify.app/Contents/MacOS/Spotify
+root              9447   0.0  0.1 426953056   6176   ??  Ss    8:20AM   0:00.10 /System/Library/PrivateFrameworks/CoreAccessories.framework/Support/accessoryd
+whitney           9446   0.0  0.1 426911936   4304   ??  S     8:20AM   0:00.39 /usr/sbin/BTLEServerAgent
+whitney           9339   0.0  0.1 426960464  11088   ??  S     8:17AM   0:01.39 /usr/libexec/tipsd
+_netbios          9282   0.0  0.0 426916544   3168   ??  SNs   8:16AM   0:00.24 /usr/sbin/netbiosd
+whitney           9139   0.0  0.5 412807776  43904   ??  S    12:43AM   0:01.67 /Applications/Firefox.app/Contents/MacOS/plugin-container.app/Contents/MacOS/plugin-container -isForBrowser -prefsLen 39753 -prefMapSize 267433 -jsInitLen 234660 -sbStartup -sbAppPath /Applications/Firefox.app -sbLevel 3 -parentBuildID 20241103194048 -greomni /Applications/Firefox.app/Contents/Resources/omni.ja -appomni /Applications/Firefox.app/Contents/Resources/browser/omni.ja -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/whitney/Library/Application Support/Firefox/Profiles/5af7kewk.default-release {5cb5675d-cd0f-4f12-85aa-a1de5a081c2f} 661 gecko-crash-server-pipe.661 org.mozilla.machname.1977823308 73 tab
+whitney           9110   0.0  0.2 426962048  13488   ??  S    11:15PM   0:06.59 /System/Library/PrivateFrameworks/HearingCore.framework/heard
+whitney           8956   0.0  0.1 426958656  11600   ??  S     9:55PM   0:02.88 /System/Library/PrivateFrameworks/People.framework/peopled
+whitney           8930   0.0  0.3 427159776  26848   ??  S     9:54PM   0:06.93 /System/Library/Services/AppleSpell.service/Contents/MacOS/AppleSpell
+_audiomxd         8649   0.0  0.1 426882160   5328   ??  Ss    9:49PM   0:00.35 /usr/libexec/audiomxd
+_neuralengine     8053   0.0  0.0 426916096   1680   ??  S     8:46PM   0:00.53 /usr/sbin/distnoted agent
+whitney           7910   0.0  0.1 426955440  10144   ??  S     8:44PM   0:04.26 /System/Library/PrivateFrameworks/CoreParsec.framework/parsecd
+root              7902   0.0  0.0 426914064   1200   ??  Ss    8:44PM   0:00.13 /usr/libexec/mmaintenanced
+root              7756   0.0  0.2 426953552  12784   ??  Ss    8:12PM   1:10.83 /usr/libexec/PerfPowerServices
+whitney           7729   0.0  0.1 426958480   7808   ??  S     8:12PM   0:04.38 /System/Library/PrivateFrameworks/CloudDocsDaemon.framework/Versions/A/Support/bird
+whitney           7682   0.0  0.2 426998160  20320   ??  S     8:12PM   0:18.29 /System/Library/Frameworks/Accounts.framework/Versions/A/Support/accountsd
+whitney           7500   0.0  0.1 427007792   6912   ??  S     7:55PM   0:01.16 /System/Library/CoreServices/PowerChime.app/Contents/MacOS/PowerChime
+nobody            7097   0.0  0.0 426916096   1664   ??  S     6:08PM   0:00.60 /usr/sbin/distnoted agent
+whitney           7020   0.0  0.1 426948368   5616   ??  S     5:23PM   0:00.22 /System/Library/PrivateFrameworks/IMDPersistence.framework/IMAutomaticHistoryDeletionAgent.app/Contents/MacOS/IMAutomaticHistoryDeletionAgent
+root              5159   0.0  0.0 426912080   2784   ??  Ss    4:59PM   0:00.05 /System/Library/CoreServices/Applications/Feedback Assistant.app/Contents/Library/LaunchServices/fbahelperd
+postgres          4162   0.0  0.1 426959824   5424   ??  SN    4:55PM   0:00.98 /System/Library/Frameworks/CoreServices.framework/Frameworks/Metadata.framework/Versions/A/Support/mdbulkimport -s mdworker-bundle -c MDSImporterBundleFinder -m com.apple.metadata.mdbulkimport
+postgres          4161   0.0  0.0 426916096   1856   ??  S     4:55PM   0:00.79 /usr/sbin/distnoted agent
+whitney           4153   0.0  0.0 426949216   2848   ??  S     4:55PM   0:00.15 /System/Library/Frameworks/CoreServices.framework/Frameworks/Metadata.framework/Versions/A/Support/mdwrite
+whitney           3367   0.0  0.1 426913136   4704   ??  S     4:48PM   0:00.13 /usr/libexec/seserviced
+whitney           3054   0.0  0.1 410375120  12544   ??  S     4:43PM   0:00.69 /Applications/Firefox.app/Contents/MacOS/plugin-container.app/Contents/MacOS/plugin-container -parentBuildID 20241103194048 -prefsLen 49977 -prefMapSize 267433 -sbStartup -sbAppPath /Applications/Firefox.app -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/whitney/Library/Application Support/Firefox/Profiles/5af7kewk.default-release {1e610d4d-6931-4b1c-917d-51927928c97c} 661 gecko-crash-server-pipe.661 org.mozilla.machname.432056740 16 rdd
+whitney           3053   0.0  0.2 410393920  12800   ??  S     4:43PM   0:00.54 /Applications/Firefox.app/Contents/MacOS/plugin-container.app/Contents/MacOS/plugin-container -parentBuildID 20241103194048 -sandboxingKind 1 -prefsLen 49977 -prefMapSize 267433 -sbStartup -sbAppPath /Applications/Firefox.app -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/whitney/Library/Application Support/Firefox/Profiles/5af7kewk.default-release {776c4cf0-42fe-452b-859a-4623afe0fe7b} 661 gecko-crash-server-pipe.661 org.mozilla.machname.373252615 17 utility
+_modelmanagerd    2939   0.0  0.1 426970736   5456   ??  Ss    4:43PM   0:00.61 /usr/libexec/modelmanagerd
+whitney           2268   0.0  0.1 426948352   4960   ??  S     4:39PM   0:00.15 /System/Library/PrivateFrameworks/CommerceKit.framework/Versions/A/Resources/storeaccountd
+whitney           2113   0.0  0.0 411052608    368 s002  Ss    4:39PM   0:00.34 /bin/zsh
+whitney           1811   0.0  0.1 411183680   4528 s001  Ss    4:39PM   0:00.40 /bin/zsh
+whitney           1799   0.0  0.0 410913344    384 s000  Ss+   4:39PM   0:00.09 /bin/zsh
+whitney           1798   0.0  0.0 411146960    752   ??  S     4:39PM   0:00.01 /Users/whitney/Library/Application Support/iTerm2/iTermServer-3.5.6 /Users/whitney/Library/Application Support/iTerm2/iterm2-daemon-1.socket
+_rmd              1639   0.0  0.0 426916096   1680   ??  S     4:39PM   0:00.68 /usr/sbin/distnoted agent
+whitney           1592   0.0  1.7 413688064 139392   ??  S     4:39PM   3:56.33 /Applications/Firefox.app/Contents/MacOS/plugin-container.app/Contents/MacOS/plugin-container -isForBrowser -prefsLen 39540 -prefMapSize 267433 -jsInitLen 234660 -sbStartup -sbAppPath /Applications/Firefox.app -sbLevel 3 -parentBuildID 20241103194048 -greomni /Applications/Firefox.app/Contents/Resources/omni.ja -appomni /Applications/Firefox.app/Contents/Resources/browser/omni.ja -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/whitney/Library/Application Support/Firefox/Profiles/5af7kewk.default-release {d2ff520d-3018-4c8b-ab83-1e6d5e81e06a} 661 gecko-crash-server-pipe.661 org.mozilla.machname.2139576620 11 tab
+whitney           1591   0.0  0.8 413243600  68096   ??  S     4:39PM   1:20.93 /Applications/Firefox.app/Contents/MacOS/plugin-container.app/Contents/MacOS/plugin-container -isForBrowser -prefsLen 39540 -prefMapSize 267433 -jsInitLen 234660 -sbStartup -sbAppPath /Applications/Firefox.app -sbLevel 3 -parentBuildID 20241103194048 -greomni /Applications/Firefox.app/Contents/Resources/omni.ja -appomni /Applications/Firefox.app/Contents/Resources/browser/omni.ja -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/whitney/Library/Application Support/Firefox/Profiles/5af7kewk.default-release {53817a3b-7f10-485d-865e-8f683770808c} 661 gecko-crash-server-pipe.661 org.mozilla.machname.1642430328 10 tab
+whitney           1560   0.0  0.4 412677472  36704   ??  S     4:39PM   0:05.29 /Applications/Firefox.app/Contents/MacOS/plugin-container.app/Contents/MacOS/plugin-container -isForBrowser -prefsLen 39540 -prefMapSize 267433 -jsInitLen 234660 -sbStartup -sbAppPath /Applications/Firefox.app -sbLevel 3 -parentBuildID 20241103194048 -greomni /Applications/Firefox.app/Contents/Resources/omni.ja -appomni /Applications/Firefox.app/Contents/Resources/browser/omni.ja -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/whitney/Library/Application Support/Firefox/Profiles/5af7kewk.default-release {2e2d09e8-0c26-4891-ae51-08f927b9b160} 661 gecko-crash-server-pipe.661 org.mozilla.machname.1027161017 9 tab
+root              1379   0.0  0.0 426915584   2288   ??  Ss    4:37PM   0:00.04 /System/Library/CoreServices/CrashReporterSupportHelper server-init
+root              1361   0.0  0.1 426951072   7568   ??  Ss    4:37PM   0:04.10 /usr/libexec/wifivelocityd
+_nsurlsessiond    1360   0.0  0.0 426916096   1664   ??  S     4:37PM   0:00.68 /usr/sbin/distnoted agent
+whitney           1345   0.0  0.1 427009200   5616   ??  S     4:37PM   0:01.32 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged -u
+whitney            842   0.0  0.1 426949856   7216   ??  S     4:37PM   0:01.30 /System/Library/CoreServices/diagnostics_agent
+_fpsd             1341   0.0  0.0 426931280   3552   ??  Ss    4:37PM   0:02.45 /System/Library/PrivateFrameworks/CoreFP.framework/Versions/A/fairplayd
+root               651   0.0  0.1 426948672   6368   ??  Ss    4:37PM   0:00.26 /System/Library/CoreServices/SubmitDiagInfo server-init
+root              1337   0.0  0.0 426950320   2736   ??  S     4:37PM   0:00.52 /usr/sbin/systemstats --logger-helper /private/var/db/systemstats
+_driverkit        1334   0.0  0.0 426851520    352   ??  Ss    4:37PM   0:00.03 /System/Library/DriverExtensions/IOUserBluetoothSerialDriver.dext/IOUserBluetoothSerialDriver com.apple.IOUserBluetoothSerialDriver 0x100000d81 com.apple.IOUserBluetoothSerialDriver
+_driverkit        1333   0.0  0.0 426851520    352   ??  Ss    4:37PM   0:00.03 /System/Library/DriverExtensions/IOUserBluetoothSerialDriver.dext/IOUserBluetoothSerialDriver com.apple.IOUserBluetoothSerialDriver 0x100000d7f com.apple.IOUserBluetoothSerialDriver
+_driverkit        1331   0.0  0.0 426851520    352   ??  Ss    4:37PM   0:00.04 /System/Library/DriverExtensions/IOUserBluetoothSerialDriver.dext/IOUserBluetoothSerialDriver com.apple.IOUserBluetoothSerialDriver 0x100000d7d com.apple.IOUserBluetoothSerialDriver
+_gamecontrollerd  1326   0.0  0.0 426916096   1664   ??  S     4:37PM   0:00.68 /usr/sbin/distnoted agent
+_applepay         1323   0.0  0.0 426916096   1680   ??  S     4:37PM   0:00.69 /usr/sbin/distnoted agent
+_spotlight        1232   0.0  0.1 426950048   4480   ??  SN    4:37PM   0:00.64 /System/Library/Frameworks/CoreServices.framework/Frameworks/Metadata.framework/Versions/A/Support/mdbulkimport -s mdworker-bundle -c MDSImporterBundleFinder -m com.apple.metadata.mdbulkimport
+whitney            965   0.0  0.3 412615968  27056   ??  S     4:37PM   0:01.28 /Applications/Firefox.app/Contents/MacOS/plugin-container.app/Contents/MacOS/plugin-container -isForBrowser -prefsLen 39176 -prefMapSize 267433 -jsInitLen 234660 -sbStartup -sbAppPath /Applications/Firefox.app -sbLevel 3 -parentBuildID 20241103194048 -greomni /Applications/Firefox.app/Contents/Resources/omni.ja -appomni /Applications/Firefox.app/Contents/Resources/browser/omni.ja -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/whitney/Library/Application Support/Firefox/Profiles/5af7kewk.default-release {2dc7895e-92c2-439b-8ecb-0c75a37effe8} 661 gecko-crash-server-pipe.661 org.mozilla.machname.126208303 8 tab
+whitney            952   0.0  0.5 412641360  38944   ??  S     4:37PM   0:02.04 /Applications/Firefox.app/Contents/MacOS/plugin-container.app/Contents/MacOS/plugin-container -isForBrowser -prefsLen 39176 -prefMapSize 267433 -jsInitLen 234660 -sbStartup -sbAppPath /Applications/Firefox.app -sbLevel 3 -parentBuildID 20241103194048 -greomni /Applications/Firefox.app/Contents/Resources/omni.ja -appomni /Applications/Firefox.app/Contents/Resources/browser/omni.ja -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/whitney/Library/Application Support/Firefox/Profiles/5af7kewk.default-release {ee09622a-1a79-4567-8588-c4a6a27c3790} 661 gecko-crash-server-pipe.661 org.mozilla.machname.753817236 7 tab
+whitney            876   0.0  0.5 412737296  38048   ??  S     4:37PM   0:08.56 /Applications/Firefox.app/Contents/MacOS/plugin-container.app/Contents/MacOS/plugin-container -isForBrowser -prefsLen 39176 -prefMapSize 267433 -jsInitLen 234660 -sbStartup -sbAppPath /Applications/Firefox.app -sbLevel 3 -parentBuildID 20241103194048 -greomni /Applications/Firefox.app/Contents/Resources/omni.ja -appomni /Applications/Firefox.app/Contents/Resources/browser/omni.ja -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/whitney/Library/Application Support/Firefox/Profiles/5af7kewk.default-release {18fac340-de3f-43e4-99b5-1334ca1cd964} 661 gecko-crash-server-pipe.661 org.mozilla.machname.1686820922 5 tab
+whitney            875   0.0  0.0 426949344   3520   ??  S     4:37PM   0:00.23 /System/Library/PrivateFrameworks/CommerceKit.framework/Versions/A/Resources/storedownloadd
+whitney            865   0.0  0.2 410382272  12832   ??  S     4:37PM   0:00.35 /Applications/Firefox.app/Contents/MacOS/plugin-container.app/Contents/MacOS/plugin-container -parentBuildID 20241103194048 -sandboxingKind 0 -prefsLen 49453 -prefMapSize 267433 -sbStartup -sbAppPath /Applications/Firefox.app -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/whitney/Library/Application Support/Firefox/Profiles/5af7kewk.default-release {f1f8ca53-a540-4f25-a3b0-06f33cd44599} 661 gecko-crash-server-pipe.661 org.mozilla.machname.1171735102 4 utility
+_spotlight         853   0.0  0.0 426916096   1728   ??  S     4:37PM   0:00.67 /usr/sbin/distnoted agent
+whitney            852   0.0  0.5 412670224  44720   ??  S     4:37PM   0:13.51 /Applications/Firefox.app/Contents/MacOS/plugin-container.app/Contents/MacOS/plugin-container -isForBrowser -prefsLen 42977 -prefMapSize 267433 -jsInitLen 234660 -sbStartup -sbAppPath /Applications/Firefox.app -sbLevel 3 -parentBuildID 20241103194048 -greomni /Applications/Firefox.app/Contents/Resources/omni.ja -appomni /Applications/Firefox.app/Contents/Resources/browser/omni.ja -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/whitney/Library/Application Support/Firefox/Profiles/5af7kewk.default-release {986b2e43-ef90-40a6-b656-24307a4f1c28} 661 gecko-crash-server-pipe.661 org.mozilla.machname.1228878615 2 tab
+whitney            850   0.0  0.1 426960128  11312   ??  SN    4:37PM   0:11.13 /System/Library/Frameworks/CoreServices.framework/Frameworks/Metadata.framework/Versions/A/Support/mdbulkimport -s mdworker-bundle -c MDSImporterBundleFinder -m com.apple.metadata.mdbulkimport
+whitney            848   0.0  0.0 426915728   2848   ??  S     4:37PM   0:00.19 /System/Library/Frameworks/CryptoTokenKit.framework/ctkahp.bundle/Contents/MacOS/ctkahp
+whitney            839   0.0  0.1 410976320   5536   ??  S     4:37PM   0:00.60 /System/Library/CoreServices/AirPlayUIAgent.app/Contents/MacOS/AirPlayUIAgent --launchd
+root               846   0.0  0.0 426911600   2384   ??  Ss    4:37PM   0:00.13 /System/Library/Frameworks/CryptoTokenKit.framework/ctkahp.bundle/Contents/MacOS/ctkahp -d
+whitney            814   0.0  0.1 426981840   8896   ??  S     4:37PM   0:04.23 /System/Library/PrivateFrameworks/CoreSpeech.framework/corespeechd
+whitney            803   0.0  0.1 410346288  10848   ??  S     4:37PM   0:00.29 /Applications/Firefox.app/Contents/MacOS/plugin-container.app/Contents/MacOS/plugin-container -parentBuildID 20241103194048 -prefsLen 42682 -prefMapSize 267433 -sbStartup -sbAppPath /Applications/Firefox.app -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/whitney/Library/Application Support/Firefox/Profiles/5af7kewk.default-release {f96b9416-98c4-4d12-8cc2-7da778b339b7} 661 gecko-crash-server-pipe.661 org.mozilla.machname.1249264714 1 socket
+root               802   0.0  0.0 426920336   1024   ??  Ss    4:37PM   0:00.06 /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/CVMServer
+root               780   0.0  0.1 426949904   5232   ??  Ss    4:37PM   0:03.23 /usr/libexec/wifianalyticsd
+_accessoryupdater   766   0.0  0.0 426916096   1664   ??  S     4:37PM   0:00.68 /usr/sbin/distnoted agent
+whitney            762   0.0  0.1 426906128   5136   ??  S     4:37PM   0:01.48 /usr/libexec/avconferenced
+whitney            751   0.0  0.1 426954176   7248   ??  S     4:37PM   0:01.37 /System/Library/PrivateFrameworks/CommerceKit.framework/Versions/A/Resources/commerce
+whitney            749   0.0  0.0 426911472   1904   ??  S     4:37PM   0:00.16 /System/Library/PrivateFrameworks/MediaRemote.framework/Support/mediaremoteagent
+whitney            743   0.0  0.1 426950176   8432   ??  S     4:37PM   0:01.41 /usr/libexec/bluetoothuserd
+whitney            730   0.0  0.2 411251424  16608   ??  S     4:37PM   0:02.53 /System/Library/CoreServices/UIKitSystem.app/Contents/MacOS/UIKitSystem system_app_start
+whitney            728   0.0  0.1 426975920   5728   ??  Ss    4:37PM   0:01.59 /System/Library/Input Methods/PressAndHold.app/Contents/PlugIns/PAH_Extension.appex/Contents/MacOS/PAH_Extension -AppleLanguages ("en-US")
+whitney            724   0.0  0.1 411538448   9168   ??  S     4:37PM   0:16.59 /System/Library/PrivateFrameworks/TextInputUIMacHelper.framework/Versions/A/XPCServices/CursorUIViewService.xpc/Contents/MacOS/CursorUIViewService
+root               720   0.0  0.1 426961632   9792   ??  Ss    4:37PM   0:12.88 /usr/libexec/gamepolicyd
+whitney            717   0.0  0.3 413586080  22720   ??  S     4:37PM   0:41.62 /System/Library/CoreServices/Spotlight.app/Contents/MacOS/Spotlight
+whitney            712   0.0  0.1 427163360  12560   ??  S     4:37PM   0:33.65 /System/Library/CoreServices/WiFiAgent.app/Contents/MacOS/WiFiAgent
+whitney            713   0.0  0.1 426916864   4752   ??  S     4:37PM   0:01.27 /System/Library/PrivateFrameworks/UserActivity.framework/Agents/useractivityd
+whitney            714   0.0  0.1 411030976   8256   ??  Ss    4:37PM   0:08.14 /System/Library/CoreServices/Dock.app/Contents/XPCServices/com.apple.dock.extra.xpc/Contents/MacOS/com.apple.dock.extra
+whitney            704   0.0  0.1 410866336   4432   ??  Ss    4:37PM   0:00.60 /System/Library/ExtensionKit/Extensions/WallpaperImageExtension.appex/Contents/MacOS/WallpaperImageExtension
+whitney            692   0.0  0.1 426953776  11280   ??  S     4:37PM   0:05.68 /System/Library/CoreServices/audioaccessoryd
+whitney            697   0.0  0.0 426958832   3168   ??  S     4:37PM   0:00.23 /System/Library/PrivateFrameworks/AMPDevices.framework/Versions/A/Support/AMPDeviceDiscoveryAgent --launchd
+whitney            698   0.0  0.1 410496080   6624   ??  S     4:37PM   0:06.14 /System/Library/PrivateFrameworks/ViewBridge.framework/Versions/A/XPCServices/ViewBridgeAuxiliary.xpc/Contents/MacOS/ViewBridgeAuxiliary
+whitney            699   0.0  0.0 410402512   3312   ??  Ss    4:37PM   0:00.59 /Applications/Utilities/Adobe Sync/CoreSync/Core Sync.app/Contents/PlugIns/ACCFinderSync.appex/Contents/MacOS/ACCFinderSync -AppleLanguages ("en-US")
+root               695   0.0  0.0 426917360   1328   ??  Ss    4:37PM   0:00.06 automountd
+whitney            683   0.0  0.1 411793168   8960   ??  S     4:37PM   0:10.34 /System/Library/CoreServices/WallpaperAgent.app/Contents/MacOS/WallpaperAgent
+whitney            680   0.0  0.0 426971760   3728   ??  S     4:37PM   0:00.52 /System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/ATS.framework/Versions/A/Support/fontworker
+root             13908   0.0  0.0 410864064   2000 s001  R+   11:42AM   0:00.01 ps aux
+whitney            673   0.0  0.4 412071808  32528   ??  S     4:37PM   0:47.93 /System/Library/CoreServices/ControlCenter.app/Contents/MacOS/ControlCenter
+_ctkd              667   0.0  0.0 426948480   3456   ??  Ss    4:37PM   0:00.11 /System/Library/Frameworks/CryptoTokenKit.framework/ctkd -st
+_nearbyd           666   0.0  0.1 426959664   8608   ??  Ss    4:37PM   0:19.07 /usr/libexec/nearbyd
+whitney            659   0.0  0.2 426963440  13456   ??  S     4:37PM   0:07.29 /System/Library/PrivateFrameworks/HomeKitDaemon.framework/Support/homed
+root               649   0.0  0.1 426954160   7488   ??  Ss    4:37PM   0:05.85 /usr/libexec/wifip2pd
+root               630   0.0  0.0 426948928   2896   ??  Ss    4:37PM   0:00.27 /System/Library/PrivateFrameworks/WirelessDiagnostics.framework/Support/awdd
+whitney            628   0.0  0.2 412042448  18208   ??  S     4:37PM   0:20.96 /System/Library/CoreServices/NotificationCenter.app/Contents/MacOS/NotificationCenter
+whitney            626   0.0  0.2 426977792  16480   ??  S     4:37PM   0:12.53 /System/Library/PrivateFrameworks/IDS.framework/identityservicesd.app/Contents/MacOS/identityservicesd
+whitney            623   0.0  0.1 426954640   8000   ??  S     4:37PM   0:24.69 /usr/libexec/trustd --agent
+whitney            622   0.0  0.1 426950400   7136   ??  S     4:37PM   0:05.63 /usr/libexec/ContinuityCaptureAgent server
+whitney            620   0.0  0.0 426947712   3712   ??  S     4:37PM   0:06.15 /usr/libexec/containermanagerd --runmode=agent --user-container-mode=current --bundle-container-mode=proxy --system-container-mode=none
+whitney            614   0.0  0.1 432944400  11232   ??  S     4:37PM   0:30.09 /System/Library/Frameworks/CoreServices.framework/Frameworks/Metadata.framework/Versions/A/Support/corespotlightd
+whitney            609   0.0  0.2 426972880  14240   ??  S     4:37PM   0:11.60 /System/Library/PrivateFrameworks/AssistantServices.framework/Versions/A/Support/assistantd
+whitney            612   0.0  0.1 426967488   9152   ??  S     4:37PM   0:14.02 /usr/libexec/networkserviceproxy
+whitney            616   0.0  0.3 426997312  23120   ??  S     4:37PM   0:40.53 /usr/libexec/duetexpertd
+_appleevents       593   0.0  0.0 426916096   1712   ??  S     4:37PM   0:00.69 /usr/sbin/distnoted agent
+whitney            600   0.0  0.1 426949600   5472   ??  S     4:37PM   0:03.04 /System/Library/CoreServices/lockoutagent
+whitney            601   0.0  0.2 426977280  18864   ??  S     4:37PM   0:27.78 /usr/libexec/routined LAUNCHED_BY_LAUNCHD
+whitney            599   0.0  0.2 426967824  13344   ??  S     4:37PM   0:07.09 /usr/sbin/usernoted
+whitney            596   0.0  0.1 426965648  10576   ??  S     4:37PM   0:10.00 /usr/libexec/nsurlsessiond
+whitney            595   0.0  0.1 426952240   9456   ??  S     4:37PM   0:12.18 /usr/libexec/rapportd
+whitney            588   0.0  0.2 426967152  12672   ??  S     4:37PM   0:18.75 /usr/libexec/secd
+whitney            584   0.0  0.1 426959616   8720   ??  S     4:37PM   0:01.91 /System/Library/PrivateFrameworks/UserNotificationsCore.framework/Support/usernotificationsd
+whitney            579   0.0  0.1 426926768   6784   ??  S     4:37PM   0:00.54 /usr/libexec/pboard
+whitney            571   0.0  0.1 426951008   6160   ??  S     4:37PM   0:08.74 /usr/libexec/UserEventAgent (Aqua)
+whitney            578   0.0  0.1 410974848   5536   ??  S     4:37PM   0:01.41 /usr/sbin/universalaccessd launchd -s
+_cmiodalassistants   569   0.0  0.0 426948960   3472   ??  Ss    4:37PM   0:00.22 /System/Library/Frameworks/CoreMediaIO.framework/Versions/A/Resources/UVCAssistant.systemextension/Contents/MacOS/UVCAssistant
+_cmiodalassistants   568   0.0  0.0 426882592   3936   ??  Ss    4:37PM   0:00.11 /usr/libexec/cameracaptured
+_cmiodalassistants   566   0.0  0.0 426953152   3840   ??  Ss    4:37PM   0:01.31 /usr/sbin/appleh13camerad
+whitney            565   0.0  0.1 426918704   4224   ??  S     4:37PM   0:27.23 /usr/sbin/cfprefsd agent
+_softwareupdate    561   0.0  0.0 426916096   1664   ??  S     4:37PM   0:00.69 /usr/sbin/distnoted agent
+root               562   0.0  0.1 426949168   6032   ??  Ss    4:37PM   0:00.64 /System/Library/Frameworks/LocalAuthentication.framework/Support/coreauthd
+root               558   0.0  0.0 426916016   3248   ??  Ss    4:37PM   0:00.53 /usr/sbin/BTLEServer
+root               554   0.0  0.2 427004400  17888   ??  Ss    4:37PM   0:23.98 /usr/libexec/searchpartyd
+_driverkit         553   0.0  0.0 426851648    336   ??  Ss    4:37PM   0:00.12 /System/Library/DriverExtensions/com.apple.AppleUserHIDDrivers.dext/com.apple.AppleUserHIDDrivers com.apple.driverkit.AppleUserHIDDrivers 0x100000be2 com.apple.AppleUserHIDDrivers
+_driverkit         552   0.0  0.0 426851440    336   ??  Ss    4:37PM   0:00.04 /System/Library/DriverExtensions/com.apple.DriverKit-IOUserDockChannelSerial.dext/com.apple.DriverKit-IOUserDockChannelSerial com.apple.IOUserDockChannelSerial 0x100000bde com.apple.DriverKit-IOUserDockChannelSerial
+_driverkit         549   0.0  0.4 426904224  32336   ??  Ss    4:37PM   3:03.15 /System/Library/DriverExtensions/com.apple.DriverKit-AppleBCMWLAN.dext/com.apple.DriverKit-AppleBCMWLAN com.apple.bcmwlan 0x100000a7e com.apple.DriverKit-AppleBCMWLAN
+root               542   0.0  0.0 410922160   3344   ??  Ss    4:37PM   0:20.32 /usr/libexec/audioclocksyncd
+_oahd              539   0.0  0.0 426912224   1056   ??  Ss    4:37PM   0:00.07 /usr/libexec/rosetta/oahd
+_coreaudiod        538   0.0  0.0 33901260    372   ??  Ss    4:37PM   0:05.37 Core Audio Driver (MSTeamsAudioDevice.driver)
+_coreaudiod        534   0.0  0.0 410165408   1776   ??  Ss    4:37PM   0:00.01 Core Audio Driver (ACE.driver)
+root               526   0.0  0.1 426949216   7184   ??  Ss    4:37PM   0:05.52 /usr/sbin/WirelessRadioManagerd
+_appleevents       525   0.0  0.1 426948992   4352   ??  Ss    4:37PM   0:00.68 /System/Library/CoreServices/appleeventsd --server
+root               523   0.0  0.1 426950064   4336   ??  Ss    4:37PM   0:04.98 /usr/libexec/aned
+root               521   0.0  0.1 426964480   7136   ??  Ss    4:37PM   1:09.92 /usr/libexec/syspolicyd
+_cmiodalassistants   488   0.0  0.0 426916096   1680   ??  S     4:37PM   0:00.69 /usr/sbin/distnoted agent
+_locationd         480   0.0  0.0 426916096   1680   ??  S     4:37PM   0:00.70 /usr/sbin/distnoted agent
+root               450   0.0  0.0 426949056   2656   ??  Ss    4:37PM   0:00.65 /usr/sbin/mDNSResponderHelper
+_analyticsd        417   0.0  0.1 426960528  10160   ??  Ss    4:37PM   0:11.62 /System/Library/PrivateFrameworks/CoreAnalytics.framework/Support/analyticsd
+root               421   0.0  0.0 426916096   1728   ??  S     4:37PM   0:00.74 /usr/sbin/distnoted agent
+_windowserver      434   0.0  0.0 426916096   1664   ??  S     4:37PM   0:00.71 /usr/sbin/distnoted agent
+_coreaudiod        436   0.0  0.0 426916096   1680   ??  S     4:37PM   0:00.74 /usr/sbin/distnoted agent
+root               443   0.0  0.0 426916320   3408   ??  Ss    4:37PM   0:00.05 /usr/libexec/ApplicationFirewall/socketfilterfw
+_networkd          442   0.0  0.1 426964688  10656   ??  Ss    4:37PM   0:13.98 /usr/libexec/symptomsd
+_nsurlsessiond     438   0.0  0.1 426969184  12016   ??  Ss    4:37PM   0:01.65 /usr/libexec/nsurlsessiond --privileged
+_mdnsresponder     435   0.0  0.2 427042752  13632   ??  Ss    4:37PM   0:28.82 /usr/sbin/mDNSResponder
+root               412   0.0  0.0 426947872   3680   ??  Ss    4:37PM   0:01.81 /System/Library/PrivateFrameworks/SystemStatusServer.framework/Support/systemstatusd
+_coreaudiod        420   0.0  0.1 426989488   8336   ??  Ss    4:37PM   7:45.37 /usr/sbin/coreaudiod
+root               415   0.0  0.1 426948528   5216   ??  Ss    4:37PM   0:00.83 /usr/libexec/eligibilityd
+root               416   0.0  0.2 426955152  16448   ??  Ss    4:37PM   3:56.37 /usr/libexec/airportd
+root               407   0.0  0.1 426957360   8896   ??  Ss    4:37PM   2:29.25 /System/Library/PrivateFrameworks/CoreDuetContext.framework/Resources/contextstored
+root               401   0.0  0.1 426962848  12480   ??  Ss    4:37PM   1:27.66 /usr/libexec/runningboardd
+_usbmuxd           370   0.0  0.0 426957408   2720   ??  Ss    4:37PM   0:00.28 /System/Library/PrivateFrameworks/MobileDevice.framework/Versions/A/Resources/usbmuxd -launchd
+_timed             369   0.0  0.0 426948816   2800   ??  Ss    4:37PM   0:00.87 /usr/libexec/timed
+root               398   0.0  0.1 426960496   7952   ??  Ss    4:37PM   0:14.17 /System/Library/PrivateFrameworks/TCC.framework/Support/tccd system
+root               341   0.0  0.0 426912096   2240   ??  Ss    4:37PM   0:00.04 /usr/libexec/IOMFB_bics_daemon
+root               394   0.0  0.1 426948288   4880   ??  Ss    4:37PM   0:01.89 /System/Library/Frameworks/CoreMediaIO.framework/Versions/A/Resources/com.apple.cmio.registerassistantservice
+root               377   0.0  0.1 426956352  12352   ??  Ss    4:37PM   0:33.39 /usr/libexec/dasd
+root               332   0.0  0.1 426954176   8528   ??  Ss    4:37PM   0:07.43 /System/Library/PrivateFrameworks/MediaRemote.framework/Support/mediaremoted
+root               335   0.0  0.1 426960864   8496   ??  Ss    4:37PM   0:03.06 /usr/sbin/systemstats --daemon
+root               368   0.0  0.1 426951264   7632   ??  Ss    4:37PM   0:18.74 /System/Library/CoreServices/launchservicesd
+root               371   0.0  0.1 426950464   6048   ??  Ss    4:37PM   0:03.91 /usr/sbin/securityd -i
+root               393   0.0  0.1 426949616   5040   ??  Ss    4:37PM   0:04.96 /usr/libexec/AirPlayXPCHelper
+root               384   0.0  0.0 426916208   3760   ??  Ss    4:37PM   0:00.40 /System/Library/CoreServices/logind
+root               361   0.0  0.0 426918464   1680   ??  Ss    4:37PM   0:02.11 /usr/sbin/syslogd
+root               338   0.0  0.1 426953504   7264   ??  Ss    4:37PM   0:20.42 /usr/libexec/configd
+root               389   0.0  0.2 426974048  20912   ??  Ss    4:37PM   2:23.80 /usr/sbin/bluetoothd
+root               345   0.0  0.0 426948688   3040   ??  Ss    4:37PM   0:00.17 /usr/libexec/remoted
+root               378   0.0  0.0 426949456   2480   ??  Ss    4:37PM   0:00.21 /System/Library/PrivateFrameworks/Heimdal.framework/Helpers/kdc
+root               392   0.0  0.1 426948256   6464   ??  Ss    4:37PM   0:34.65 /usr/libexec/corebrightnessd --launchd
+root               364   0.0  0.0 426948896   3376   ??  Ss    4:37PM   0:08.19 /usr/libexec/thermalmonitord
+root               340   0.0  0.1 426950864   7760   ??  Ss    4:37PM   0:14.74 /System/Library/CoreServices/powerd.bundle/powerd
+root               356   0.0  0.0 426952352   3712   ??  Ss    4:37PM   0:00.89 /usr/libexec/kernelmanagerd
+whitney            676   0.0  0.1 426952048   6688   ??  S     4:37PM   0:01.29 /System/Library/PrivateFrameworks/FamilyCircle.framework/Versions/A/Resources/familycircled
+whitney          13907   0.0  0.0 426845504   3344   ??  U    11:42AM   0:00.03 /System/Library/PrivateFrameworks/BusinessChatService.framework/businessservicesd
+whitney          13892   0.0  0.1 426948576   5088   ??  S    11:42AM   0:00.08 /System/Library/PrivateFrameworks/AssetCacheServices.framework/Versions/A/XPCServices/AssetCacheLocatorService.xpc/Contents/MacOS/AssetCacheLocatorService -a
+whitney          13891   0.0  0.1 411180304   9312   ??  Ss   11:42AM   0:00.10 /System/Library/PrivateFrameworks/CloudTelemetry.framework/Versions/A/XPCServices/CloudTelemetryService.xpc/Contents/MacOS/CloudTelemetryService
+root             13877   0.0  0.0 426915840   1328   ??  Ss   11:42AM   0:00.06 /usr/libexec/logd_helper
+whitney          13875   0.0  0.2 426962496  16752   ??  S    11:42AM   0:00.18 cloudphotod
+_spotlight       13873   0.0  0.1 426930992   9232   ??  S    11:42AM   0:00.08 /System/Library/Frameworks/CoreServices.framework/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared -s mdworker -c MDSImporterWorker -m com.apple.mdworker.shared
+_spotlight       13874   0.0  0.1 426935648   9904   ??  S    11:42AM   0:00.08 /System/Library/Frameworks/CoreServices.framework/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared -s mdworker -c MDSImporterWorker -m com.apple.mdworker.shared
+whitney          13872   0.0  0.2 426935040  13552   ??  S    11:42AM   0:00.11 /System/Library/Frameworks/CoreServices.framework/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared -s mdworker -c MDSImporterWorker -m com.apple.mdworker.shared
+root             13871   0.0  0.1 411825872   8832   ??  Ss   11:42AM   0:00.18 /System/Library/PrivateFrameworks/TVIdleServices.framework/idleassetsd
+whitney          13870   0.0  0.1 426952000  12144   ??  S    11:42AM   0:00.15 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+root             13869   0.0  0.0 426950128   3424   ??  Ss   11:42AM   0:00.03 /usr/libexec/sandboxd
+whitney          13868   0.0  0.1 426949184   4320   ??  S    11:42AM   0:00.09 /System/Library/CoreServices/ScopedBookmarkAgent
+whitney          13867   0.0  0.2 426954880  18928   ??  S    11:42AM   0:00.52 /System/Library/PrivateFrameworks/PhotoLibraryServices.framework/Versions/A/Support/photolibraryd
+whitney          13866   0.0  0.2 426960256  19648   ??  S    11:42AM   0:00.42 /System/Library/PrivateFrameworks/PhotoAnalysis.framework/Versions/A/Support/photoanalysisd
+whitney          13865   0.0  0.2 426935056  14144   ??  S    11:42AM   0:00.10 /System/Library/Frameworks/CoreServices.framework/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared -s mdworker -c MDSImporterWorker -m com.apple.mdworker.shared
+whitney          13863   0.0  0.1 426935056  10944   ??  S    11:42AM   0:00.09 /System/Library/Frameworks/CoreServices.framework/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared -s mdworker -c MDSImporterWorker -m com.apple.mdworker.shared
+whitney          13864   0.0  0.1 426935056  10096   ??  S    11:42AM   0:00.09 /System/Library/Frameworks/CoreServices.framework/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared -s mdworker -c MDSImporterWorker -m com.apple.mdworker.shared
+whitney          13861   0.0  0.1 426964992  10192   ??  S    11:41AM   0:00.30 /System/Library/PrivateFrameworks/MapsSync.framework/mapssyncd
+whitney          13860   0.0  0.0 426912224   2768   ??  S    11:41AM   0:00.04 /usr/libexec/spindump_agent
+root             13859   0.0  0.1 426914432   6384   ??  Ss   11:41AM   0:00.09 /usr/sbin/spindump
+whitney          13858   0.0  0.2 426963728  18288   ??  S    11:41AM   0:03.11 /usr/libexec/replayd
+whitney          13857   0.0  0.1 426947744   7152   ??  S    11:41AM   0:00.05 /System/Library/PrivateFrameworks/CoreCDP.framework/Versions/A/Resources/cdpd
+whitney          13856   0.0  0.2 426976320  14960   ??  S    11:41AM   0:00.17 /System/Library/CoreServices/Keychain Circle Notification.app/Contents/MacOS/Keychain Circle Notification
+whitney          13855   0.0  0.1 426935040  11872   ??  S    11:41AM   0:00.11 /System/Library/Frameworks/CoreServices.framework/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared -s mdworker -c MDSImporterWorker -m com.apple.mdworker.shared
+whitney          13853   0.0  0.1 426934480  11360   ??  S    11:41AM   0:00.12 /System/Library/Frameworks/CoreServices.framework/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared -s mdworker -c MDSImporterWorker -m com.apple.mdworker.shared
+whitney          13829   0.0  0.2 426961392  19056   ??  S    11:41AM   0:00.19 /System/Library/Frameworks/CoreTelephony.framework/Support/CommCenter -L
+root             13826   0.0  0.0 426911712   1712   ??  Ss   11:41AM   0:00.06 /usr/libexec/sysmond
+root             13825   0.0  0.1 426949456   7328   ??  Ss   11:41AM   0:00.08 /usr/libexec/ospredictiond
+_installcoordinationd 13824   0.0  0.0 426912304   2832   ??  Ss   11:41AM   0:00.09 /System/Library/PrivateFrameworks/InstallCoordination.framework/Support/installcoordinationd
+whitney          13823   0.0  0.0 426911168   1952   ??  S    11:41AM   0:00.04 /usr/libexec/icloudmailagent
+whitney          13759   0.0  0.1 426912064   4944   ??  S    11:40AM   0:00.04 /usr/libexec/feedbackd
+root             13758   0.0  0.1 426949760   6096   ??  Ss   11:40AM   0:00.07 /usr/libexec/rtcreportingd
+root             13757   0.0  0.0 410774272   1952   ??  Ss   11:40AM   0:00.03 /usr/libexec/online-auth-agent
+whitney          13748   0.0  0.2 426963760  14304   ??  S    11:39AM   0:00.28 /System/Library/PrivateFrameworks/AppleMediaServicesUI.framework/amsengagementd
+whitney          13724   0.0  0.3 426975264  21040   ??  S    11:39AM   0:00.61 /System/Library/PrivateFrameworks/VoiceShortcuts.framework/Versions/A/Support/siriactionsd
+whitney          13680   0.0  0.5 412564448  38640   ??  S    11:39AM   0:00.12 /Applications/Firefox.app/Contents/MacOS/plugin-container.app/Contents/MacOS/plugin-container -isForBrowser -prefsLen 39816 -prefMapSize 267433 -jsInitLen 234660 -sbStartup -sbAppPath /Applications/Firefox.app -sbLevel 3 -parentBuildID 20241103194048 -greomni /Applications/Firefox.app/Contents/Resources/omni.ja -appomni /Applications/Firefox.app/Contents/Resources/browser/omni.ja -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/whitney/Library/Application Support/Firefox/Profiles/5af7kewk.default-release {75c9abde-b91b-48ea-8005-669887708756} 661 gecko-crash-server-pipe.661 org.mozilla.machname.1948300956 105 tab
+whitney          13673   0.0  0.5 412565472  38656   ??  S    11:39AM   0:00.13 /Applications/Firefox.app/Contents/MacOS/plugin-container.app/Contents/MacOS/plugin-container -isForBrowser -prefsLen 39816 -prefMapSize 267433 -jsInitLen 234660 -sbStartup -sbAppPath /Applications/Firefox.app -sbLevel 3 -parentBuildID 20241103194048 -greomni /Applications/Firefox.app/Contents/Resources/omni.ja -appomni /Applications/Firefox.app/Contents/Resources/browser/omni.ja -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/whitney/Library/Application Support/Firefox/Profiles/5af7kewk.default-release {3914757f-fd7c-47ce-a889-7659dd4aac06} 661 gecko-crash-server-pipe.661 org.mozilla.machname.1405074279 104 tab
+whitney          13665   0.0  0.2 426963984  16160   ??  S    11:38AM   0:00.31 /System/Library/CoreServices/UniversalControl.app/Contents/MacOS/UniversalControl
+whitney          13618   0.0  0.5 412567216  38944   ??  S    11:37AM   0:00.14 /Applications/Firefox.app/Contents/MacOS/plugin-container.app/Contents/MacOS/plugin-container -isForBrowser -prefsLen 39816 -prefMapSize 267433 -jsInitLen 234660 -sbStartup -sbAppPath /Applications/Firefox.app -sbLevel 3 -parentBuildID 20241103194048 -greomni /Applications/Firefox.app/Contents/Resources/omni.ja -appomni /Applications/Firefox.app/Contents/Resources/browser/omni.ja -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/whitney/Library/Application Support/Firefox/Profiles/5af7kewk.default-release {00c78de3-c56f-41b3-a374-a240adf5f820} 661 gecko-crash-server-pipe.661 org.mozilla.machname.1867017232 103 tab
+whitney          13603   0.0  1.0 412767664  83456   ??  S    11:36AM   0:05.44 /Applications/Firefox.app/Contents/MacOS/plugin-container.app/Contents/MacOS/plugin-container -isForBrowser -prefsLen 39816 -prefMapSize 267433 -jsInitLen 234660 -sbStartup -sbAppPath /Applications/Firefox.app -sbLevel 3 -parentBuildID 20241103194048 -greomni /Applications/Firefox.app/Contents/Resources/omni.ja -appomni /Applications/Firefox.app/Contents/Resources/browser/omni.ja -appDir /Applications/Firefox.app/Contents/Resources/browser -profile /Users/whitney/Library/Application Support/Firefox/Profiles/5af7kewk.default-release {313edf01-4929-4d0a-a145-63a5cfd11987} 661 gecko-crash-server-pipe.661 org.mozilla.machname.358021649 100 tab
+_locationd       13600   0.0  0.0 426947712   3168   ??  S    11:36AM   0:00.08 /usr/libexec/containermanagerd --runmode=agent --user-container-mode=current --bundle-container-mode=proxy --system-container-mode=none
+_cmiodalassistants 13599   0.0  0.0 426947712   3168   ??  S    11:36AM   0:00.08 /usr/libexec/containermanagerd --runmode=agent --user-container-mode=current --bundle-container-mode=proxy --system-container-mode=none
+whitney          13589   0.0  0.2 426951872  15552   ??  S    11:36AM   0:00.49 /System/Library/PrivateFrameworks/GeoServices.framework/Versions/A/XPCServices/com.apple.geod.xpc/Contents/MacOS/com.apple.geod
+whitney          13586   0.0  0.1 426948528   6688   ??  S    11:36AM   0:00.07 /System/Library/Frameworks/LocalAuthentication.framework/Support/coreauthd
+_fpsd            13583   0.0  0.1 426914608   4208   ??  Ss   11:36AM   0:00.10 /System/Library/PrivateFrameworks/CoreADI.framework/adid
+whitney          13582   0.0  0.1 426952096  10032   ??  S    11:36AM   0:00.20 /System/Library/PrivateFrameworks/AuthKit.framework/Versions/A/Support/akd
+whitney          13571   0.0  0.1 426958432  11024   ??  S    11:35AM   0:03.75 /System/Library/Frameworks/Contacts.framework/Support/contactsd
+root             13569   0.0  0.1 426918080   4464   ??  Ss   11:35AM   0:00.09 /usr/libexec/securityd_system
+whitney          13568   0.0  0.2 426976064  20688   ??  S    11:35AM   0:01.10 /System/Library/PrivateFrameworks/TelephonyUtilities.framework/callservicesd
+whitney          13485   0.0  0.1 426959456   6864   ??  S    11:33AM   0:00.26 /usr/libexec/secinitd
+whitney          13462   0.0  0.1 426950400  11328   ??  S    11:33AM   0:01.31 /usr/libexec/triald
+whitney          13439   0.0  0.1 410659408   4832   ??  S    11:32AM   0:00.20 /usr/libexec/SidecarRelay
+root             13438   0.0  0.0 426916672   3744   ??  Ss   11:32AM   0:00.09 /System/Library/Frameworks/Security.framework/Versions/A/XPCServices/com.apple.CodeSigningHelper.xpc/Contents/MacOS/com.apple.CodeSigningHelper
+whitney          13351   0.0  0.2 426972752  19696   ??  S    11:31AM   0:01.39 /usr/libexec/knowledge-agent
+whitney          13349   0.0  0.3 427043136  24688   ??  S    11:31AM   0:02.61 /System/Library/PrivateFrameworks/CloudKitDaemon.framework/Support/cloudd
+whitney          13347   0.0  0.2 426964560  15424   ??  S    11:31AM   0:00.53 /System/Library/PrivateFrameworks/SyncedDefaults.framework/Support/syncdefaultsd
+root             13343   0.0  0.0 410784432   3232   ??  Ss   11:31AM   0:00.11 /usr/libexec/containermanagerd_system --runmode=privileged --user-container-mode=current --bundle-container-mode=global --bundle-container-owner=_appinstalld --system-container-mode=none
+whitney          13291   0.0  0.1 426949024   7888   ??  S    11:29AM   0:00.14 /System/Library/PrivateFrameworks/Synapse.framework/Support/contentlinkingd
+whitney          13281   0.0  0.1 410792016   4816   ??  Ss   11:29AM   0:00.22 /Users/whitney/Applications/iTerm.app/Contents/XPCServices/pidinfo.xpc/Contents/MacOS/pidinfo
+whitney          13224   0.0  0.1 426959200  12032   ??  S    11:28AM   0:00.86 /usr/libexec/proactived
+whitney          13213   0.0  0.2 426973072  17072   ??  S    11:28AM   0:00.95 /System/Library/PrivateFrameworks/CoreSuggestions.framework/Versions/A/Support/suggestd
+whitney          13188   0.0  0.2 426977664  15712   ??  Ss   11:27AM   0:00.46 /System/Library/CoreServices/Siri.app/Contents/XPCServices/SiriNCService.xpc/Contents/MacOS/SiriNCService
+whitney          12933   0.0  0.2 426968000  15664   ??  S    11:22AM   0:01.75 /System/Library/PrivateFrameworks/CoreDuetContext.framework/Resources/ContextStoreAgent
+_biome           12572   0.0  0.1 426948464   7104   ??  Ss   11:12AM   0:00.42 /System/Library/PrivateFrameworks/BiomeStreams.framework/Support/biomed
+whitney          12539   0.0  0.1 426949600  10624   ??  S    11:11AM   0:02.29 /System/Library/PrivateFrameworks/BiomeStreams.framework/Support/BiomeAgent
