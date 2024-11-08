@@ -113,10 +113,10 @@ def train_evaluate(parameters, X_train, y_train, X_test, y_test):
 
 
 # Example usage
-X = np_to_list(X_train)
-y = np_to_list(y_train)
-params = define_params()
-thing = random_search(params)
+#X = np_to_list(X_train)
+#y = np_to_list(y_train)
+#params = define_params()
+#rs = random_search(params)
 
 
-breakpoint()
+#breakpoint()

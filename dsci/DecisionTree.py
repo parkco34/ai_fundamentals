@@ -63,7 +63,7 @@ class DecisionTree:
 
         else:
             # Entropy
-            return -sum(p * log2(p) for p in proboabilities)
+            return -sum(p * log2(p) for p in probabilities)
 
     def info_gain(self, parent, left_child, right_child):
         """
@@ -178,14 +178,15 @@ class DecisionTree:
         right_mask = ~left_mask
 
         # REcusively build left and right subtrees
-        node.left = self.build_tree(X[lef_mask], y[left_mask], depth+1)
+        node.left = self.build_tree(X[left_mask], y[left_mask], depth+1)
         node.right = self.build_tree(X[right_mask], y[right_mask], depth+1)
 
         return node
 
     def fit(self, X, y):
         """
-        Builds tree using training data
+        Builds tree using training data and labels by establishing the root
+        node first, recursively building the branches.
         --------------------------------------------
         INPUT:
             X: (list) Training data
@@ -194,30 +195,62 @@ class DecisionTree:
         OUTPUT:
 
         """
-        pass
+        self.root = build_tree(X, y, depth=0)
 
-    def prediction(self, X):
+        return self
+
+    def traverse_tree(self, X, node):
+        """
+        Traverse the tree to make a prediction for one sample.
+        --------------------------------------------------------
+        INPUT:
+            X: (list) Training data
+            node: () 
+
+        OUTPUT:
+        """
+        if node.is_leaf == True:
+            return node.value
+
+        try:
+
+            if x[node.feature] <= node.threshold:
+                return self.traverse_tree(x, node.left)
+            
+            else:
+                return self.traverse_tree(x, node.right)
+            
+        except Exception as e:
+            print(f"Oops... You dun fucked up: {e}")
+        
+
+    def prediction(self, X): 
         """
         Make predictions using the tree.
         --------------------------------------------
         INPUT:
+            X: (list) Training data
 
         OUTPUT:
-
+            predictions: (?) ?
         """
-        pass
+        return [self.traverse_tree(x, self.root) for x in X]
 
-    def calc_gini(self, y):
+    def get_params(self):
         """
-        Calculate gini impurity.
-        ---------------------------------------------
+        Gets tree parameters.
+        ------------------------------------------------------
         INPUT:
-            y:
+            Nada
 
         OUTPUT:
-
+            (dict) Parameters
         """
-        pass
-
+        return {
+            "max_depth": self.max_depth,
+            "min_samples_split": self.min_samples_split,
+            "min_samples_leaf": self.min_samples_leaf,
+            "criterion": self.criterion
+        }
 
 

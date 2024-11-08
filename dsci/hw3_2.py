@@ -1,33 +1,33 @@
 #!/usr/bin/env python
 """
-Part 2: Support Vector Machine (SVM) - Linear and w/ RBF Kernel.
+part 2: support vector machine (svm) - linear and w/ rbf kernel.
 5pts. each task
-Please complete the following tasks to explore Linear Support Vector Machines (LSVM) and Support
-Vector Machines (SVM) with an RBF kernel. You can use Python and libraries such as scikit-learn to
+please complete the following tasks to explore linear support vector machines (lsvm) and support
+vector machines (svm) with an rbf kernel. you can use python and libraries such as scikit-learn to
 implement and demonstrate your work.
 2
-Task 1: Linear Support Vector Machine (LSVM)
-1. Load the Iris dataset.
-2. Split the data into training and testing sets.
-3. Implement a Linear Support Vector Machine (SVM) classiWier using scikit-learn.
-4. Train the LSVM model on the training data.
-5. Evaluate the LSVM model’s performance on the test data and report accuracy.
-Task 2: Support Vector Machine (SVM) with RBF Kernel
-1. Load the Iris dataset.
-2. Split the data into training and testing sets.
-3. Implement a Support Vector Machine (SVM) classiWier with an RBF kernel using scikit-learn.
-4. Train the SVM model with the RBF kernel on the training data.
-5. Evaluate the SVM model’s performance on the test data and report accuracy.
-Task 3: Hyperparameter Tuning for SVM with RBF Kernel
-1. Perform hyperparameter tuning for the SVM with an RBF kernel. Search for optimal values of
-hyperparameters such as C and γ using Random Search.
-2. Report the best hyperparameters for the SVM with the RBF kernel.
-3. Train a new SVM model with the best hyperparameters and evaluate its performance on the test
+task 1: linear support vector machine (lsvm)
+1. load the iris dataset.
+2. split the data into training and testing sets.
+3. implement a linear support vector machine (svm) classiwier using scikit-learn.
+4. train the lsvm model on the training data.
+5. evaluate the lsvm model’s performance on the test data and report accuracy.
+task 2: support vector machine (svm) with rbf kernel
+1. load the iris dataset.
+2. split the data into training and testing sets.
+3. implement a support vector machine (svm) classiwier with an rbf kernel using scikit-learn.
+4. train the svm model with the rbf kernel on the training data.
+5. evaluate the svm model’s performance on the test data and report accuracy.
+task 3: hyperparameter tuning for svm with rbf kernel
+1. perform hyperparameter tuning for the svm with an rbf kernel. search for optimal values of
+hyperparameters such as c and γ using random search.
+2. report the best hyperparameters for the svm with the rbf kernel.
+3. train a new svm model with the best hyperparameters and evaluate its performance on the test
 data.
-Task 4: Metrics Comparison
-1. Calculate and compare relevant evaluation metrics (e.g., accuracy, precision, recall, F1-score) for
-the LSVM from Task 1 and the SVM with an RBF kernel from Task 2.
-2. Not graded: Discuss the differences in performance and characteristics between these models.
+task 4: metrics comparison
+1. calculate and compare relevant evaluation metrics (e.g., accuracy, precision, recall, f1-score) for
+the lsvm from task 1 and the svm with an rbf kernel from task 2.
+2. not graded: discuss the differences in performance and characteristics between these models.
 """
 from sklearn.svm import SVC
 from sklearn.metrics import (
