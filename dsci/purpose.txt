@@ -15,4 +15,3 @@ The Iris dataset (the flowers) is a classic beginner's dataset in machine learni
 
 Think of it like learning to tune a guitar - the Iris dataset is like your practice guitar. It's not about the flowers specifically; it's about learning the techniques that you can then apply to any classification problem in the future.
 
-Is that what you were trying to understand?

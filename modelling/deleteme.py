@@ -1,55 +1,55 @@
 #!/usr/bin/env python
 def clean_data(dataframe):
     """
-    Cleans the data by handling missing values, removing unnecessary rows,
-    and converting percentage constraints to numerical values.
+    Take care of missing values and non-numerical inputs.
     --------------------------------------------------
     INPUT:
         dataframe: (pd.DataFrame)
-
     OUTPUT:
-        cleaned_dataframe: (pd.DataFrame)
+        new_dataframe: (pd.DataFrame)
     """
-    # Display dataframe information
-    print("Original Data Info:")
-    print(dataframe.info())
-    print("Statistics:")
-    print(dataframe.describe(include='all'))
+    # Output dataframe information
+    print(f"INFO: {dataframe.info()}")
+    print(f"Statistics: {dataframe.describe(include='all')}")
 
     # Drop any completely empty rows
-    dataframe = dataframe.dropna(how='all').reset_index(drop=True)
+    dataframe = dataframe.dropna(how="all").reset_index(drop=True)
 
-    # Handling non-numerical constraint rows
-    # Identify the sections of the data based on unique column names or row patterns
-
-    # Separate each table based on context:
+    # Separate each table based on context, adjusting the indices
     oil_data = dataframe.iloc[0:3].reset_index(drop=True)
     oil_data.columns = ["Type", "Cost/Barrel", "Octane Rating", "Max Available"]
 
-    gasoline_requirements = dataframe.iloc[4:11].reset_index(drop=True)
-    gasoline_requirements.columns = ["Gasoline Type", "Type 1", "Type 2", "Type 3"]
+    # Find the index where Regular gasoline starts
+    regular_start = dataframe[dataframe['Type'] == 'Regular'].index[0]
+    # Find the index where Sales data starts
+    sales_start = dataframe[dataframe['Type'].str.contains('Regular gasoline', na=False)].index[0]
 
-    sales_data = dataframe.iloc[13:15].reset_index(drop=True)
-    sales_data.columns = ["Gasoline Type", "Average Octane Rating", "Sales Price", "Minimum Demand"]
+    gas_data = dataframe.iloc[regular_start:sales_start].reset_index(drop=True)
+    gas_data.columns = ["Gasoline Type", "Type 1", "Type 2", "Type 3"]
 
-    # Clean data by converting constraints to numerical values where possible
-    for col in ["Type 1", "Type 2", "Type 3"]:
-        gasoline_requirements[col] = gasoline_requirements[col].replace({
-            ">= 25%": 0.25, ">= 35%": 0.35, "<= 30%": 0.30,
-            ">= 30%": 0.30, ">= 45%": 0.45, "<= 20%": 0.20
-        })
+    sales_data = dataframe.iloc[sales_start:sales_start+2].reset_index(drop=True)
+    sales_data.columns = ["Gasoline Type", "Octane Rating", "Sales Price", "Minimum Demand"]
 
-    # Convert data to numeric types where appropriate
-    oil_data[["Cost/Barrel", "Octane Rating", "Max Available"]] = oil_data[["Cost/Barrel", "Octane Rating", "Max Available"]].apply(pd.to_numeric)
-    sales_data[["Average Octane Rating", "Sales Price", "Minimum Demand"]] = sales_data[["Average Octane Rating", "Sales Price", "Minimum Demand"]].apply(pd.to_numeric)
+    # Clean data by converting constraints to numerical values
+    for col in gas_data.columns[1:]:
+        gas_data[col] = gas_data[col].str.extract(r'(\d+)').astype(float) / 100
+
+    # Convert data to numerical types
+    oil_data[["Cost/Barrel", "Octane Rating", "Max Available"]] = \
+        oil_data[["Cost/Barrel", "Octane Rating", "Max Available"]].apply(pd.to_numeric)
+
+    # Clean sales data - remove 'barrels' from Minimum Demand and convert to numeric
+    sales_data['Minimum Demand'] = sales_data['Minimum Demand'].str.extract(r'(\d+,?\d*)').str.replace(',', '').astype(float)
+    sales_data[["Octane Rating", "Sales Price"]] = \
+        sales_data[["Octane Rating", "Sales Price"]].apply(lambda x: pd.to_numeric(x.str.replace('$', '')))
 
     # Display cleaned data for verification
     print("\nCleaned Oil Data:")
     print(oil_data)
-    print("\nCleaned Gasoline Requirements:")
-    print(gasoline_requirements)
+    print("\nCleaned Gasoline Data:")
+    print(gas_data)
     print("\nCleaned Sales Data:")
     print(sales_data)
 
-    return oil_data, gasoline_requirements, sales_data
+    return oil_data, gas_data, sales_data
 

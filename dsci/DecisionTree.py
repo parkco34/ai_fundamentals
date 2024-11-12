@@ -78,8 +78,8 @@ class DecisionTree:
             gain: (float) Information Gain for node
         """
         # Weight of each child node
-        w_left = len(left_child) / len(parents)
-        w_right = len(right_child) / len(parents)
+        w_left = len(left_child) / len(parent)
+        w_right = len(right_child) / len(parent)
 
         # Parent impurity minus the sum of the products of the child impurities
         # and weights of corresponding children
@@ -115,7 +115,7 @@ class DecisionTree:
 
             for feature in range(n_features):
                 # Get unique values for feature
-                thresholds = np.unique(X[:, feature])
+                thresholds = get_unique_values(X[:, feature])
 
                 for threshold in thresholds:
                     # Split data
@@ -159,6 +159,9 @@ class DecisionTree:
             or n_samples < 2 * self.min_samples_leaf
             or n_classes == 1
         ):
+            leaf = Node()
+            leaf.is_leaf = True
+            leaf.value = Counter(y).most_common(1)[0][0]
             
             return leaf
         
@@ -173,11 +176,16 @@ class DecisionTree:
 
             return leaf
 
+        # Create decision node
+        node = Node()
+        node.feature = best_feature
+        node.threhsold = best_threshold
+
         # Split data
         left_mask = X[:, best_feature] <= best_threshold
         right_mask = ~left_mask
 
-        # REcusively build left and right subtrees
+        # REcusively build left and right subtrees !
         node.left = self.build_tree(X[left_mask], y[left_mask], depth+1)
         node.right = self.build_tree(X[right_mask], y[right_mask], depth+1)
 
@@ -195,13 +203,17 @@ class DecisionTree:
         OUTPUT:
 
         """
-        self.root = build_tree(X, y, depth=0)
+        self.root = self.build_tree(X, y, depth=0)
 
         return self
 
-    def traverse_tree(self, X, node):
+    def traverse_tree(self, x, node):
         """
-        Traverse the tree to make a prediction for one sample.
+        Traversing tree, making prediction for a single data sample starting
+        from the root node, going down to the leaf node, where at each node, it
+        makes a decision based on sample's feature values and threshold stored
+        in that node.  This continues until it reaches a leaf node, where it
+        outputs the predicted class.
         --------------------------------------------------------
         INPUT:
             X: (list) Training data
@@ -223,7 +235,6 @@ class DecisionTree:
         except Exception as e:
             print(f"Oops... You dun fucked up: {e}")
         
-
     def prediction(self, X): 
         """
         Make predictions using the tree.
@@ -252,5 +263,7 @@ class DecisionTree:
             "min_samples_leaf": self.min_samples_leaf,
             "criterion": self.criterion
         }
+
+
 
 
