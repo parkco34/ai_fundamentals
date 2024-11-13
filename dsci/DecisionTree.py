@@ -1,19 +1,6 @@
 #!/usr/bin/env python
 from collections import Counter
-from math import log2
-
-def get_unique_values(feature):
-    """
-    Gets the unique values of feature while preserving the order.
-    -------------------------------------------------------------
-    INPUT:
-        feature: (list)
-
-    OUTPUT:
-        unique_values: (list)
-    """
-    return list(dict.fromkeys(feature))
-
+import numpy as np
 
 class Node:
     """
@@ -59,11 +46,11 @@ class DecisionTree:
 
         if self.criterion == "gini":
             # Gini Impurity
-            return 1 - sum(p**2 for p in probabilities)
+            return 1 - np.sum(p**2 for p in probabilities)
 
         else:
             # Entropy
-            return -sum(p * log2(p) for p in probabilities)
+            return -np.sum(p * np.log2(p) for p in probabilities)
 
     def info_gain(self, parent, left_child, right_child):
         """
@@ -115,7 +102,7 @@ class DecisionTree:
 
             for feature in range(n_features):
                 # Get unique values for feature
-                thresholds = get_unique_values(X[:, feature])
+                thresholds = np.unique(X[:, feature])
 
                 for threshold in thresholds:
                     # Split data
@@ -149,7 +136,7 @@ class DecisionTree:
         """
         # Get shape values for iteration and classes
         n_samples, n_features = len(X), len(X[0])
-        n_classes = len(get_unique_values(y))
+        n_classes = len(np.unique(y))
 
         # Create a leaf node if stopping criteria are met
         if (

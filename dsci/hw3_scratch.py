@@ -1,8 +1,54 @@
 #!/usr/bin/env python
+"""
+Part 1: 
+Decision Trees (DT)
+------------------------
+Task 1: Hyperparameter Tuning (Random Search)
+========================
+1. Load the Iris dataset.
+2. Split the data into training and testing sets.
+3. Implement a DT classifier.
+4. Perform a Random Search to find the best hyperparameters for the DT classiWier. Search for
+hyperparameters like max depth, min samples split, min samples leaf, and criterion. HInt: Use the
+RandomizedSearchCV function from scikit-learn.
+5. Print the best hyperparameters and the model’s accuracy with these hyperparameters.
+
+Task 2: Error Analysis
+========================
+1. After training the DT model with the best hyperparameters from Task 1, use this model to make
+predictions on the test data.
+2. Identify and print the indices of misclassiWied instances (where the true class is not equal to the
+predicted class).
+
+Task 3: Confusion Matrix
+========================
+1. Calculate the confusion matrix for the model’s predictions on the test data.
+2. Print the confusion matrix values (True Positives, True Negatives, False Positives, False
+Negatives).
+Note: The following Tasks 4 and 5 were not taught extensively in class for DTs. However, the
+concepts were covered in liner regression, so I’d like you to give these a try w.r.t. DTs.
+
+Task 4: Regression with DTs
+========================
+1. Load a dataset suitable for regression (e.g., the Boston housing dataset from scikit-learn).
+2. Split the dataset into training and testing sets.
+3. Implement a DT regression model.
+4. Train the model on the training data.
+5. Calculate and print the mean squared error (MSE) on the testing data to assess the model’s
+performance.
+
+Task 5: Metrics Comparison
+========================
+1. Compare the performance of the DT classiWier from Task 1 and the DT regression model from
+Task 4.
+2. Calculate and print relevant evaluation metrics for the classiWier (e.g., accuracy, precision, recall,
+F1-score) and the regression model (e.g., MSE).
+3. Discuss the results, including which model performed better and why.
+"""
 import numpy as np
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
-from random import random, randint, choice
+from random import random, choice
 import DecisionTree as dt
 
 # Constants
@@ -11,26 +57,18 @@ N_ITERATIONS = 100
 RANDOM_STATE = 73
 np.random.seed(RANDOM_STATE)
 
-def np_to_list(numpy_array):
+def define_params(
+    max_depth=[i for i in range(1, 21)], 
+    min_samples_split=
+        [i for i in range(2, 21)],
+    min_samples_leaf=
+        [i for i in range(1, 11)], 
+    criterion=["gini", "entropy"]):
     """
-    Converts numpy.ndarray to lists.
-    ------------------------------------
-    INPUT:
-        numpy_array: (np.ndarray) 
-
-    OUTPUT:
-        (list)
-    """
-    return numpy_array.tolist()
-
-def define_params(max_depth=[i for i in range(1, 21)], min_samples_split=[i for
-                                                                          i in range(2, 21)],
-                  min_samples_leaf=[i for i in range(1, 11)], criterion=["gini", "entropy"]):
-    """
-    Defines parameter distribution for Random Search.
+    Defines parameter distribution for Random Search,
+    converting the lists to np.ndarrays.
     ------------------------------------------------------
     INPUT:
-        estimator: (?) Model to use (DecisionTreeClassifier,
         RandomForestRegressor, etc.)
         max_depth: (list) Depth of tree
         min_samples_split: (list) Sample number to split w/ higher values for
@@ -43,8 +81,8 @@ def define_params(max_depth=[i for i in range(1, 21)], min_samples_split=[i for
         params: (dict) 
     """
     return {
-        "max_depth": max_depth, "min_samples_split": min_samples_split,
-        "min_samples_leaf": min_samples_leaf, "criterion": criterion
+        "max_depth": np.array(max_depth), "min_samples_split": np.array(min_samples_split),
+        "min_samples_leaf": np.array(min_samples_leaf), "criterion": criterion
     }
 
 def random_search(
@@ -55,6 +93,7 @@ def random_search(
     Purpose: ?
     -------------------------------------------------
     INPUT:
+        param_space: 
 
     OUTPUT:
     """
@@ -77,15 +116,16 @@ def train_evaluate(parameters, X_train, y_train, X_test, y_test):
     --------------------------------------------------------
     INPUT:
         parameters: (dict) Sampled parameters
-        X_train:
-        y_train:
-        X_test:
-        y_test:
+        X_train: (np.ndarray) Training data
+        y_train: (np.ndarray) Training data labels
+        X_test: (np.ndarray) Test data features
+        y_test: (np.ndarray) Test data labels
 
     OUTPUT:
-        accuracy: (?) Performance metric for this sample parameter combination
+        tree: (DecisionTree) Trained Decision Tree model'
+        accuracy: (float) Accuracy of model on test data
     """
-    tree = DecisionTree(
+    tree = dt.DecisionTree(
         max_depth = parameters["depth"],
         min_samples_split=parameters["split"],
         min_samples_leaf=parameters["leaf"],
@@ -99,9 +139,10 @@ def train_evaluate(parameters, X_train, y_train, X_test, y_test):
     y_prediction = tree.prediction(X_test)
     
     # Number of correct predictions divided by the number of test amples
-    accuracy = sum(1 for y, p in zip(y_test, y_pred) if y == p) / len(y_test)
+    accuracy = sum(1 for y, p in zip(y_test, y_prediction) if y == p) / len(y_test)
+    breakpoint()
 
-    return accuracy
+    return tree, accuracy
 
 def task1_hyperparam_tuning():
     """
@@ -112,8 +153,8 @@ def task1_hyperparam_tuning():
 
     OUTPUT:
         best_model: ()
-        X_test: (list) Test data
-        y_test: (list) Test labels
+        X_test: (np.ndarray) Test data
+        y_test: (np.ndarray) Test labels
     """
     print("\nTask 1: Finding best hyperparameter using random search")
     print("="*50)
@@ -124,14 +165,15 @@ def task1_hyperparam_tuning():
     X_train, X_test, y_train, y_test = train_test_split(X, y,
                                                         test_size=TEST_SIZE,
                                                         random_state=RANDOM_STATE)
-
+    
     # Define parameter space and perform random search
     param_space = define_params()
+    # Random Search
     parameter_samples = random_search(param_space)
     # Evaluate all parameter combos
     best_accuracy  = 0
     best_params = None
-    best_params = None
+    best_model = None
 
     for params in parameter_samples:
         model, accuracy = train_evaluate(params, X_train, y_train, X_test,
@@ -143,7 +185,7 @@ def task1_hyperparam_tuning():
 
     print("\nBest Hyperparameters:")
     print(f"Max depth: {best_params['depth']}")
-    print(f"Min Samples Split: {bet_params['split']}")
+    print(f"Min Samples Split: {best_params['split']}")
     print(f"Min Samples Leaf: {best_params['leaf']}")
     print(f"Criterion: {best_params['criterion']}")
     print(f"Best Accuracy: {best_accuracy:.4f}")
@@ -162,21 +204,7 @@ def task2_error_analysis(model, X_test, y_test):
     OUTPUT:
         y_prediction: (list)
     """
-    print("\nTask 2: Error Analysis")
-    print("="*50)
-    
-    # Make predictions
-    y_prediction = model.prediction(X_test)
-
-    # Find misclassified instances
-    misclassified = [(i, true, pred) for i, (true, pred) in
-                     enumerate(zip(y_test, y_prediction)) if true != pred]
-
-    print("\nMisclassified instancs (Index, True Class, Predicted Class):")
-    for idx, true, pred in misclassified:
-        print(f"Index: {idx}, True: {true}, Predicted: {pred}")
-
-    return y_prediction
+    pass
 
 def task3_confusion_martrix(y_test, y_pred):
     """
@@ -189,25 +217,7 @@ def task3_confusion_martrix(y_test, y_pred):
     OUTPUT:
         None
     """
-    print("\nTask 3: Confusion Matrix")
-    print("="*50)
-    
-    # Confusion matrix
-    cm = confusion_matrix(y_test, y_pred)
-
-    classes = np.unique(y_test)
-    for i in classes:
-        # Convert to binary classification for this class
-        y_test_binary = (y_test == i).astype(int)
-        y_pred_binary = (y_pred == i).astype(int)
-
-        tn, fp, fn, tp = confusion_matrix(y_test_binary, y_pred_binary).ravel()
-
-        print(f"\nClass {i} metrics:")
-        print(f"True Positives: {tp}")
-        print(f"True Negatives: {tn}")
-        print(f"False Positives: {fp}")
-        print(f"False Negatives: {fn}")
+    pass
 
 def task4_regression():
     """
@@ -218,26 +228,11 @@ def task4_regression():
     OUTPUT:
 
     """
-    print("\nTask 4: Regression")
-    print("="*50)
-
-    # Load Boston Housing dataset
-    boston = load_boston()
-    X, y = boston.data, boston.target
-
-    # Split data
-    X_train, X_test, y_train, y_test = train_test_split(X, y,
-                                                        test_size=TEST_SIZE,
-                                                        random_state=RANDOM_STATE)
-
-    # Train regression
-    # ?
-
+    pass
 
 def main():
-   pass
-
-    
+    # Task 1: Hyperparameter tuning
+    best_model, X_test, y_test = task1_hyperparam_tuning() 
 
 if __name__ == "__main__":
     main()
