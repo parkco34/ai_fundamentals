@@ -67,7 +67,7 @@ def attribute_entropy(X, y, attribute, indent=""):
         # Output info
         print(f"{indent}  {attribute} = {value}:")
         print(f"{indent}    Count: {len(subset_y)} (Pass: {pass_count}, Fail: {fail_count})")
-        print(f"{indent}    Entropy: {weighted_entropy:.4f}")
+        print(f"{indent}    Entropy: {subset_entropy:.4f}")
         print(f"{indent}    Weight: {weight:.4f}")
     print(f"{indent}  Weighted Entropy for '{attribute}': {weighted_entropy:.4f}\n")
 
@@ -113,9 +113,13 @@ def data_gini_index(y):
 
     return 1 - sum(probabilities**2)
 
-def attribute_gini_index(X, y, attribute):
+def attribute_gini_index(X, y, attribute, indent=""):
     """
     Calculates the weighted Gini index for a given attribute.
+    Gini index measures impurity: 1 - sum(p_i^2)
+    For binary classification:
+        - Minimum = 0 (Pure node)
+        - Maximum = 0.5 (equal split)
     ------------------------------------------------------
     INPUT:
         X: (pd.DataFrame) Attribute data
@@ -135,10 +139,15 @@ def attribute_gini_index(X, y, attribute):
         weight = subset_total / total
         subset_gini = data_gini_index(subset_y)
         weighted_gini += weight * subset_gini
+
+        # calculate counts w/in loop
+        pass_count = sum(subset_y == "Pass")
+        fail_count = sum(subset_y == "Fail")
+
         # Output info
         print(f"{indent}  {attribute} = {value}:")
         print(f"{indent}    Count: {len(subset_y)} (Pass: {pass_count}, Fail: {fail_count})")
-        print(f"{indent}    Gini: {gini:.4f}")
+        print(f"{indent}    Gini: {subset_gini:.4f}")
         print(f"{indent}    Weight: {weight:.4f}")
     print(f"{indent}  Weighted Gini for '{attribute}': {weighted_gini:.4f}\n")
 
@@ -161,18 +170,18 @@ def find_best_split_ig(X, y):
         node: (str) Attribute for split 
     """ 
     best_attribute = None
+    # Initialize to low value since we want MAX
     best_ig = -1.0
 
     for attribute in X.columns:
         ig = information_gain(X, y, attribute)
-#        print(f"ig: {ig}\nattribute: {attribute}")
 
         if ig > best_ig:
             best_ig = ig
             best_attribute = attribute
 
     print(f"Best attribute: {best_attribute}")
-    print(f"Best information gain: {best_ig}")
+    print(f"Bestd information gain: {best_ig}")
 
     return best_attribute
 
@@ -193,7 +202,7 @@ def find_best_split_gini(X, y):
     """
     # Initialize with large value since gini ~ 1/info_gain
     best_attribute = None
-    best_gini = float("-inf")
+    best_gini = float("inf")
 
     for attribute in X.columns:
         gini = attribute_gini_index(X, y, attribute)
@@ -201,6 +210,9 @@ def find_best_split_gini(X, y):
         if gini < best_gini:
             best_gini = gini
             best_attribute = attribute
+
+    print(f"Best attribute: {best_attribute}")
+    print(f"Best Gini index: {best_gini}")
 
     return best_attribute
 
@@ -332,6 +344,32 @@ def clean_tree(tree):
     else:
         return tree
 
+def get_majority_class(subtree):
+    """
+    Handles case when test data contains value not seen during training.
+    --------------------------------------------------------
+    INPUT:
+        subtree: (?)
+
+    OUTPUT:
+        decision: (str)
+    """
+    pass_wins, fail_wins = 0, 0
+
+    # Count how many branches where Pass wins
+    for branch_value, counts in subtree.items():
+
+        if isinstance(counts, dict):
+            
+            if counts.get("Pass",  0) > counts.get("Fail", 0):
+                pass_wins += 1
+
+            else:
+                fail_wins += 1
+    decision = "Pass" if pass_wins > fail_wins else "Fail"
+
+    return decision
+
 def predict(tree, test, indent=""):
     """
     Predictions with debugging output.
@@ -376,7 +414,85 @@ def predict(tree, test, indent=""):
             print(f"""{indent}WARNING: Value {next_attribute} not found in
                   training data for {attribute}""")
             # Return the majority class or handle unseen values
+            majority = get_majority_class(subtree)
+            return majority
 
+def validate_using_sklearn():
+    """
+    Validates the ( ͡° ͜ʖ ͡°  ) decision tree implementation against
+    scikit-learn's
+    implementation.
+    - Ensures both implementations use entropy as splitting criterion.
+    - Uses same max_depth
+    - Assumes test_data keys match X.columns
+    -----------------------------------------------------------------
+    INPUT:
+        X: (pd.Dataframe) Training data
+        y: (pd.DataFrame) Target labels
+        our_tree: (dict) Decision tree
+        test_data: (dict) Test instances
+        max_depth: (int: optional, default=3) Max depth of tree duh 
+
+    OUTPUT:
+        (tuple)
+        our_prediction: (str)
+        sklearn_prediction: (str)
+        accuracy_match: (bool) Whether predictions match
+    """
+    try:
+        from sklearn.tree import DecisionTreeClassifier
+
+    except ImportError:
+        raise ImportError(
+            "sciki-learn is required for validation. "
+            "Install it using: pip install scikit-learn"
+        )
+
+    # Validate test_data keys match training data columns
+    if not set(test_data.keys()) == set(X.columns):
+        raise ValueError(
+            f"Test data features {set(test_data.keys())} "
+            f"don't match training features {set(X.columns)}"
+        )
+
+    # Create and train sklearn tree with matching parameteres
+    clf = DecisionTreeClassifier(
+        criterion="entropy",
+        max_depth = max_depth,
+        random_state=73
+    )
+    clf.fit(X, y)
+
+    # Get predictions from both implementations
+    our_pred = predict(our_tree, test_data)
+
+    # Convert test_data to format sklearn expects
+    test_values = [list(test_data.values())]
+    sklearn_pred = clf.predict([list[test_data.values()]])[0]
+
+    # Compare and print results
+    predictions_match = our_pred == sklearn_pred
+    print(f"Our prediction: {our_pred}")
+    print(f"sklearn predictions: {sklearn_pred}")
+    print(f"Predictions match: {predictions_match}")
+
+    return our_pred, sklearn_pred, predictions_match
+
+
+#+++++++++++++
+#EXAMPLE USAGE:
+#+++++++++++++
+def main():
+    #tree = grow_tree(X, y, func=find_best_split_gini)
+    tree = grow_tree(X, y)
+    cleaned_tree = clean_tree(tree)
+    #test_data = {"Other online courses": "Y", "Student background": "Maths", "Working Status": "NW"}
+    test_data = {"Other online courses": "Y", "Student background": "Maths", "Working Status": "W"}
+    prediction = predict(cleaned_tree, test_data)
+    print(f"The predicted class is: {prediction}")
+
+if __name__ == "__main__":
+    main()
 
 
 # --------------------------------
@@ -420,19 +536,3 @@ def predict(tree, test, indent=""):
 
 
 # -------------------------------------------------------------------------------------------------------------------------
-#+++++++++++++
-#EXAMPLE USAGE:
-#+++++++++++++
-def main():
-    #tree = grow_tree(X, y, func=find_best_split_gini)
-    tree = grow_tree(X, y)
-    cleaned_tree = clean_tree(tree)
-    #test_data = {"Other online courses": "Y", "Student background": "Maths", "Working Status": "NW"}
-    test_data = {"Other online courses": "Y", "Student background": "Maths", "Working Status": "W"}
-    prediction = predict(cleaned_tree, test_data)
-    print(f"The predicted class is: {prediction}")
-
-if __name__ == "__main__":
-    main()
-
-
