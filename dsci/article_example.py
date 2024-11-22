@@ -10,10 +10,10 @@ For BINARY CLASSIFICATION, but can easily be adjusted for MULTICLASS
 classification...
 ------------------------------------------------------------------------------------------------------------------------------
 """
+from graphviz import Digraph
 from math import log2
 import pandas as pd
 import graphviz
-import time
 
 dframe = pd.read_csv("exam_results.csv")
 df = dframe.drop(columns=["Resp srl no"])
@@ -181,7 +181,7 @@ def find_best_split_ig(X, y):
             best_attribute = attribute
 
     print(f"Best attribute: {best_attribute}")
-    print(f"Bestd information gain: {best_ig}")
+    print(f"Best information gain: {best_ig}")
 
     return best_attribute
 
@@ -266,22 +266,16 @@ def grow_tree(X, y, max_depth=None, min_num_samples=2, current_depth=0,
     
         return {"Pass": pass_count, "Fail": fail_count}
 
-    best_feature = func(X, y)
+    best_attribute = func(X, y)
 
     # No best information gain, return most common item
-    if best_feature is None:
+    if best_attribute is None:
         return {"Pass": pass_count, "Fail": fail_count}
 
-    # Calculate information gain for each attribute
-    info_gains = {}
-    for attribute in X.columns:
-        print(f"{indent} Evaluating attribute: '{attribute}':")
-        ig = information_gain(X, y, attribute, indent + "   ")
-        info_gains[attribute] = ig
+    # Optionally calculate and print the information gain for the abest
+    # attribute
+    best_info_gain = information_gain(X, y, best_attribute, indent)
 
-    # Select the best attribute based on highest information gain
-    best_attribute = max(info_gains, key=info_gains.get)
-    best_info_gain = info_gains[best_attribute]
     print(f"""{indent} Best attribute to split on: '{best_attribute}' with
           information gain: {best_info_gain:.4f}""")
     print(f"{indent}---------------------------------------------------\n")
@@ -289,11 +283,12 @@ def grow_tree(X, y, max_depth=None, min_num_samples=2, current_depth=0,
     my_tree = {best_attribute: {}}
 
     # Split dataset and grow subtrees for each split
-    for feature_value in X[best_feature].unique():
+    for feature_value in X[best_attribute].unique():
         print(f"{indent}Splitting '{best_attribute}' = '{feature_value}'")
-        subset_X = X[X[best_feature] ==
-                     feature_value].drop(columns=[best_feature])
-        subset_y = y[X[best_feature] == feature_value]
+
+        subset_X = X[X[best_attribute] ==
+                     feature_value].drop(columns=[best_attribute])
+        subset_y = y[X[best_attribute] == feature_value]
 
         # When leaf node reached, attach Pass/Fail values, otherwise continue
         # branching
@@ -478,6 +473,30 @@ def validate_using_sklearn():
 
     return our_pred, sklearn_pred, predictions_match
 
+def visualize_tree(tree, parent_name=None, edge_label=None, graph=None):
+    if graph is None:
+        graph = Digraph(format='png')
+        graph.attr('node', shape='rectangle')
+    
+    if not isinstance(tree, dict):
+        # Leaf node
+        node_name = f"Leaf_{id(tree)}"
+        graph.node(node_name, label=f"Predict: {tree}")
+
+        if parent_name:
+            graph.edge(parent_name, node_name, label=edge_label)
+
+    else:
+        for attribute, branches in tree.items():
+            node_name = f"Node_{id(attribute)}"
+            graph.node(node_name, label=attribute)
+
+            if parent_name:
+                graph.edge(parent_name, node_name, label=edge_label)
+            for branch_value, subtree in branches.items():
+                visualize_tree(subtree, parent_name=node_name, edge_label=str(branch_value), graph=graph)
+
+    return graph
 
 #+++++++++++++
 #EXAMPLE USAGE:
@@ -491,48 +510,9 @@ def main():
     prediction = predict(cleaned_tree, test_data)
     print(f"The predicted class is: {prediction}")
 
+    # Visualize
+    tree_graph = visualize_tree(cleaned_tree)
+    tree_graph.render('article_example')
+
 if __name__ == "__main__":
     main()
-
-
-# --------------------------------
-# VISUALIZATION of Decision Tree
-# --------------------------------
-# ChatGPT -- Do yourself ?
-#def visualize_tree(tree, node_name='root', graph=None):
-#    """
-#    Visualize the decision tree using graphviz.
-#    ------------------------------------------------
-#    INPUT:
-#        tree: (dict) The decision tree
-#        node_name: (str) The name of the current node (default is 'root')
-#        graph: (graphviz.Digraph) The graphviz graph object (default is None)
-#
-#    OUTPUT:
-#        graph: (graphviz.Digraph) The graphviz graph object with the tree added
-#    """
-#    if graph is None:
-#        graph = graphviz.Digraph()
-#
-#    if not isinstance(tree, dict):
-#        graph.node(node_name, label=str(tree), shape='ellipse')
-#        return graph
-#
-#    for attribute, subtree in tree.items():
-#        if attribute not in ["Pass", "Fail"]:
-#            for value, subsubtree in subtree.items():
-#                child_node_name = f'{node_name}_{value}'
-#                graph.node(child_node_name, label=f'{value}')
-#                graph.edge(node_name, child_node_name, label=attribute)
-#                visualize_tree(subsubtree, node_name=child_node_name, graph=graph)
-#        else:
-#            graph.node(node_name, label=f'{tree["Pass"]}P, {tree["Fail"]}F', shape='box')
-#
-#    return graph
-
-# Usage:
-#graph = visualize_tree(cleaned_tree)
-#graph.render('decision_tree', format='png', cleanup=True)
-
-
-# -------------------------------------------------------------------------------------------------------------------------
