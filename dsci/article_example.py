@@ -14,6 +14,10 @@ from graphviz import Digraph
 from math import log2
 import pandas as pd
 import graphviz
+import logging
+
+# Set to DEBUG for detailed output
+logging.basicConfig(level=logging.INFO)
 
 dframe = pd.read_csv("exam_results.csv")
 df = dframe.drop(columns=["Resp srl no"])
@@ -88,6 +92,8 @@ def information_gain(X, y, attribute, indent=""):
     parent_entropy = data_entropy(y)
     weighted_child_entropy = attribute_entropy(X, y, attribute)
     info_gain = parent_entropy - weighted_child_entropy
+    logging.debug(f"""{indent}Information Gain by splitting on '{attribute}':
+                  {info_gain:.4f}""")
     print(f"{indent}Information Gain by splitting on '{attribute}': {info_gain:.4f}\n")
 
     return info_gain
@@ -144,6 +150,15 @@ def attribute_gini_index(X, y, attribute, indent=""):
         pass_count = sum(subset_y == "Pass")
         fail_count = sum(subset_y == "Fail")
 
+        # Logging information
+        logging.debug("{indent} {attribute} = {value}:")
+        logging.debug(f"""{indent}    Count: {len(subset_y)} (Pass: {pass_count},
+                      Fail: {fail_count})""")
+        logging.debug(f"{indent}    Gini: {subset_gini:.4f}")
+        logging.debug(f"{indent}    Weight: {weight:.4f}")
+        logging.debug(f"""{indent}    Weight Gini for '{attribute}' :
+                      {weighted_gini:.4f}\n""")
+
         # Output info
         print(f"{indent}  {attribute} = {value}:")
         print(f"{indent}    Count: {len(subset_y)} (Pass: {pass_count}, Fail: {fail_count})")
@@ -180,6 +195,10 @@ def find_best_split_ig(X, y):
             best_ig = ig
             best_attribute = attribute
 
+    # Logging output
+    logging.debug(f"{indent}Best attribute: {best_attribute}")
+    logging.debug(f"{indent}Best information gain: {best_ig}")
+
     print(f"Best attribute: {best_attribute}")
     print(f"Best information gain: {best_ig}")
 
@@ -210,7 +229,12 @@ def find_best_split_gini(X, y):
         if gini < best_gini:
             best_gini = gini
             best_attribute = attribute
+    
+    # Logging
+    logging.debug(f"{indent}Best Attribute: {best_attribute}")
+    logging.debug(f"{indent}Best Gini index: {best_gini}")
 
+    # Output info
     print(f"Best attribute: {best_attribute}")
     print(f"Best Gini index: {best_gini}")
 
