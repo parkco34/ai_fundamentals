@@ -27,6 +27,9 @@ df = df.reindex(columns=["Other online courses", "Student background", "Working 
 
 def data_entropy(y):
     """
+    PARENT ENTROPY
+    Gets entropy for entire dataset.
+    ----------------------------------------------------
     INPUT:
         y: (pd.Series)
 
@@ -168,7 +171,7 @@ def attribute_gini_index(X, y, attribute, indent=""):
 
     return weighted_gini
 
-def find_best_split_ig(X, y):
+def find_best_split_ig(X, y, indent=""):
     """
     Uses INFORMATION GAIN.
     -------------------------------------------
@@ -265,12 +268,20 @@ def grow_tree(X, y, max_depth=None, min_num_samples=2, current_depth=0,
     print(f"{indent}==================== Depth {current_depth} ====================")
     print(f"{indent}Total samples: {total_samples} (Pass: {pass_count}, Fail: {fail_count})")
     print(f"{indent}Parent Entropy: {parent_entropy:.4f}\n")
+
+    logging.debug(f"""{indent}Depth {current_depth}, Total samples:
+                  {total_samples}""")
+    logging.debug(f"{indent}Pass: {pass_count}, Fail: {fail_count}")
+    logging.debug(f"{indent} Entropy: {parent_entropy:.4f}")
+
     # ------------------
     # Stopping criteria
     # ------------------
     # Target classes all the same
     if len(y.unique()) == 1:
         print(f"{indent}All samples have the same label: {y.unique()[0]}")
+
+        logging.debug(f"{indent}All samples haev the same label: {y.unique()[0]}")
 
         # Return counts for leaf node
         return {"Pass": pass_count, "Fail": fail_count}
@@ -335,7 +346,7 @@ def grow_tree(X, y, max_depth=None, min_num_samples=2, current_depth=0,
 
     return my_tree
 
-def clean_tree(tree):
+def clean_tree(tree, indent=""):
     """
     Removes the unneccessary Pass/Fail summary labels for the tree in order to
     correctly "process" the predictions.
@@ -355,6 +366,9 @@ def clean_tree(tree):
         if not subtree:
             pass_count = tree.get("Pass", 0)
             fail_count = tree.get("Fail", 0)
+
+            logging.debug(f"""{indent}Leaf node cleaned with counts: Pass =
+                          {pass_count}, Fail = {fail_count}""")
             
             return "Pass" if pass_count > fail_count else "Fail"
 
@@ -387,6 +401,9 @@ def get_majority_class(subtree):
                 fail_wins += 1
     decision = "Pass" if pass_wins > fail_wins else "Fail"
 
+    # Logging
+    logging.debug(f"Majority class determined: {decision}")
+
     return decision
 
 def predict(tree, test, indent=""):
@@ -403,9 +420,13 @@ def predict(tree, test, indent=""):
     """
     print(f"{indent} Current tree node: ", tree)
 
+    logging.debug(f"{indent}Current tree node: {tree}")
+
     # If leaf node, non-dictionary
     if not isinstance(tree, dict):
         print(f"{indent}Reached leaf node with prediction: ", tree)
+
+        logging.debug(f"{indent}Reached leaf node with prediction: {tree}")
 
         return tree
    
@@ -414,7 +435,9 @@ def predict(tree, test, indent=""):
         prediction = "Pass" if tree["Pass"] > tree["Fail"] else "Fail"
         print(f"""{indent}Reached leaf node with count - Pass: {tree.get('Pass',
               0)}, Fail: {tree.get('Fail', 0)}""")
-        print(f"{indent}Predicting: ", prediction)
+        print(f"{indent}Predicting: {prediction}")
+        logging.debug(f"""{indent}Reached leaf node with count - Pass:
+                      {tree.get('Pass', 0)}, Fail: {tree.get('Fail', 0)}""")
 
         return prediction
 
@@ -422,9 +445,17 @@ def predict(tree, test, indent=""):
         print(f"{indent}Testing attribute: {attribute}")
         next_attribute = test[attribute]
         print(f"{indent}Test case has value: {next_attribute}")
+    
+        # Logging
+        logging.debug(f"{indent}Testing attribute: {attribute}")
+        logging.debug(f"{indent}Test case has value: {next_attribute}")
         
         if next_attribute in subtree:
             print(f"{indent}Following path: {attribute} = {next_attribute}")
+            # Logging
+            logging.debug(f"""{indent}Following path: {attribute} =
+                         {next_attribute}""")
+
             prediction = predict(subtree[next_attribute], test)
 
             return prediction

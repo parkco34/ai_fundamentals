@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # Logging:
 import logging
 from graphviz import Digraph
