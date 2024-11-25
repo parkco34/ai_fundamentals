@@ -73,11 +73,6 @@ class DecisionTree(object):
             subset_entropy = parent_entropy(subset_y)
             weighted_entropy += weight * subset_entropy
 
-            # log information
-            logging.debug(f"{attribute} == {val}")
-            logging.debug(f"""count: {len(subset_y)}  (pass: pass_count), fail:
-                          {fail_count}""")
-
             return weighted_entropy
 
     def parent_gini(self, y):
@@ -134,15 +129,6 @@ class DecisionTree(object):
             # Subset gini from parent gini of entire dataset
             parent_gini = parent_gini(subset_y)
             weighted_gini += weight * parent_gini
-
-            # log information
-            logging.debug(f"{attribute} == {val}")
-            logging.debug(f"""count: {len(subset_y)}  (pass: pass_count), fail:
-                          {fail_count}""")
-            logging.debug(f"{indent}    Gini: {subset_gini:.4f}")
-            logging.debug(f"{indent}    Weight: {weight:.4f}")
-            logging.debug(f"""{indent}    Weight Gini for '{attribute}' :
-                          {weighted_gini:.4f}\n""")
         
         return weighted_gini
 
@@ -181,11 +167,127 @@ class DecisionTree(object):
 
         return best_feat
 
-    def grow_tree(self):
+    def plurality_value(self, parent_examples, random_state=None):
         """
+        Returns the most common output value among set of examples, breaking
+        ties randomly
+        ------------------------------------------------
+        INPUT:
+            parent_examples: (np.ndarray) 
+
+        OUTPUT:
+            basic_bitch: (int) Most common class label, breaking ties randomly
+        """
+        # If array is empty
+        if len(y) == 0:
+            return None
+
+        # Get value counts
+        values, counts = np.unique(parent_examples, return_counts=True)
+
+        # Find indices with maximum count
+        max_indices = np.where(counts == counts.max())[0]
+    
+        # If single maximum, return it
+        if len(max_indices) == 1:
+            return values[max_indices[0]]
+        
+        # Randomly break ties
+        rng = np.random.RandomState(random_state)
+
+        return values[rng.choice(max_indices)]
+
+    def learn_decision_tree(self, X, y, max_depth=None, min_num_samples=2,
+                  current_dept=0, method="gini"):
+        """
+        Recursive function that grows the tree, returning the completed tree.
+        --------------------------------------------------------
+        INPUT:
+            X: (np.ndarray) Feature matrix
+            y: (np.ndarray) Target vector
+            max_depth: (int; default: None)
+            min_num_samples: (int; default: 2)
+            current_depth: (int; default: 0)
+            func: (function; default: find_best_split_ig) Function to find best
+            split with; Information gain or Gini Index.
+
+        OUTPUT:
+            tree: (dict)
+        """
+        # If examples empty, return PLURALITY_VALUE(examples)
+        if len(y) == 0:
+            pass
+        
+        # If all examples have the same classification
+
+        # if attributes is empty, return PLURALITY_VALUE(examples)
+        
+        # argmax of most important attribute 
+
+
+    def clean_tree(self):
+        """
+        Removes the unneccessary labels for tree in order to correctly
+        "process" the predictions
+        --------------------------------------------------------
+        INPUT:
+
+        OUTPUT:
+            
+        """
+        pass
+
+    def majority_class(self, subtree):
+        """
+        Handles case when test data contains value not seen during training,
+        returning the most common value.
+        ------------------------------------------------------
+        INPUT:
+
+        OUTPUT:
+        """
+        pass
+
+    def predict(self, test):
+        """
+        Predictions with debugging output.
+        ------------------------------------------------------
+        INPUT:
+
+        OUTPUT:
 
         """
         pass
+
+    def validate_using_sklearn(self):
+        """
+    Validates the ( ͡° ͜ʖ ͡°  ) decision tree implementation against
+    scikit-learn's
+    implementation.
+    - Ensures both implementations use entropy as splitting criterion.
+    - Uses same max_depth
+    - Assumes test_data keys match X.columns
+    -----------------------------------------------------------------
+    INPUT:
+        X: (pd.Dataframe) Training data
+        y: (pd.DataFrame) Target labels
+        our_tree: (dict) Decision tree
+        test_data: (dict) Test instances
+        max_depth: (int: optional, default=3) Max depth of tree duh 
+
+    OUTPUT:
+        (tuple)
+        our_prediction: (str)
+        sklearn_prediction: (str)
+        accuracy_match: (bool) Whether predictions match
+        """
+        pass
+
+
+
+
+
+
 
 
 
