@@ -197,7 +197,7 @@ class DecisionTree(object):
 
         return values[rng.choice(max_indices)]
 
-    def learn_decision_tree(self, X, y, max_depth=None, min_num_samples=2,
+    def learn_decision_tree(self, X, y, parent_y=None, max_depth=None, min_num_samples=2,
                   current_dept=0, method="gini"):
         """
         Recursive function that grows the tree, returning the completed tree.
@@ -205,6 +205,7 @@ class DecisionTree(object):
         INPUT:
             X: (np.ndarray) Feature matrix
             y: (np.ndarray) Target vector
+            parent_y: (np.ndarray) Parent node's target vector (for empty nodes)
             max_depth: (int; default: None)
             min_num_samples: (int; default: 2)
             current_depth: (int; default: 0)
@@ -214,16 +215,59 @@ class DecisionTree(object):
         OUTPUT:
             tree: (dict)
         """
-        # If examples empty, return PLURALITY_VALUE(examples)
+        # If first call, set parent_y to current y
+        if parent_y is None:
+            parent_y = y
+
+        # If examples empty, return PLURALITY_VALUE(parent_examples)
         if len(y) == 0:
-            pass
+            return {"class": self.plurality_value(parent_y)}
         
         # If all examples have the same classification
-
-        # if attributes is empty, return PLURALITY_VALUE(examples)
+        if len(np.unique(y)) == 1:
+            return {"class": y[0]}
         
-        # argmax of most important attribute 
+        # if attributes is empty or max depth reached
+        if X.shape[1] == 0 or (max_depth is not None and current_depth >=
+                               max_depth):
+            return {"class": self.plurality_value(y)}
 
+        # Find best attributes using existing best_split method
+        best_feature = self.bes_split(X, y, method=method)
+
+        if best_feature is None:
+            return {"class": self.plurality_value(y)}
+
+        # Create tree structure
+        tree = {
+            "feature": best_feature,
+            "branches": {}
+        }
+
+        # For each value of the best feature
+        for value in np.unique(X[:, best_feature]):
+            # Create mask for feature value
+            mask = X[:, bes_feature] == value
+
+            # Get subset of data excluding the used feature
+            X_subset = np.delete(X[mask], best_feature, axis=1)
+            y_subset = y[mask]
+
+            # Recursive call
+            subtree = self.learn_decision_tree(
+                X_subset,
+                y_subset,
+                parent_y=y,
+                max_depth=max_depth,
+                min_num_samples=min_num_samples,
+                current_depth=current_depth+1,
+                method=method
+            )
+
+            # Add branch to tree
+            tree["branch"][value] = subtree
+
+        return tree
 
     def clean_tree(self):
         """
