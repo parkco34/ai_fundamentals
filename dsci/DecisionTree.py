@@ -4,10 +4,21 @@ import numpy as np
 
 class DecisionTree(object):
     def __init__(
-        max_depth,
+        self,
+        max_depth=None,
         min_num_samples=2,
         criterion="gini"
     ):        
+        """
+        Initialize DecisionTree classifier
+        ------------------------------------------
+        INPUT:
+            max_depth: (int) (default=None)
+            min_num_samples: (int) (default=2) Minimum number of samples
+            required to splkit a node
+            criterion: (str) (default='gini') Supported criteria are 'gini' for
+            the Gini IMpurity and 'entropy' for the information gain
+        """
         self.max_depth = max_depth
         self.min_num_samples = min_num_samples
         self.criterion = criterion
@@ -20,8 +31,12 @@ class DecisionTree(object):
             array: (np.ndarray) duh
 
         OUTPUT:
-            probs: (float) Probablities
+            probs: (np.ndarray) Array of probabilities for each unique class
         """
+        # Ensure we dont have an empty array, returning an empty array if so
+        if len(array) == 0:
+            return np.array([])
+
         total = len(array)
         probs = np.bincount(array) / total
 
@@ -40,10 +55,14 @@ class DecisionTree(object):
         OUTPUT:
             entropy: (float)
         """
+        # Ensure we have a populated array
+        if len(y) == 0:
+            return 0.0
+
         # Probabilities for the different classes
-        probabilities = get_probabilities(y)
+        probabilities = self.get_probabilities(y)
         
-        # ENtropy - Ensuring probabilities aren't zero
+        # ENtropy - Ensuring probabilities avoiding log(0)
         entropy = -np.sum([p * np.log2(p) for p in probabilities if p > 0])
         return entropy
 
@@ -57,20 +76,32 @@ class DecisionTree(object):
             attribute: (int) Categorical label (0 or 1)
 
         OUTPUT:
-
+            weighted_entropy: (float) Weighted entropy of child nodes
         """
+        # ensure non-empty array
+        if len(y) == 0:
+            return 0.0
+
         # Unique values only
-        chldren = np.unique(X[attribute])
-        weighted_entropy = 0
+        children = np.unique(X[:, attribute])
+        weighted_entropy = 0.0
+        total_samples = len(y)
 
         logging.debug(f"Entropy for attribute: {attribute}")
 
         for val in children:
+            # Get indices where feature has this value
+            mask = X[:, attribute] == val 
             # Subset target values
-            subset_y = y[X[attribute] == val]
-            # getting the probability distribution of subset
-            weight = get_probabilities(subset_y)
-            subset_entropy = parent_entropy(subset_y)
+            subset_y = y[mask]
+
+            # Ensure length of subset_y array is non-empty
+            if len(subset_y) == 0:
+                continue
+
+            # Weight, parent entropy and weighted entropy
+            weight = len(subset_y) / total_samples
+            subset_entropy = self.parent_entropy(subset_y)
             weighted_entropy += weight * subset_entropy
 
             return weighted_entropy
@@ -100,8 +131,8 @@ class DecisionTree(object):
         OUTPUT:
             gini: (float) gini index
         """
-        probabilities = get_probabilities(y)
-        gini = -np.sum(probabilities**2)
+        probabilities = self.get_probabilities(y)
+        gini = 1 - np.sum(probabilities**2)
 
         return gini
 
@@ -117,17 +148,26 @@ class DecisionTree(object):
         OUTPUT:
             weighted_gini: (float) 
         """
+        if len(y) == 0:
+            return 0.0
+
         # Get attribute values
-        values = np.unique(X[attribute])
-        weighted_gini = 0
+        values = np.unique(X[:, attribute])
+        weighted_gini = 0.0
+        total_samples = len(y)
 
         for val in values:
+            # Mask
+            mask = X[:, attribute]
             # Subset of attributes
-            subset_y = y[X[attribute] == val]
-            # Probability distribution of subset
-            weight = get_probabilities(subset_y)
+            subset_y = y[mask]
+
+            if len(subset_y) == 0:
+                continue
+
+            weight = len(subset_y) / total_samples
             # Subset gini from parent gini of entire dataset
-            parent_gini = parent_gini(subset_y)
+            parent_gini = self.parent_gini(subset_y)
             weighted_gini += weight * parent_gini
         
         return weighted_gini
@@ -156,7 +196,7 @@ class DecisionTree(object):
             best_gini = ("inf")
 
             for feat in np.unique(X.columns):
-                gini = child_gini(X, y, feat)
+                gini = self.child_gini(X, y, feat)
 
                 # Check for smallest gini index
                 if gini < best_gini:
@@ -264,7 +304,7 @@ class DecisionTree(object):
         # For each value of the best feature
         for value in np.unique(X[:, best_feature]):
             # Create mask for feature value
-            mask = X[:, bes_feature] == value
+            mask = X[:, best_feature] == value
 
             # Get subset of data excluding the used feature
             X_subset = np.delete(X[mask], best_feature, axis=1)
@@ -282,7 +322,7 @@ class DecisionTree(object):
             )
 
             # Add branch to tree
-            tree["branch"][value] = subtree
+            tree["branches"][value] = subtree
 
         return tree
 
