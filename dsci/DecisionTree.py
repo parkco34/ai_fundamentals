@@ -150,20 +150,37 @@ class DecisionTree(object):
         """
         # initialize best feature
         best_feat = None
-        # Initialize with large value since gini ~ 1/info_gain
-        best_gini = ("inf")
 
-        for feat in np.unique(X.columns):
-            gini = child_gini(X, y, feat)
+        if method == "gini":
+            # Initialize with large value since gini ~ 1/info_gain
+            best_gini = ("inf")
 
-            # Check for smallest gini index
-            if gini < best_gini:
-                best_gini = gini
-                best_feat = feat
+            for feat in np.unique(X.columns):
+                gini = child_gini(X, y, feat)
+
+                # Check for smallest gini index
+                if gini < best_gini:
+                    best_gini = gini
+                    best_feat = feat
+
+        else:
+            # Entropy for information gain
+            best_criterion = -float("inf")
+
+            for feat in np.unique(X.columns):
+                # calculate information gain
+                parent_entropy = self.parent_entropy(y)
+                child_entropy = self.child_entropy(X, y, feat)
+                info_gain = parent_entropy - child_entropy
+
+                # Update if we find larger information gain
+                if info_gain > best_criterion:
+                    best_criterion = info_gain
+                    best_feat = feat
 
         # Logging
         logging.debug(f"Best Feature: {best_feat}")
-        logging.debug(f"Best Gini index: {best_gini}")
+        logging.debug(f"""Best {'Gini' if method == 'gini' else 'information gain'}: {best_crtierion}""")
 
         return best_feat
 
@@ -278,17 +295,6 @@ class DecisionTree(object):
 
         OUTPUT:
             
-        """
-        pass
-
-    def majority_class(self, subtree):
-        """
-        Handles case when test data contains value not seen during training,
-        returning the most common value.
-        ------------------------------------------------------
-        INPUT:
-
-        OUTPUT:
         """
         pass
 
