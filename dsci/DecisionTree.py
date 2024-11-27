@@ -104,7 +104,7 @@ class DecisionTree(object):
             subset_entropy = self.parent_entropy(subset_y)
             weighted_entropy += weight * subset_entropy
 
-            return weighted_entropy
+        return weighted_entropy
 
     def parent_gini(self, y):
         """
@@ -158,7 +158,7 @@ class DecisionTree(object):
 
         for val in values:
             # Mask
-            mask = X[:, attribute]
+            mask = X[:, attribute] == val
             # Subset of attributes
             subset_y = y[mask]
 
@@ -167,8 +167,8 @@ class DecisionTree(object):
 
             weight = len(subset_y) / total_samples
             # Subset gini from parent gini of entire dataset
-            parent_gini = self.parent_gini(subset_y)
-            weighted_gini += weight * parent_gini
+            subset_gini = self.parent_gini(subset_y)
+            weighted_gini += weight * subset_gini
         
         return weighted_gini
 
@@ -186,16 +186,20 @@ class DecisionTree(object):
             method: (str) Gini or Information gain
 
         OUTPUT:
-            best_feat: (?) Best feature for split
+            best_feat: (int) Index of the best feature to split on
         """
+        if len(y) == 0 or X.shape[1] == 0:
+            return None
+
         # initialize best feature
         best_feat = None
 
         if method == "gini":
-            # Initialize with large value since gini ~ 1/info_gain
-            best_gini = ("inf")
-
-            for feat in np.unique(X.columns):
+            # Initialize with large value since gini ~ 1/info_gai
+            best_gini = float("inf")
+            
+            # For each attribute, comapre some stuff
+            for feat in range(X.shape[1]):
                 gini = self.child_gini(X, y, feat)
 
                 # Check for smallest gini index
@@ -203,11 +207,13 @@ class DecisionTree(object):
                     best_gini = gini
                     best_feat = feat
 
+            best_criterion = best_gini
+
         else:
             # Entropy for information gain
             best_criterion = -float("inf")
-
-            for feat in np.unique(X.columns):
+        
+            for feat in range(X.shape[1]):
                 # calculate information gain
                 parent_entropy = self.parent_entropy(y)
                 child_entropy = self.child_entropy(X, y, feat)
@@ -220,7 +226,7 @@ class DecisionTree(object):
 
         # Logging
         logging.debug(f"Best Feature: {best_feat}")
-        logging.debug(f"""Best {'Gini' if method == 'gini' else 'information gain'}: {best_crtierion}""")
+        logging.debug(f"""Best {'Gini' if method == 'gini' else 'information gain'}: {best_criterion}""")
 
         return best_feat
 
@@ -230,7 +236,9 @@ class DecisionTree(object):
         ties randomly
         ------------------------------------------------
         INPUT:
-            parent_examples: (np.ndarray) 
+            parent_examples: (np.ndarray) Target labels
+            random_state: (int) (default=None) Random state that introduces
+            reproducabiliy
 
         OUTPUT:
             basic_bitch: (int) Most common class label, breaking ties randomly
@@ -326,26 +334,15 @@ class DecisionTree(object):
 
         return tree
 
-    def clean_tree(self):
+    def predict(self):
         """
-        Removes the unneccessary labels for tree in order to correctly
-        "process" the predictions
-        --------------------------------------------------------
-        INPUT:
-
-        OUTPUT:
-            
+        ?
         """
         pass
 
-    def predict(self, test):
+    def fit(self, X, y):
         """
-        Predictions with debugging output.
-        ------------------------------------------------------
-        INPUT:
-
-        OUTPUT:
-
+        ?
         """
         pass
 
@@ -356,7 +353,7 @@ class DecisionTree(object):
     implementation.
     - Ensures both implementations use entropy as splitting criterion.
     - Uses same max_depth
-    - Assumes test_data keys match X.columns
+    - Assumes test_data keys match X.shape[1]
     -----------------------------------------------------------------
     INPUT:
         X: (pd.Dataframe) Training data
@@ -380,4 +377,6 @@ class DecisionTree(object):
 
 
 
+dt = DecisionTree()
+breakpoint()
 

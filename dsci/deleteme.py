@@ -1,313 +1,120 @@
 #!/usr/bin/env python
-import numpy as np
-import logging
+class DecisionTree(object):
+    # ... [other methods] ...
 
-class DecisionTree:
-    def __init__(self, max_depth=None, min_num_samples=2, criterion="gini"):
+    def fit(self, X, y):
+        self.tree = self.learn_decision_tree(
+            X,
+            y,
+            max_depth=self.max_depth,
+            min_num_samples=self.min_num_samples,
+            method=self.criterion
+        )
+
+    def predict(self, X):
         """
-        Initialize the DecisionTree classifier.
+        Predict the class labels for the given test data.
 
-        Parameters:
-        -----------
-        max_depth : int, optional (default=None)
-            Maximum depth of the tree
-        min_num_samples : int, optional (default=2)
-            Minimum number of samples required to split a node
-        criterion : str, optional (default="gini")
-            The function to measure the quality of a split.
-            Supported criteria are "gini" for the Gini impurity
-            and "entropy" for the information gain.
+        INPUT:
+            X: (np.ndarray) Test data
+
+        OUTPUT:
+            y_pred: (np.ndarray) Predicted class labels
         """
-        self.max_depth = max_depth
-        self.min_num_samples = min_num_samples
-        self.criterion = criterion
+        y_pred = [self.predict_single(sample, self.tree) for sample in X]
+        return np.array(y_pred)
 
-    def get_probabilities(self, array):
+    def predict_single(self, sample, tree):
         """
-        Returns the probability distribution of the given array.
+        Recursively traverse the tree to predict the class label for a single sample.
 
-        Parameters:
-        -----------
-        array : np.ndarray
-            Input array of class labels
+        INPUT:
+            sample: (np.ndarray) A single sample
+            tree: (dict) The decision tree
 
-        Returns:
-        --------
-        probs : np.ndarray
-            Array of probabilities for each unique class
+        OUTPUT:
+            label: Predicted class label
         """
-        if len(array) == 0:
-            return np.array([])
-
-        total = len(array)
-        probs = np.bincount(array) / total
-        return probs
-
-    def parent_entropy(self, y):
-        """
-        Calculate the entropy of the dataset.
-
-        Parameters:
-        -----------
-        y : np.ndarray
-            Array of class labels
-
-        Returns:
-        --------
-        entropy : float
-            Entropy value of the dataset
-        """
-        if len(y) == 0:
-            return 0.0
-
-        probabilities = self.get_probabilities(y)
-        # Calculate entropy while avoiding log(0)
-        entropy = -np.sum([p * np.log2(p) for p in probabilities if p > 0])
-        return entropy
-
-    def child_entropy(self, X, y, attribute):
-        """
-        Calculate the weighted entropy for child nodes after splitting on an attribute.
-
-        Parameters:
-        -----------
-        X : np.ndarray
-            Feature matrix
-        y : np.ndarray
-            Target vector
-        attribute : int
-            Index of the attribute to split on
-
-        Returns:
-        --------
-        weighted_entropy : float
-            Weighted entropy of child nodes
-        """
-        if len(y) == 0:
-            return 0.0
-
-        children = np.unique(X[:, attribute])
-        weighted_entropy = 0.0
-        total_samples = len(y)
-
-        for val in children:
-            # Get indices where feature has this value
-            mask = X[:, attribute] == val
-            subset_y = y[mask]
-
-            if len(subset_y) == 0:
-                continue
-
-            # Weight is the proportion of samples with this feature value
-            weight = len(subset_y) / total_samples
-            subset_entropy = self.parent_entropy(subset_y)
-            weighted_entropy += weight * subset_entropy
-
-        return weighted_entropy
-
-    def parent_gini(self, y):
-        """
-        Calculate the Gini impurity of the dataset.
-
-        Parameters:
-        -----------
-        y : np.ndarray
-            Array of class labels
-
-        Returns:
-        --------
-        gini : float
-            Gini impurity value
-        """
-        if len(y) == 0:
-            return 0.0
-
-        probabilities = self.get_probabilities(y)
-        gini = 1 - np.sum(probabilities ** 2)
-        return gini
-
-    def child_gini(self, X, y, attribute):
-        """
-        Calculate the weighted Gini impurity for child nodes after splitting on an attribute.
-
-        Parameters:
-        -----------
-        X : np.ndarray
-            Feature matrix
-        y : np.ndarray
-            Target vector
-        attribute : int
-            Index of the attribute to split on
-
-        Returns:
-        --------
-        weighted_gini : float
-            Weighted Gini impurity of child nodes
-        """
-        if len(y) == 0:
-            return 0.0
-
-        values = np.unique(X[:, attribute])
-        weighted_gini = 0.0
-        total_samples = len(y)
-
-        for val in values:
-            mask = X[:, attribute] == val
-            subset_y = y[mask]
-
-            if len(subset_y) == 0:
-                continue
-
-            weight = len(subset_y) / total_samples
-            subset_gini = self.parent_gini(subset_y)
-            weighted_gini += weight * subset_gini
-
-        return weighted_gini
-
-    def best_split(self, X, y, method="gini"):
-        """
-        Find the best feature to split on using either Gini impurity or information gain.
-
-        Parameters:
-        -----------
-        X : np.ndarray
-            Feature matrix
-        y : np.ndarray
-            Target vector
-        method : str, optional (default="gini")
-            The criterion to use for finding the best split
-
-        Returns:
-        --------
-        best_feat : int
-            Index of the best feature to split on
-        """
-        if len(y) == 0 or X.shape[1] == 0:
-            return None
-
-        best_feat = None
-
-        if method == "gini":
-            best_criterion = float("inf")
-            for feat in range(X.shape[1]):
-                gini = self.child_gini(X, y, feat)
-                if gini < best_criterion:
-                    best_criterion = gini
-                    best_feat = feat
+        if 'class' in tree:
+            return tree['class']
         else:
-            best_criterion = -float("inf")
-            parent_ent = self.parent_entropy(y)
-            for feat in range(X.shape[1]):
-                child_ent = self.child_entropy(X, y, feat)
-                info_gain = parent_ent - child_ent
-                if info_gain > best_criterion:
-                    best_criterion = info_gain
-                    best_feat = feat
-
-        logging.debug(f"Best Feature: {best_feat}")
-        logging.debug(f"Best {'Gini' if method == 'gini' else 'information gain'}: {best_criterion}")
-
-        return best_feat
+            feature = tree['feature']
+            value = sample[feature]
+            if value in tree['branches']:
+                subtree = tree['branches'][value]
+                return self.predict_single(sample, subtree)
+            else:
+                # Use the plurality class stored at this node
+                return tree['plurality_class']
 
     def plurality_value(self, y, random_state=None):
         """
-        Returns the most common output value among a set of examples,
-        breaking ties randomly.
-
-        Parameters:
-        -----------
-        y : np.ndarray
-            Array of class labels
-        random_state : int, optional (default=None)
-            Random state for reproducibility
-
-        Returns:
-        --------
-        most_common : int
-            Most common class label
+        Returns the most common output value among set of examples, breaking
+        ties randomly.
         """
         if len(y) == 0:
             return None
 
         values, counts = np.unique(y, return_counts=True)
-        max_indices = np.where(counts == counts.max())[0]
+        max_count_indices = np.where(counts == counts.max())[0]
 
-        if len(max_indices) == 1:
-            return values[max_indices[0]]
+        if len(max_count_indices) == 1:
+            return values[max_count_indices[0]]
 
-        rng = np.random.RandomState(random_state)
-        return values[rng.choice(max_indices)]
+        rng = np.random.default_rng(random_state)
+        return rng.choice(values[max_count_indices])
 
-    def learn_decision_tree(self, X, y, parent_y=None, max_depth=None,
-                          min_num_samples=2, current_depth=0, method="gini"):
+    def learn_decision_tree(self, X, y, parent_y=None, max_depth=None, min_num_samples=2,
+                            current_depth=0, method="gini"):
         """
-        Recursively builds the decision tree.
-
-        Parameters:
-        -----------
-        X : np.ndarray
-            Feature matrix
-        y : np.ndarray
-            Target vector
-        parent_y : np.ndarray, optional (default=None)
-            Parent node's target vector
-        max_depth : int, optional (default=None)
-            Maximum depth of the tree
-        min_num_samples : int, optional (default=2)
-            Minimum number of samples required to split a node
-        current_depth : int, optional (default=0)
-            Current depth in the tree
-        method : str, optional (default="gini")
-            The criterion to use for finding the best split
-
-        Returns:
-        --------
-        tree : dict
-            The decision tree represented as a dictionary
+        Recursive function that grows the tree, returning the completed tree.
         """
-        if parent_y is None:
-            parent_y = y
+        # ... [existing code] ...
 
-        # Base cases
+        # Find the plurality class of the current node
+        plurality_class = self.plurality_value(y)
+
+        # If stopping conditions are met, return a leaf node
         if len(y) == 0:
             return {"class": self.plurality_value(parent_y)}
-
         if len(np.unique(y)) == 1:
             return {"class": y[0]}
-
         if X.shape[1] == 0 or (max_depth is not None and current_depth >= max_depth):
-            return {"class": self.plurality_value(y)}
+            return {"class": plurality_class}
 
         # Find best attribute to split on
         best_feature = self.best_split(X, y, method=method)
 
         if best_feature is None:
-            return {"class": self.plurality_value(y)}
+            return {"class": plurality_class}
 
-        # Create tree structure
+        # Create the tree node with plurality class
         tree = {
             "feature": best_feature,
-            "branches": {}
+            "branches": {},
+            "plurality_class": plurality_class
         }
 
-        # Create branches
+        # For each value of the best feature
         for value in np.unique(X[:, best_feature]):
             mask = X[:, best_feature] == value
             X_subset = np.delete(X[mask], best_feature, axis=1)
             y_subset = y[mask]
 
-            # Recursive call
             subtree = self.learn_decision_tree(
                 X_subset,
                 y_subset,
                 parent_y=y,
                 max_depth=max_depth,
                 min_num_samples=min_num_samples,
-                current_depth=current_depth+1,
+                current_depth=current_depth + 1,
                 method=method
             )
 
             tree["branches"][value] = subtree
 
         return tree
+
+    # ... [other methods] ...
+
 
