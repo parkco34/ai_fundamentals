@@ -1,27 +1,103 @@
-#!/usr/bin/env python
+# Predcited class labels!/usr/bin/env python
+from typing import Optional, Union, Dict, List, Any
+import logging
 import numpy as np
+
+
+class Node:
+    def __init__(self, data=None, children=None, split_on=None,
+                 predicted_class=None, is_leaf=False):
+        self.data = data
+        self.predicted_class = predicted_class
+        self.children = children if children is not None else []
+        self.split_on = split_on
+        self.is_leaf = is_leaf
 
 
 class DecisionTree(object):
     def __init__(
         self,
-        max_depth=None,
-        min_num_samples=2,
-        criterion="gini"
+        max_depth: OPtional[int] = None,
+        min_num_samples: int = 2,
+        criterion: str = "gini"
     ):        
         """
         Initialize DecisionTree classifier
         ------------------------------------------
         INPUT:
-            max_depth: (int) (default=None)
+            max_depth: (int, optional) (default=None)
             min_num_samples: (int) (default=2) Minimum number of samples
-            required to splkit a node
+            required to split a node
             criterion: (str) (default='gini') Supported criteria are 'gini' for
-            the Gini IMpurity and 'entropy' for the information gain
+            the Gini IMpurity and 'entropy' for the information gain; function
+            to measure the quality of the split
         """
+        # Check for proper criterion
+        if criterion not in ["entropy", "gini"]:
+            raise ValueError("Criterion must be either 'gini' or 'entropy'")
+        # Invoke Node class
+        self.root = Node()
         self.max_depth = max_depth
         self.min_num_samples = min_num_samples
         self.criterion = criterion
+        self.n_features = None
+        self.classes_ = None
+        self.feature_types = None
+
+    def _check_input(self, X: np.ndarray, y: Optional[np.ndarray] = None) -> None:
+        """
+        Validate input data
+        """
+        if not isinstance(X, np.ndarray):
+            try:
+                X = np.array(X)
+
+            except:
+                raise TypeError("X must be convertible to numpy array")
+
+        if y is not None:
+            if not isinstance(y, np.ndarray):
+                try:
+                    y = np.array(y)
+
+                except:
+                    raise TypeError("y must be convertible to numpy array")
+
+            if X.shape[0] != y.shape[0]:
+                raise TypeError("Number of samples in X and y must match!")
+
+        if len(X.shape) != 2:
+            raise ValueError("X must be a 2D array")
+
+    def _get_feature_type(self, X: np.ndarray, feature_idx: int) -> str:
+        """
+        Determines if features is categorical or numerical.
+        ------------------------------------------------------
+        INPUT:
+            X: (np.ndarray) Training data
+            feature_idx: (int) ?
+
+        OUTPUT:
+            feature_type: (str) Categorical or numerical
+        """
+        unique_values = np.unique(X[:, feature_idx])
+
+        if len(unique_values) <= 10 and all(instance(x, (int, np.integer)) for
+                                            x in unique_values):
+            return "categorical"
+
+        return "numerical"
+
+    def split_numerical(self, X: np.ndarray, y: np.ndarray, feature: int):
+        """
+        Finds best split point for numerical feature.
+        ------------------------------------------------
+        INPUT:
+            X: (np.ndarray) Training data
+            y: (np.ndarray) Target labels
+            feature: (?) Individual feature
+        """
+        pass
 
     def get_probabilities(self, array):
         """
@@ -262,8 +338,16 @@ class DecisionTree(object):
 
         return values[rng.choice(max_indices)]
 
-    def learn_decision_tree(self, X, y, parent_y=None, max_depth=None, min_num_samples=2,
-                  current_dept=0, method="gini"):
+    def learn_decision_tree(
+        self, 
+        X, 
+        y, 
+        parent_y=None, 
+        max_depth=None, 
+        min_num_samples=2,
+        current_dept=0, 
+        method="gini"
+    ):
         """
         Recursive function that grows the tree, returning the completed tree.
         --------------------------------------------------------
@@ -334,17 +418,123 @@ class DecisionTree(object):
 
         return tree
 
-    def predict(self):
+    def traverse_tree(self, x, tree):
         """
-        ?
-        """
-        pass
+        Traverse decision tree for a single sample to make prediction
+        ----------------------------------------------------------------
+        INPUT:
 
+        OUTPUT:
+
+        """
+        # Base case if we've hit a leaf node, do weird shit
+        if "class" in tree:
+            return tree["class"]
+
+        # Get the feature index we're splitting on at this node
+        feature = tree["feature"]
+        # Get the values for this feature in our input sample
+        value = x[feature]
+
+        # Handle case whre we see a feature value not present in traiing data
+        if value not in tree["branches"]:
+            # Collect all class values from current value
+            classes = []
+            for subtree in tree["branches"].values():
+                
+                if "class" in subtree:
+                    classes.append(subtree["class"])
+
+            # If we found any classes, return most common
+            if classes:
+                # Get most frequent class
+                return max(set(classes), key=classes.count)
+            
+            # If no classes found return the first available  class
+            return list(tree["branches"].values())[0]["class"]
+
+        # Recursively traverse proper branch
+        return self.traverse_tree(x, tree["branches"][value])
+
+    def predict(self, X):
+        """
+        Predict class probabilities for samples in X
+        -------------------------------------------------
+        INPUT:
+            X: (np.ndarray) Training data
+
+        OUTPUT:
+            predcitions: (np.ndarray) Predcited class labels
+        """
+        # Input validation
+        if not isinstance(X, np.ndarray):
+            raise TypeError("X must be a numpy array")
+
+        if len(X.shape) != 2 or X.shape[1] != self.n_features:
+            raise ValueError(f"X mnust have shape (n_samples, {self.n_features})")
+
+        # Make predictions for each sample
+        predictions = np.array([self._traverse_tree(x, self.tree) for x in X])
+
+        return predictions
+        
+    def predict_prob(self, X):
+        """
+        Predict class probabilities for samples in X.
+        ------------------------------------------------
+        INPUT:
+            X: (np.ndarray) training data
+
+        OUTPUT:
+            probabilities: (np.ndarray) Class Probabilities of shape
+            (n_samples, n_classes)
+        """
+        if not hasattr(self, "classes_"):
+            self.classes_ = np.unique(self.predict(X))
+
+        # Get predictions
+        predictions = self.predict(X)
+
+        # Calculate probabilities using get_probabilities method
+        probabilities = np.zeros(len(X), len(self.classes_))
+        for i, class_label in enumerate(self.classes_):
+            probabilities[:, i] = (predictions == class_label).astype(float)
+
+        return probabilities
+        
     def fit(self, X, y):
         """
-        ?
+        Train the decision tree classifier
+        ------------------------------------------------
+        INPUT:
+            X: (np.ndarray) Training feature matrix of shape (n_samples,
+            n_features)
+            y: (np.ndarray) Target labels of shape (n_samples)
+
+        OUTPUT:
         """
-        pass
+        # Input validation
+        if not isinstance(X, np.ndarray) or not isinstance(y, np.ndarray):
+            raise TypeError("X and y must be numpy arrays!")
+
+        if X.shape[0] != y.shape[0]:
+            raise ValueError("Number of samples in X and y must match")
+
+        if len(X.shape) != 2:
+            raise ValueError("X must be a 2D array")
+            
+        # Store number of features
+        self.n_features = X.shape[1]
+
+        # Train tree using specific criterion
+        self.tree = self.learn_decision_tree(
+            X,
+            y,
+            max_depth=self.max_depth,
+            method=self.criterion
+        )
+
+        return self
 
     def validate_using_sklearn(self):
         """
