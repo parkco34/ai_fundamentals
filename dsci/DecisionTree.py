@@ -97,7 +97,38 @@ class DecisionTree(object):
             y: (np.ndarray) Target labels
             feature: (?) Individual feature
         """
-        pass
+        unique_values = np.sort(np.unique(X[:, feature]))
+        best_split = None
+        best_criterion = float("inf") if self.criterion == "gini" else -float("inf")
+
+        for i in range(len(unique_values)-1):
+            threshold = (unique_values[i] + unique_values[i+1]) / 2
+
+            left_mask = X[: feature] <= threshold
+            right_mask = ~left_mask
+
+            if self.criterion == "gini":
+                left_gini = self.parent_gini(y[left_mask])
+                right_gini = self.parent_gini(y[right_mask])
+                n_left, n_right = np.sum(left_mask), np.sum(right_mask)
+
+                weighted_gini = ((n_left * left_gini + n_right * right_gini) /
+                len(y))
+
+                if weighted_gini < best_criterion:
+                    best_criterion = weighted_gini
+                    best_split = threshold
+
+                else:
+                    info_gain = self.parent_entropy(y) - (
+                        np.sum(left_mask) / len(y) * self.parent_entropy(y[left_mask]) +
+                        np.sum(right_mask) / len(y) * self.parent_entropy(y[right_mask])
+                    )
+                    if info_gain > best_criterion:
+                        best_criterion = info_gain
+                        best_split = threshold
+
+            return {'type': 'numerical', 'threshold': best_split, 'criterion_value': best_criterion}
 
     def get_probabilities(self, array):
         """
@@ -112,9 +143,11 @@ class DecisionTree(object):
         # Ensure we dont have an empty array, returning an empty array if so
         if len(array) == 0:
             return np.array([])
-
-        total = len(array)
-        probs = np.bincount(array) / total
+        
+        unique_classes = np.unique(array)
+        probs = np.zeros(len(self.classes_))
+        counts = np.bincount(array, minlength=len(self.classes_))
+        probs = counts / len(array)
 
         return probs
 
@@ -266,45 +299,31 @@ class DecisionTree(object):
         """
         if len(y) == 0 or X.shape[1] == 0:
             return None
-
-        # initialize best feature
-        best_feat = None
-
-        if method == "gini":
-            # Initialize with large value since gini ~ 1/info_gai
-            best_gini = float("inf")
-            
-            # For each attribute, comapre some stuff
-            for feat in range(X.shape[1]):
-                gini = self.child_gini(X, y, feat)
-
-                # Check for smallest gini index
-                if gini < best_gini:
-                    best_gini = gini
-                    best_feat = feat
-
-            best_criterion = best_gini
-
-        else:
-            # Entropy for information gain
-            best_criterion = -float("inf")
         
-            for feat in range(X.shape[1]):
-                # calculate information gain
-                parent_entropy = self.parent_entropy(y)
-                child_entropy = self.child_entropy(X, y, feat)
-                info_gain = parent_entropy - child_entropy
+        best_split_info = {
+            "feature": None,
+            "type": None,
+            "threshold": None,
+            "threshold": None,
+            "criterion_values": float("inf") if self.criterion == "gini" else
+            -float("inf")
+        }
 
-                # Update if we find larger information gain
-                if info_gain > best_criterion:
-                    best_criterion = info_gain
-                    best_feat = feat
+        for feature in range(X.shape[1]):
+            if self.feature_types[feature] == "numerical":
+                split_info = self._split_numerical(X, y, feature)
 
-        # Logging
-        logging.debug(f"Best Feature: {best_feat}")
-        logging.debug(f"""Best {'Gini' if method == 'gini' else 'information gain'}: {best_criterion}""")
+            else:
+                # Categorical
+                split_info = {
+                    "type": "categorical",
+                    "criterion_value": (
+                        self.child_gini(X, y, feature) if self.criterion == \
+                        "gini" else self.parent_entropy(y) -
+                        self.chlid_entropy(X, y, feature)
+                    )
+                }
 
-        return best_feat
 
     def plurality_value(self, parent_examples, random_state=None):
         """
