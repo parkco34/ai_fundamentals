@@ -324,8 +324,15 @@ class DecisionTree(object):
                     )
                 }
 
+            if (self.criterion == 'gini' and split_info['criterion_value'] < best_split_info['criterion_value']) or \
+               (self.criterion == 'entropy' and split_info['criterion_value'] > best_split_info['criterion_value']):
+                best_split_info.update(split_info)
+                best_split_info['feature'] = feature
 
-    def plurality_value(self, parent_examples, random_state=None):
+        return best_split_info if best_split_info['feature'] is not None else None
+
+    def plurality_value(self, y: np.ndarray, random_state: Optional[int] =
+                        None) -> None:
         """
         Returns the most common output value among set of examples, breaking
         ties randomly
@@ -359,14 +366,11 @@ class DecisionTree(object):
 
     def learn_decision_tree(
         self, 
-        X, 
-        y, 
-        parent_y=None, 
-        max_depth=None, 
-        min_num_samples=2,
-        current_dept=0, 
-        method="gini"
-    ):
+        X: np.ndarray, 
+        y: np.ndarray, 
+        parent_y: Optional[np.ndarray] = None, 
+        current_depth: int = 0
+    ) -> None:
         """
         Recursive function that grows the tree, returning the completed tree.
         --------------------------------------------------------
@@ -387,13 +391,20 @@ class DecisionTree(object):
         if parent_y is None:
             parent_y = y
 
+        # Establish node
+        node = Node(data={"X": X, "y": y})
+
         # If examples empty, return PLURALITY_VALUE(parent_examples)
         if len(y) == 0:
-            return {"class": self.plurality_value(parent_y)}
+            node.predicted_class = self.plurality_value(parent_y)
+            node.is_leaf = True
+            return node
         
         # If all examples have the same classification
         if len(np.unique(y)) == 1:
-            return {"class": y[0]}
+            node.predicted_class = y[0]
+            node.is_leaf = True
+            return node
         
         # if attributes is empty or max depth reached
         if X.shape[1] == 0 or (max_depth is not None and current_depth >=
