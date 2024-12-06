@@ -1,4 +1,5 @@
 # Predcited class labels!/usr/bin/env python
+import io
 from typing import Optional, Union, Dict, List, Any
 import pandas as pd
 import logging
@@ -6,13 +7,21 @@ import numpy as np
 
 
 class Node:
-    def __init__(self, data=None, children=None, split_on=None,
-                 predicted_class=None, is_leaf=False):
+    def __init__(
+        self, 
+        data=None, 
+        children=None, 
+        split_on=None,
+        predicted_class=None, 
+        is_leaf=False,
+        threshold=None
+    ):
         self.data = data
         self.predicted_class = predicted_class
         self.children = children if children is not None else {}
         self.split_on = split_on
         self.is_leaf = is_leaf
+        self.threshold = threshold
 
 
 class DecisionTree(object):
@@ -45,6 +54,16 @@ class DecisionTree(object):
         self.classes_ = None
         self.feature_types = None
 
+    def _encode_classes(self, y):
+        """
+        Encode string classes into integers for internal processing
+        """
+        unique_classes = np.unique(y)
+        self.classes_ = unique_classes
+        self.class_to_int = {cls: i for i, cls in enumerate(unique_classes)}
+        self.int_to_class = {i: cls for cls, i in self.class_to_int.items()}
+        return np.array([self.class_to_int[val] for val in y])
+
     def _check_input(self, X: np.ndarray, y: Optional[np.ndarray] = None) -> None:
         """
         Validate input data
@@ -70,61 +89,53 @@ class DecisionTree(object):
         if len(X.shape) != 2:
             raise ValueError("X must be a 2D array")
 
-    def _get_feature_type(self, X: np.ndarray, feature_idx: int) -> str:
-        """
-        Determines if features is categorical or numerical.
-        ------------------------------------------------------
-        INPUT:
-            X: (np.ndarray) Training data
-            feature_idx: (int) ?
+    def _is_number(self, x):
+        try:
+            float(x)
+            return True
+        except:
+            return False
 
-        OUTPUT:
-            feature_type: (str) Categorical or numerical
-        """
-        # why ?
+    def _get_feature_type(self, X: np.ndarray, feature_idx: int) -> str:
         unique_values = np.unique(X[:, feature_idx])
 
-        if len(unique_values) <= 10 and all(isinstance(x, (int, np.integer)) for
-                                            x in unique_values):
+        # If all values can be converted to float, consider it numerical
+        if all(self._is_number(val) for val in unique_values):
+            return "numerical"
+        else:
             return "categorical"
 
-        return "numerical"
 
     def split_numerical(self, X: np.ndarray, y: np.ndarray, feature: int):
-        """
-        Finds best split point for numerical feature.
-        ------------------------------------------------
-        INPUT:
-            X: (np.ndarray) Training data
-            y: (np.ndarray) Target labels
-            feature: (?) Individual feature
-        """
-        # Get sorted unique values
-        unique_values = np.sort(np.unique(X[:, feature]))
+        # Since this method should only be called if the feature is numeric,
+        # we can safely convert values to float.
+        unique_values = np.unique(X[:, feature].astype(float))
+        unique_values = np.sort(unique_values)
         best_split = None
         best_criterion = float("inf") if self.criterion == "gini" else -float("inf")
 
-        # For each pair of consecutive values, split between them nuts
+        # If there's less than 2 unique numeric values, no split possible
+        if len(unique_values) < 2:
+            # Return a default dictionary indicating no valid split
+            return {'type': 'numerical', 'threshold': None, 'criterion_value': best_criterion}
+
         for i in range(len(unique_values)-1):
             threshold = (unique_values[i] + unique_values[i+1]) / 2
 
-            left_mask = X[:, feature] <= threshold
+            left_mask = X[:, feature].astype(float) <= threshold
             right_mask = ~left_mask
 
             if self.criterion == "gini":
-                # Calculate weights gini impurity
                 left_gini = self.parent_gini(y[left_mask])
                 right_gini = self.parent_gini(y[right_mask])
                 n_left, n_right = np.sum(left_mask), np.sum(right_mask)
-                weighted_gini = (n_left * left_gini + n_right * right_gini) / \
-                len(y)
+                weighted_gini = (n_left * left_gini + n_right * right_gini) / len(y)
 
-                # Compare gini shit
                 if weighted_gini < best_criterion:
                     best_criterion = weighted_gini
                     best_split = threshold
 
-            else:
+            else:  # entropy
                 info_gain = self.parent_entropy(y) - (
                     np.sum(left_mask) / len(y) * self.parent_entropy(y[left_mask]) +
                     np.sum(right_mask) / len(y) * self.parent_entropy(y[right_mask])
@@ -134,6 +145,7 @@ class DecisionTree(object):
                     best_split = threshold
 
         return {'type': 'numerical', 'threshold': best_split, 'criterion_value': best_criterion}
+
 
     def get_probabilities(self, array):
         """
@@ -149,8 +161,6 @@ class DecisionTree(object):
         if len(array) == 0:
             return np.array([])
         
-        unique_classes = np.unique(array)
-        probs = np.zeros(len(self.classes_))
         counts = np.bincount(array, minlength=len(self.classes_))
         probs = counts / len(array)
 
@@ -273,14 +283,19 @@ else -> return most common class from node's data
         # ?
         feature = node.split_on
 
-        if hasattr(node, "threshold"):
-            return (self._predict_single(x, node.children["left"])
-                   if x[feature] <= node.threshold
-                   else self._predict_single(x, node.children["right"]))
+        # if node.threshold is None, categorical split
+        if node.threshold is not None:
+            # Numerical split
+            return (
+                self._predict_single(x, node.children["left"])
+                if x[feature] <= node.threshold
+                else self._predict_single(x, node.children["right"])
+            )
 
         # Obtain value for that feature
         value = x[feature]
         if value not in node.children:
+            # If unseen category at prediction time, pick the plurality class
             return self.plurality_value(node.data["y"])
 
         return self._predict_single(x, node.children[value])
@@ -372,16 +387,24 @@ else -> return most common class from node's data
             if self.feature_types[feature] == "numerical":
                 split_info = self.split_numerical(X, y, feature)
 
+                # if no valid numerical spit continue to next feature
+                if split_info["threshold"] is None:
+                    continue
+
             else:
                 # Categorical split
-                split_info = {
-                    "type": "categorical",
-                    "criterion_value": (
-                        self.child_gini(X, y, feature) if self.criterion == \
-                        "gini" else self.parent_entropy(y) -
-                        self.child_entropy(X, y, feature)
-                    )
-                }
+                crit_val = (
+                    self.child_gini(X, y, feature) if self.criterion=="gini"
+                    else self.parent_entropy(y) - self.child_entropy(X, y,
+                                                                     feature))
+                split_info = {"type": "categorical", "criterion_value":
+                              crit_val}
+
+            # Check for valid threshold
+            if (split_info["type"] == "numerical" and
+                split_info["threshold"] is None):
+                # No valid numerical split found
+                return None
 
             # Compare criteria values and update if better
             if ((self.criterion == 'gini' and split_info['criterion_value'] < best_split_info['criterion_value']) or \
@@ -389,7 +412,11 @@ else -> return most common class from node's data
                 best_split_info.update(split_info)
                 best_split_info['feature'] = feature
 
-        return best_split_info if best_split_info["feature"] is not None else None
+        # If no feature improved criterion, return None
+        if best_split_info["feature"] is None:
+            return None
+
+        return best_split_info
 
     def plurality_value(self, y: np.ndarray, random_state: Optional[int] =
                         None) -> None:
@@ -511,9 +538,10 @@ else -> return most common class from node's data
                 node.children[value] = self.learn_decision_tree(
                     X[mask],
                     y[mask],
+                    y,
                     current_depth+1
                 )
-        
+
         return node
         
     def traverse_tree(self, x: np.ndarray, tree):
@@ -587,6 +615,9 @@ else -> return most common class from node's data
         # Input validation
         self._check_input(X, y)
 
+        # Encode classes
+        y = self._encode_classes(y)
+
         # GEt data
         self.n_features = X.shape[1]
         self.classes_ = np.unique(y)
@@ -599,76 +630,38 @@ else -> return most common class from node's data
         self.root = self.learn_decision_tree(X, y)
         return self
 
-    def validate_using_sklearn(self):
-        """
-    Validates the ( ͡° ͜ʖ ͡°  ) decision tree implementation against
-    scikit-learn's
-    implementation.
-    - Ensures both implementations use entropy as splitting criterion.
-    - Uses same max_depth
-    - Assumes test_data keys match X.shape[1]
-    -----------------------------------------------------------------
-    INPUT:
-        X: (pd.Dataframe) Training data
-        y: (pd.DataFrame) Target labels
-        our_tree: (dict) Decision tree
-        test_data: (dict) Test instances
-        max_depth: (int: optional, default=3) Max depth of tree duh 
 
-    OUTPUT:
-        (tuple)
-        our_prediction: (str)
-        sklearn_prediction: (str)
-        accuracy_match: (bool) Whether predictions match
-        """
-        from sklearn.tree import DecisionTreeClassifier
+def main():
+# Student dataset ================================================
+    df = pd.read_csv("exam_results.csv")
+    y = df["Exam Result"].values
+    X = df[["Other online courses", "Student background", "Working Status"]].values
+    tree = DecisionTree(criterion="gini", max_depth=5)
+    tree.fit(X, y)
 
-        # Create sklearn tree with same parameters
-        sklearrn_tree = DecisionTreeClassifier(
-            max_depth=self.max_depth,
-            criterion = self.criterion,
-            min_samples_split=self.min_num_samples
-        )
+    predictions = tree.predict(X)
+    # convert predictions integers back to original string labels
+    decoded_predictions = [tree.int_to_class[pred] for pred in predictions]
+    print("""Preditcted exam results for each student based on their characteristics""")
+    for i, pred in enumerate(decoded_predictions):
+        student_id = df.iloc[i]["Resp srl no"]
+        print(f"Student {student_id}: Predicted = {pred}")
+    # ================================================================
+    # Example Usage ================================================
+#    df = pd.read_csv("restaurant_waiting.csv")
+#    y = df["WillWait"].values
+#    X = df.drop("WillWait", axis=1).values.astype(str)
+#    tree = DecisionTree(criterion="gini",  max_depth=5)
+#    tree.fit(X, y)
+#    predictions = tree.predict(X)
+#    decoded_predictions = [tree.int_to_class[p] for p in predictions]
+#
+#    for i, pred in enumerate(decoded_predictions):
+#        print(f"Sample {i}: Predicted = {pred}")
 
-        # Fit both trees
-        sklearn_tree.fit(X, y)
-        self.fit(X, y)
-
-        # Get prediction
-        our_predictions = self.predict(test_X)
-        sklearn_predictions = sklearn_tree.predict(test_X)
-
-        # Compare predictions
-        accuracy_match = np.mean(our_predictions == sklearn_predictions)
-        return our_predictions, sklearn_predictions, accuracy_match
+    breakpoint()
 
 
+if __name__ == "__main__":
+    main()
 
-# =======================================================
-"""EXAMPLE USAGE"""
-# Load and encode data for exam_results.csv dataset
-data = pd.read_csv('exam_results.csv')
-mappings = {
-    'Exam Result': {'Pass': 1, 'Fail': 0},
-    'Other online courses': {'Y': 1, 'N': 0},
-    'Student background': {'Maths': 0, 'CS': 1, 'Other': 2},
-    'Working Status': {'W': 1, 'NW': 0}
-}
-# Encode categorical variables using the mappings
-for column, mapping in mappings.items():
-    data[column] = data[column].map(mapping)
-
-# Split into features (X) and target (y)
-X = data.drop('Exam Result', axis=1).values
-y = data['Exam Result'].values
-# =======================================================
-# Test the implementation
-dt = DecisionTree(max_depth=3, criterion="gini")
-dt.fit(X, y)
-predictions = dt.predict(X)
-accuracy = np.mean(predictions == y)
-print(f"Accuracy: {accuracy:.2f}")
-
-# Validate against sklearn
-#sklearn_comparison = dt.validate_using_sklearn(X, y, X)
-#print(f"Sklearn accuracy match: {sklearn_comparison[2]:.2f}")
