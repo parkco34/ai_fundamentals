@@ -6,6 +6,12 @@ import logging
 import numpy as np
 
 
+class TargetColumnIdentifier:
+    def __init__(self):
+        # Common patterns in target column names
+        pass
+
+
 class Node:
     def __init__(
         self, 
@@ -632,20 +638,24 @@ else -> return most common class from node's data
 
 
 def main():
-# Student dataset ================================================
-    df = pd.read_csv("exam_results.csv")
-    y = df["Exam Result"].values
-    X = df[["Other online courses", "Student background", "Working Status"]].values
-    tree = DecisionTree(criterion="gini", max_depth=5)
-    tree.fit(X, y)
+    # Iris dataset =================================================
+    df = pd.read_csv("iris_dataset.csv")
 
-    predictions = tree.predict(X)
-    # convert predictions integers back to original string labels
-    decoded_predictions = [tree.int_to_class[pred] for pred in predictions]
-    print("""Preditcted exam results for each student based on their characteristics""")
-    for i, pred in enumerate(decoded_predictions):
-        student_id = df.iloc[i]["Resp srl no"]
-        print(f"Student {student_id}: Predicted = {pred}")
+
+    # Student dataset ================================================
+#    df = pd.read_csv("exam_results.csv")
+#    y = df["Exam Result"].values
+#    X = df[["Other online courses", "Student background", "Working Status"]].values
+#    tree = DecisionTree(criterion="gini", max_depth=5)
+#    tree.fit(X, y)
+#
+#    predictions = tree.predict(X)
+#    # convert predictions integers back to original string labels
+#    decoded_predictions = [tree.int_to_class[pred] for pred in predictions]
+#    print("""Preditcted exam results for each student based on their characteristics""")
+#    for i, pred in enumerate(decoded_predictions):
+#        student_id = df.iloc[i]["Resp srl no"]
+#        print(f"Student {student_id}: Predicted = {pred}")
     # ================================================================
     # Example Usage ================================================
 #    df = pd.read_csv("restaurant_waiting.csv")
@@ -659,7 +669,6 @@ def main():
 #    for i, pred in enumerate(decoded_predictions):
 #        print(f"Sample {i}: Predicted = {pred}")
 
-    breakpoint()
 
 
 if __name__ == "__main__":
