@@ -1,12 +1,64 @@
 #!/usr/bin/env python
 import pandas as pd
+from IPython.display import display
 import numpy as np
 import matplotlib.pyplot as plt
 
+def configure_pandas_display():
+    """
+    Configures pandas display settings for better readability of output.
+    ------------------------------------------
+    INPUT:
+        None
+
+    OUTPUT:
+        None
+    """
+    # Set padnas display options for readability
+    # Show all columns
+    pd.set_option("display.max_columns", None)
+    #Increase width for visibility
+    pd.set_option("display.width", 120)
+    # Limit width of each column to prevent overflow
+    pd.set_option("display.max_colwidth", 100)
+
+def load_data(file_path):
+    """
+    Loads data from CSV file into pandas DataFrame
+    --------------------------------------------------
+    INPUT:
+        file_path: (str) Path to CSV file
+
+    OUTPUT:
+        data: (pd.DataFrame) Loaded data
+    """
+    try:
+        return pd.read_csv(file_path)
+
+    except FileNotFoundError:
+        print(f"Error: Could not find file at {file_path}")
+        return None
+
+    except Exception as e:
+        print(f"Error loading data: {str(e)}")
+        return None
+
 # Correlation analysis
-def add_correlations(df, summary):
+def add_correlations(df, summary_df):
     """
     Adds correlation analysis for numeric columns to the summary DataFrame.
+
+    The function provides a way to quickly identify which variables in dataset 
+    are most strongly related to each other, which can be valuable for:
+
+        - Feature selection in machine learning
+        - Understanding relationships in your data
+        - Identifying potential collinearity issues
+        - Data exploration and visualization planning
+
+    ! => Pearson's correlation coefficient is the COVARIANCE of two variables
+    divided by the product of their standard deviations.  
+    PRODUCT MOMENT -> The mean of the product of the mean-adjusted r.v.s.
     ------------------------------------------------------------------
     INPUT:
         df: (pd.DataFrame) 
@@ -16,17 +68,30 @@ def add_correlations(df, summary):
         summary_df: (pd.DataFrame) Summary dataframe with added correlation
         information
     """
+    # Grabs only the numeric columns of the ORIGINAL dataset
     numeric_cols = df.select_dtypes(include=[np.number]).columns
 
+    # As long as there's more than one column, since we need atleast two...
     if len(numeric_cols) > 1:
+        # Computes pairwise correlation of columns, excluding NA/null values
+        # from ORIGINAL dataset, resulting in a square matrix, where each cell
+        # shows the correlation between two variables, -1 < x < 1
         corr_matrix = df[numeric_cols].corr()
 
-        # ?
+        # Iteratively obtain top  correlation information
+        # Extracts all correlations for that column from correlation matrix
         for col in summary_df["col_name"]:
+            # If col_name in summary_df is also in original df, compare
             if col in numeric_cols:
+                # removes correlation with itself, always 1.0
                 correlations = corr_matrix[col].drop(col)
+                # Selects three highest absolute correlation values
                 top_corr = correlations.nlargest(3)
-
+                
+                # Stores the results
+                # Uses pandas' loc accessor to find the row where col_name
+                # matches current column
+                # Converts correlations to dictionary, then string
                 summary_df.loc[
                     summary_df["col_name"] == col,
                     "top_correlations"
@@ -55,6 +120,8 @@ def suggest_dtype(col_info):
 
 def column_summary(df, n_counts):
     """
+    ? --> LEARN THIS SHIT!
+
     Provides a summary of the DataFrame columns including statistical measures.
     Data quality indicators, and distribution analysis.
     ------------------------------------------------------------
@@ -179,15 +246,88 @@ def column_summary(df, n_counts):
 
     return summary_df
 
-def main():
-    # Get dataframe
-    df = pd.read_csv(
-        "data/Utility_Energy_Registry_Monthly_County_Energy_Use__Beginning_2021_20241208.csv"
-    )
+def truncate_dict_values(d, max_items=10):
+    """
+    Truncates columns that are too long to be readable.
+    ----------------------------------------
+    INPUT:
+        d: (dict) Values to truncate
+        max_items: (int) Limit to the number of items to truncate
 
-    summary_df = column_summary(df, 10)
-    print(summary_df)
+    OUTPUT:
+        truncated_output: (str)
+    """
+    if len(d) > max_items:
+        # Only includes the max_items number of columns
+        truncated = dict(list(d.items())[:max_items])
+        # Converts the appropriate length and adds elipsis at end
+        truncated_output = str(truncated)[:-1] + ", ...}"
 
+        return truncated_output
+    # otherwise just output the dictionary as a string
+    return str(d)
 
-if __name__ == "__main__":
-    main()
+def analyze_data(df, n_counts=10):
+    """
+    Perform comprehensive analysis on the provided DataFrame
+    ------------------------------------------------------------
+    INPUT:
+        df: (pd.DataFrame) DataFrame to analyze
+        n_counts: (int) Number of top distinct values to show
+
+    OUTPUT:
+        summary_df: (pd.DataFrame) Summary analysis
+    """
+    # Generate initial summary
+    summary_df = column_summary(df, n_counts)
+
+    # Add correlation analysis
+    summary_df = add_correlations(df, summary_df)
+
+    # Add dtype suggestions
+    summary_df["dtype_suggestions"] = summary_df.apply(suggest_dtype, axis=1)
+
+    return summary_df
+
+#def main():
+#    # Configure pandas display settings
+#    configure_pandas_display()
+#
+#    # Define file path
+#    file_path = "data/Utility_Energy_Registry_Monthly_County_Energy_Use__Beginning_2021_20241208.csv"
+#
+#    # Load data
+#    df = load_data(file_path)
+#    if df is None:
+#        return None
+#
+#    # Perform analysis
+#    try:
+#        summary_df = analyze_data(df)
+#
+#        # Display results
+#        print("\nData Analysis Summary:")
+#        print("-" * 50)
+#        display(summary_df)
+#
+#    except Exception as e:
+#        print(f"Error during analysis: {str(e)}")
+#
+#
+#if __name__ == "__main__":
+#    main()
+#
+# ========================================================================================================
+# testing and debugging
+configure_pandas_display()
+# Get dataframe
+df = pd.read_csv(
+    "data/Utility_Energy_Registry_Monthly_County_Energy_Use__Beginning_2021_20241208.csv"
+)
+summary_df = analyze_data(df)
+
+## After computing summary_df
+print("\nData Analysis Summary:")
+print("-" * 50)
+display(summary_df)
+breakpoint()
