@@ -333,7 +333,7 @@ def encode_categorical_columns(df, summary_df):
         # If desired, convert them to integers (0/1)
         bool_cols = df.select_dtypes(include="bool").columns
 
-        if len(boo_cols) > 0:
+        if len(bool_cols) > 0:
             df[bool_cols] = df[bool_cols].astype(int)
 
     return df
