@@ -289,6 +289,56 @@ def analyze_data(df, n_counts=10):
 
     return summary_df
 
+def encode_categorical_columns(df, summary_df):
+    """
+    THE IDEA IS:
+    Identify columns suggested for categorical types based on the summary output.
+    If a column has only 2 distinct categories, encode it directly into a single binary (0/1) column.
+    If a column has more than 2 categories (but still is suggested as categorical), use one-hot encoding to create multiple binary indicator columns.
+    ------------------------------------------------------
+    INPUT:
+        df: (pd.DataFrame) 
+        summary_df: (pd.DataFrame)
+
+    OUTPUT:
+        df: (pd.DataFrame) Dataframe with encoded columns
+    """
+    # Identify columns to encode based on suggestions
+    categorical_cols = df.select_dtypes(include="object").columns.tolist()
+
+    # Iterate thru each categorical column
+    for col in categorical_cols:
+        # Get unique values, excluding NA values
+        unique_vals = df[col].dropna().unique()
+
+        # IF there's only one unique value, it's effectively a constant and may
+        # not be useful
+        if len(unique_vals) == 1:
+            # Either drop column or encode it arbitrarily as 0
+            # Or use: df.drop[columns] = [col], inplace=True
+            df[col] = 0
+        
+        # If exactly two unique values, binary encode
+        elif len(unique_vals) == 2:
+            val1, val2 = unique_vals
+            # Encode like, val1 -> 0 and val2 -> 1
+            df[col] = df[col].apply(lambda x: 1 if x == val2 else 0)
+
+        # More than two unique categories: one-hot encoding
+        else:
+            # pd.get_dummies -> Converts categorical to indicator values
+            df = pd.get_dummies(df, columns=[col], prefix=col)
+
+        # After potential one-hot encoding, some boolean columns may appear.
+        # If desired, convert them to integers (0/1)
+        bool_cols = df.select_dtypes(include="bool").columns
+
+        if len(boo_cols) > 0:
+            df[bool_cols] = df[bool_cols].astype(int)
+
+    return df
+
+
 #def main():
 #    # Configure pandas display settings
 #    configure_pandas_display()
@@ -304,11 +354,13 @@ def analyze_data(df, n_counts=10):
 #    # Perform analysis
 #    try:
 #        summary_df = analyze_data(df)
+#        # Encode categorical columns as suggested
+#        encoded_df = encode_categorical_columns(df, summary_df)
 #
 #        # Display results
-#        print("\nData Analysis Summary:")
+#        print("\nData after encoding categorical columns:")
 #        print("-" * 50)
-#        display(summary_df)
+#        display(encoded_df.head())
 #
 #    except Exception as e:
 #        print(f"Error during analysis: {str(e)}")
@@ -325,9 +377,10 @@ df = pd.read_csv(
     "data/Utility_Energy_Registry_Monthly_County_Energy_Use__Beginning_2021_20241208.csv"
 )
 summary_df = analyze_data(df)
+new_df = encode_categorical_columns(df, summary_df)
 
 ## After computing summary_df
-print("\nData Analysis Summary:")
+print("\nData after encoding: ")
 print("-" * 50)
-display(summary_df)
+display(new_df.head())
 breakpoint()
