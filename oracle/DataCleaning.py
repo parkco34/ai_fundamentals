@@ -7,9 +7,62 @@ class DataCleaning(object):
     Data Wrangling Class for handling missing data and categorical encodings.
     """
     def __init__(self, dataframe):
+        """
+        Establish dataframe and obtain columns and rows
+        """
         self.dataframe = dataframe
         self.rows = dataframe.shape[0]
         self.columns = dataframe.shape[1]
+
+    def column_summary(df):
+        """
+        Basic check on column datatype, null counts, distinct values, etc.
+        Loops thru each column, using a dataframe to store the:
+            column name
+            column datatype
+            number of nulls
+            number of non-nulls
+            number of distinct values
+            min/max values
+            median value
+            average value (if number)
+            number of non-zero values (if number)
+            top N distinct values
+        -----------------------------------------------------------
+        INPUT:
+            df: (pd.DataFrame) Dataframe representing data
+
+        OUTPUT:
+            summary_df: (pd.DataFrame) DataFrame as summary of original
+            dataframe
+        """
+        # Initialize summary dataframe
+        summary_df = pd.DataFrame(columns=[
+            "column_name",
+            "column_dtype",
+            "null_num",
+            "non_null_num",
+            "num_unique",
+            "min_val",
+            "max_val",
+            "median_val",
+            "avg_val",
+            "non_zero_num",
+            "top_N_unique"
+        ])
+
+        for col in df.columns:
+            column_name = col
+            column_dtype = df[col].dtype
+            null_num = df[column_name].isnull().sum()
+            non_null_num = df[column_name].notnull().sum()
+            num_unique = len(df[column_name].unique())
+            min_val = min(df[column_name])
+            max_val = max(df[column_name])
+            avg_val = mean(df[column_name])
+            non_zero_num = len([v for v in df[column].unique() if v > 0])
+            # Get value counts and sort, obtaining top N values
+            value_counts = df[column_name].value_counts()
 
     def drop_cols_missing_data(self):
         """
@@ -22,7 +75,8 @@ class DataCleaning(object):
         OUTPUT:
             new_df: (pd.DataFrame) Dataframe with dropped columns
         """
-        pass
+        self.dataframe = self.dataframe.loc[:, self.dataframe.isnull().mean()
+                                            <= threshold]
 
     def drop_rows_missing_data(self):
         """
