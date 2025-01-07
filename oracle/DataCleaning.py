@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import pandas as pd
 import numpy as np
 
 
@@ -14,7 +15,7 @@ class DataCleaning(object):
         self.rows = dataframe.shape[0]
         self.columns = dataframe.shape[1]
 
-    def column_summary(df):
+    def column_summary(self, N):
         """
         Basic check on column datatype, null counts, distinct values, etc.
         Loops thru each column, using a dataframe to store the:
@@ -30,7 +31,7 @@ class DataCleaning(object):
             top N distinct values
         -----------------------------------------------------------
         INPUT:
-            df: (pd.DataFrame) Dataframe representing data
+            N: (int) Top N distinct values for dataframe
 
         OUTPUT:
             summary_df: (pd.DataFrame) DataFrame as summary of original
@@ -42,27 +43,45 @@ class DataCleaning(object):
             "column_dtype",
             "null_num",
             "non_null_num",
-            "num_unique",
             "min_val",
             "max_val",
             "median_val",
             "avg_val",
+            "distinct_values",
+            "num_distinct_vals",
             "non_zero_num",
             "top_N_unique"
         ])
 
-        for col in df.columns:
+        for col in self.dataframe.columns:
             column_name = col
-            column_dtype = df[col].dtype
-            null_num = df[column_name].isnull().sum()
-            non_null_num = df[column_name].notnull().sum()
-            num_unique = len(df[column_name].unique())
-            min_val = min(df[column_name])
-            max_val = max(df[column_name])
-            avg_val = mean(df[column_name])
-            non_zero_num = len([v for v in df[column].unique() if v > 0])
-            # Get value counts and sort, obtaining top N values
-            value_counts = df[column_name].value_counts()
+            column_dtype = self.dataframe[col].dtype
+            null_num = self.dataframe[col].isnull().sum()
+            non_null_num = self.dataframe[col].notnull().sum()
+
+            # Initialize default values
+            min_val, max_val, median_val, avg_val, non_zero_num,
+            top_N_unique=\
+            None, None, None, None, None, None
+
+            # Calculate only for numerical columns
+            if pd.api.types.is_numeric_dtype(self.dataframe[col]):
+                min_val = self.dataframe[col].min()
+                max_val = self.dataframe[col].max()
+                median_val = self.dataframe[col].median()
+                avg_val = self.dataframe[col].mean()
+                non_zero_num = (self.dataframe[col] != 0).sum()
+
+            # Calculate TOP N unique values
+            distince_values = self.dataframe[col].dropna().value_counts()
+            num_distinct_vals = distinct_values.shape[0]
+            top_N_unique = distinct_values.head(N).index.tolist()
+
+            # Append column summary to summary df
+            summary_df = pd.concat([summary_df, pd.DataFrame([{
+                pass
+            }])])
+            
 
     def drop_cols_missing_data(self):
         """
@@ -145,4 +164,8 @@ class DataCleaning(object):
         pass
 
 
+# Example usage
+df = pd.read_csv("data/sample_data.csv")
+dc = DataCleaning(df)
+summary = dc.column_summary()
 
