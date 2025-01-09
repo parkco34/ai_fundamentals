@@ -60,9 +60,7 @@ class DataCleaning(object):
             non_null_num = self.dataframe[col].notnull().sum()
 
             # Initialize default values
-            min_val, max_val, median_val, avg_val, non_zero_num,
-            top_N_unique=\
-            None, None, None, None, None, None
+            min_val, max_val, median_val, avg_val, non_zero_num, top_N_unique = None, None, None, None, None, None
 
             # Calculate only for numerical columns
             if pd.api.types.is_numeric_dtype(self.dataframe[col]):
@@ -73,15 +71,26 @@ class DataCleaning(object):
                 non_zero_num = (self.dataframe[col] != 0).sum()
 
             # Calculate TOP N unique values
-            distince_values = self.dataframe[col].dropna().value_counts()
+            dstinct_values = self.dataframe[col].dropna().value_counts()
             num_distinct_vals = distinct_values.shape[0]
             top_N_unique = distinct_values.head(N).index.tolist()
 
             # Append column summary to summary df
             summary_df = pd.concat([summary_df, pd.DataFrame([{
-                pass
+                "column_name": column_name,
+                "column_dtype": column_dtype,
+                "null_num": null_num,
+                "non_null_num": non_null_num,
+                "min_val": min_val,
+                "max_val": max_val,
+                "median_val": median_val,
+                "avg_val": avg_val,
+                "distinct_values": distinct_values,
+                "num_distinct_vals": num_distinct-values,
+                "non_zero_num": non_zero_num,
+                "top_N_unique": top_N_uniuqe
             }])])
-            
+        
 
     def drop_cols_missing_data(self):
         """
@@ -167,5 +176,5 @@ class DataCleaning(object):
 # Example usage
 df = pd.read_csv("data/sample_data.csv")
 dc = DataCleaning(df)
-summary = dc.column_summary()
+summary = dc.column_summary(10)
 
