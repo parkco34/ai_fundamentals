@@ -71,7 +71,7 @@ class DataCleaning(object):
                 non_zero_num = (self.dataframe[col] != 0).sum()
 
             # Calculate TOP N unique values
-            dstinct_values = self.dataframe[col].dropna().value_counts()
+            distinct_values = self.dataframe[col].dropna().value_counts()
             num_distinct_vals = distinct_values.shape[0]
             top_N_unique = distinct_values.head(N).index.tolist()
 
@@ -86,18 +86,19 @@ class DataCleaning(object):
                 "median_val": median_val,
                 "avg_val": avg_val,
                 "distinct_values": distinct_values,
-                "num_distinct_vals": num_distinct-values,
+                "num_distinct_vals": num_distinct_vals,
                 "non_zero_num": non_zero_num,
-                "top_N_unique": top_N_uniuqe
-            }])])
+                "top_N_unique": top_N_unique
+            }])], ignore_index=True)
         
+        return summary_df
 
-    def drop_cols_missing_data(self):
+    def drop_cols_missing_data(self, threshold=0.5):
         """
         Drop columns where proportion of missing data exceeds threshold
         ----------------------------------------
         INPUT:
-            threshold: (float) Proportion of missing data required to drop
+            threshold: (float; default: 0.5) Proportion of missing data required to drop
             column, (0.5 = 50% missing)
 
         OUTPUT:
@@ -105,6 +106,8 @@ class DataCleaning(object):
         """
         self.dataframe = self.dataframe.loc[:, self.dataframe.isnull().mean()
                                             <= threshold]
+
+        breakpoint()
 
     def drop_rows_missing_data(self):
         """
@@ -177,4 +180,7 @@ class DataCleaning(object):
 df = pd.read_csv("data/sample_data.csv")
 dc = DataCleaning(df)
 summary = dc.column_summary(10)
+
+# Drop columns of mising data
+missing = dc.drop_cols_missing_data()
 
