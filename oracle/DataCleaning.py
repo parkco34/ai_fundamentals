@@ -82,7 +82,7 @@ class DataCleaning(object):
         summary_df = pd.DataFrame(summary_rows)
         return summary_df
 
-    def _drop_cols_missing_data(self, threshold=0.5):
+    def drop_cols_missing_data(self, threshold=0.5):
         """
         Drop columns where proportion of missing data exceeds threshold.
         If no columns need to be removed, the dataframe will not undergo a
@@ -94,13 +94,11 @@ class DataCleaning(object):
             column, (0.5 = 50% missing)
 
         OUTPUT:
-            new_df: (pd.DataFrame) Dataframe with dropped columns
+            None
         """
-        new_df = self.dataframe.loc[:, self.dataframe.isnull().mean() <= threshold]
-        
-        return new_df
+        self.dataframe = self.dataframe.loc[:, self.dataframe.isnull().mean() <= threshold]
 
-    def _drop_rows_missing_data(self):
+    def drop_rows_missing_data(self):
         """
         Drop rows with any missing data, where there's at least one NULL value
         - This isn't best practice, since it might delete valueable
@@ -115,7 +113,7 @@ class DataCleaning(object):
 
         return new_df
 
-    def _imputing_vals_mean(self, df, column):
+    def imputing_vals_mean(self, df, column):
         """
         Imputes missing values in a numerical column with the mean.
         - Good for small number of missing data
@@ -140,7 +138,7 @@ class DataCleaning(object):
 
         return new_col
 
-    def _imputing_vals_median(self, df, column):
+    def imputing_vals_median(self, df, column):
         """
         Imputes missing values in a numerical column with the Median.
         --------------------------------------------------------
