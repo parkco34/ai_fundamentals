@@ -1,67 +1,100 @@
-# Oracle Principal Data Scientist Project: Energy Usage Optimization
+# Energy Usage Optimization Project
 
-## Overview
+## Project Structure Overview
 
-This repository demonstrates an end-to-end data science project focused on forecasting and optimizing energy usage, integrating renewable sources (DERs), detecting anomalies, and leveraging GenAI for explainable insights. The approach reflects real-world scenarios encountered by utilities and aligns with the responsibilities of a Principal Data Scientist at Oracle’s Energy and Water product team.
+```
+energy-usage-optimization/
+├── data/
+│   ├── raw/                     # Original, immutable data
+│   ├── processed/               # Cleaned and transformed data
+│   └── external/                # External data sources (weather, holidays)
+├── notebooks/
+│   ├── 01_data_exploration.ipynb
+│   ├── 02_feature_engineering.ipynb
+│   ├── 03_model_training.ipynb
+│   └── 04_model_evaluation.ipynb
+├── src/
+│   ├── data/
+│   │   ├── __init__.py
+│   │   ├── make_dataset.py     # Scripts for data processing
+│   │   └── validation.py       # Data validation utilities
+│   ├── features/
+│   │   ├── __init__.py
+│   │   └── build_features.py   # Feature engineering code
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── train.py           # Model training scripts
+│   │   └── predict.py         # Prediction utilities
+│   └── visualization/
+│       ├── __init__.py
+│       └── visualize.py       # Visualization utilities
+├── tests/
+│   ├── __init__.py
+│   ├── test_data.py
+│   ├── test_features.py
+│   └── test_models.py
+├── dashboard/
+│   ├── __init__.py
+│   ├── app.py                # Main dashboard application
+│   └── components/           # Dashboard components
+├── infrastructure/
+│   ├── Dockerfile           # Container definition
+│   ├── docker-compose.yml   # Multi-container setup
+│   └── requirements.txt     # Project dependencies
+├── models/                  # Saved model artifacts
+│   ├── forecasting/
+│   ├── anomaly_detection/
+│   └── genai/
+├── config/
+│   ├── config.yaml         # Configuration parameters
+│   └── logging.yaml        # Logging configuration
+├── .gitignore
+├── setup.py               # Package installation
+└── README.md             # Project documentation
+```
 
-## Key Features
+## Development Guidelines
 
-- **Load Forecasting:**  
-  Uses deep learning models (LSTMs or Transformers) and classical ML methods (Gradient Boosted Trees) to predict energy consumption, integrating time series features such as weather conditions, holidays, and historical load patterns.
+### Code Style
+- Follow PEP 8 guidelines
+- Use type hints for function parameters and return values
+- Include docstrings for all functions and classes
+- Implement proper error handling and logging
 
-- **Anomaly Detection:**  
-  Identifies irregular consumption patterns and potential grid outages using Gaussian Mixture Models and Isolation Forest.
+### Git Workflow
+1. Create feature branches from `develop`
+2. Use meaningful commit messages
+3. Submit pull requests for code review
+4. Merge only after CI/CD checks pass
 
-- **GenAI Integration:**  
-  Leverages a locally fine-tuned language model to automatically generate human-readable summaries, explain anomalies, and provide context through a Retrieval Augmented Generation (RAG) pipeline.
+### Testing
+- Write unit tests for all new features
+- Maintain minimum 80% code coverage
+- Include integration tests for critical paths
+- Use pytest for testing framework
 
-- **MLOps & Cloud Deployment:**  
-  Implements containerization (Docker), CI/CD pipelines, model versioning, automated retraining, and cloud environment simulations for production-readiness.
+### Documentation
+- Keep README files updated
+- Document all configuration options
+- Include examples in docstrings
+- Maintain API documentation
 
-- **Visualization & Dashboards:**  
-  Offers an interactive dashboard (via Plotly/Dash or Streamlit) displaying forecasts, anomalies, feature importance, and scenario simulations for stakeholders.
+### Data Processing Guidelines
+1. Never modify raw data
+2. Document all data transformations
+3. Include data validation steps
+4. Track data lineage
 
-## Repository Structure
+### Model Development
+1. Version control all models
+2. Document hyperparameter choices
+3. Include model cards
+4. Track experiments with MLflow
 
-- `data/`  
-  Raw and processed datasets, along with scripts for data ingestion.
-  
-- `notebooks/`  
-  Jupyter notebooks demonstrating:
-  - Data exploration and preprocessing
-  - Model training and evaluation
-  - Anomaly detection experiments
-  - GenAI integration tests
-  
-- `models/`  
-  Saved model artifacts, versioned and tracked.
-  
-- `scripts/`  
-  Standalone Python scripts for training models, running inference, and handling MLOps tasks.
-  
-- `dashboard/`  
-  Code for interactive visualization and dashboards.
-  
-- `infrastructure/`  
-  Dockerfiles, CI/CD configurations, and deployment scripts.
+### Security Considerations
+- Secure API endpoints
+- Implement proper authentication
+- Handle sensitive data appropriately
+- Regular security audits
 
-- `README.md`  
-  Project description and instructions.
-
-## Getting Started
-
-### Prerequisites
-
-- **Python 3.8+**
-- **pip or conda** for package management
-- **Docker** (for containerization and deployment)
-- **Git** for version control
-- **Basic CLI familiarity**
-
-### Installation
-
-1. **Clone the Repository:**
-   ```bash
-   git clone https://github.com/yourusername/energy-usage-optimization.git
-   cd energy-usage-optimization
-
+This structure provides a solid foundation for scalable development while maintaining code quality and reproducibility.

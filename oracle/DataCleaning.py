@@ -38,20 +38,7 @@ class DataCleaning(object):
             dataframe
         """
         # Initialize summary dataframe
-        summary_df = pd.DataFrame(columns=[
-            "column_name",
-            "column_dtype",
-            "null_num",
-            "non_null_num",
-            "min_val",
-            "max_val",
-            "median_val",
-            "avg_val",
-            "distinct_values",
-            "num_distinct_vals",
-            "non_zero_num",
-            "top_N_unique"
-        ])
+        summary_rows = []
 
         for col in self.dataframe.columns:
             column_name = col
@@ -72,11 +59,11 @@ class DataCleaning(object):
 
             # Calculate TOP N unique values
             distinct_values = self.dataframe[col].dropna().value_counts()
-            num_distinct_vals = distinct_values.shape[0]
+            num_distinct_vals = len(distinct_values)
             top_N_unique = distinct_values.head(N).index.tolist()
 
-            # Append column summary to summary df
-            summary_df = pd.concat([summary_df, pd.DataFrame([{
+            # Append dictionary to summary rows
+            summary_rows.append({
                 "column_name": column_name,
                 "column_dtype": column_dtype,
                 "null_num": null_num,
@@ -85,17 +72,22 @@ class DataCleaning(object):
                 "max_val": max_val,
                 "median_val": median_val,
                 "avg_val": avg_val,
-                "distinct_values": distinct_values,
+                "distinct_values": distinct_values.index.tolist(),
                 "num_distinct_vals": num_distinct_vals,
                 "non_zero_num": non_zero_num,
                 "top_N_unique": top_N_unique
-            }])], ignore_index=True)
+            })
         
+        # Convert dictionary to DataFrame
+        summary_df = pd.DataFrame(summary_rows)
         return summary_df
 
-    def drop_cols_missing_data(self, threshold=0.5):
+    def _drop_cols_missing_data(self, threshold=0.5):
         """
-        Drop columns where proportion of missing data exceeds threshold
+        Drop columns where proportion of missing data exceeds threshold.
+        If no columns need to be removed, the dataframe will not undergo a
+        change.
+        - Loss of information, though ... 
         ----------------------------------------
         INPUT:
             threshold: (float; default: 0.5) Proportion of missing data required to drop
@@ -104,46 +96,67 @@ class DataCleaning(object):
         OUTPUT:
             new_df: (pd.DataFrame) Dataframe with dropped columns
         """
-        self.dataframe = self.dataframe.loc[:, self.dataframe.isnull().mean()
-                                            <= threshold]
+        new_df = self.dataframe.loc[:, self.dataframe.isnull().mean() <= threshold]
+        
+        return new_df
 
-        breakpoint()
-
-    def drop_rows_missing_data(self):
+    def _drop_rows_missing_data(self):
         """
-        Drop rows with any missing data
+        Drop rows with any missing data, where there's at least one NULL value
+        - This isn't best practice, since it might delete valueable
+        information.
         ----------------------------------------
         INPUT:
 
         OUTPUT:
+            new_df: (pd.DataFrame) DataFrame with possible NULL rows removed.
         """
-        pass
+        new_df = self.dataframe.dropna(axis=0, inplace=True)
 
-    def imputing_vals_mean(self, column):
+        return new_df
+
+    def _imputing_vals_mean(self, df, column):
         """
         Imputes missing values in a numerical column with the mean.
+        - Good for small number of missing data
+        - Prevents loss of data
+        
+        --> Good for:
+            - Loss of variation in data
+            - Normal/skewed distributions
+            - Can't use for Categorical columns
+        
+        *--> Sensitive to OUTLIERS
         -----------------------------------------------------------
         INPUT:
+            df: (pd.DataFrame) current dataframe
             column: (str) Column name to impute.
 
         OUTPUT:
             new_col: 
         """
-        pass
+        new_col = df[column].fillna(df[column].mean(),
+                                               inplace=True)
 
-    def imputing_vals_median(self, column):
+        return new_col
+
+    def _imputing_vals_median(self, df, column):
         """
         Imputes missing values in a numerical column with the Median.
         --------------------------------------------------------
         INPUT:
+            df: (pd.DataFrame) current dataframe
             column: (str) Column name to impute
 
         OUTPUT:
-
+            new_col: (pd.Series) New column after adjustement
         """
-        pass
+        new_col = df[column].fillna(df[column].median(),
+                                                inplace=True)
 
-    def imputing_group(self, group_via_col, target_col, method="mean"):
+        return new_col
+
+    def _imputing_group(self, group_via_col, target_col, method="mean"):
         """
         Imputes missing values in a target column by group
         --------------------------------------------------------
@@ -182,5 +195,6 @@ dc = DataCleaning(df)
 summary = dc.column_summary(10)
 
 # Drop columns of mising data
+# !=> No change ... 
 missing = dc.drop_cols_missing_data()
 
