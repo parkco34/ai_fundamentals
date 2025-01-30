@@ -97,4 +97,9 @@ energy-usage-optimization/
 - Handle sensitive data appropriately
 - Regular security audits
 
-This structure provides a solid foundation for scalable development while maintaining code quality and reproducibility.
+# PROCESS
+
+## Clean data
+1 Missing values and data type consistency
+
+
