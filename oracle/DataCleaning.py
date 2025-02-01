@@ -119,29 +119,48 @@ class DataCleaning(object):
 
         return self.dataframe
 
-    def imputing_vals_mean(self, column):
+    def imputing_vals_mean(self, columns):
         """
-        Imputes missing values in a numerical column with the mean.
-        - Good for small number of missing data
-        - Prevents loss of data
-        
-        --> Good for:
-            - Loss of variation in data
-            - Normal/skewed distributions
-            - Can't use for Categorical columns
-        
-        *--> Sensitive to OUTLIERS
-        -----------------------------------------------------------
+        Imputes missing values in a numerical colum with the arithmetic mean.
+
+        Mathematical definition:
+        For a vector x = [x₁, ..., xₙ] with missing values, let:
+        - I = {i | xᵢ is not missing}
+        - μ = (1/|I|) * ∑ᵢ∈I xᵢ
+        Then for each missing value j: xⱼ ← μ
+
+        Properties:
+        - Preserves the sample mean: E[X] remains unchanged
+        - Reduces variance: Var(X_imputed) ≤ Var(X_original)
+        - Maintains sample size: n_imputed = n_original
+        -------------------------------------------------------
         INPUT:
-            df: (pd.DataFrame) current dataframe
-            column: (str) Column name to impute.
+            column: (str) Name of column to impute
 
         OUTPUT:
+            self.dataframe: (pd.DataFrame) Dataframe with imputed values in
+            specific column
         """
-        if (column in self.dataframe.columns and
-        pd.api.is_numeric_dtype(self.dataframe[column])):
-            self.dataframe[column].fillna(self.dataframe[column].mean(),
-                                          inplace=True)
+        # Validate column existence
+        if column not in self.dataframe.columns:
+            raise ValueError(f"Column '{column}' not found in DataFrame")
+
+        # Validate column type
+        if not pd.api.types.is_numeric.dtype(self.dataframe[column]):
+            raise ValueError(f"""Column '{column}' must be numeric, got
+                             {self.dataframe[column].dtype}""")
+
+        # Create a copy to esnure we're working with original data
+        df_copy = self.dataframe.copy()
+
+        # Calculate mean of non-missing data
+        column_mean = df_copy[column].mean()
+
+        # Impute missing values
+        df_copy[column] = df_copy[column].fillna(column_mean)
+
+        # update the instance dataframe
+        self.dataframe = df_copy
 
         return self.dataframe
 
@@ -211,18 +230,51 @@ class DataCleaning(object):
         return self.dataframe
 
     def foward_fill(self):
-        pass
+        """
+        Method to fill missing values by carrying forward the last observed
+        non-missing value (ffil).
+        Useful for;
+            - Time series data
+        -----------------------------------------------------
+        INPUT:
+
+        OUTPUT:
+        """
+        self.dataframe.fillna(method="ffill", inplace=True)
+
+        return self.dataframe
 
     def backward_fill(self):
-        pass
+        """
+        Method for filling in missing values via carrying backward the next
+        observed non-missing value.
+        --------------------------------------------------
+        INPUT:
+
+        OUTPUT:
+        """
+        self.dataframe.fillna(method="bfill", inplace=True)
+
+        return self.dataframe
 
 
 # Example usage
 df = pd.read_csv("data/raw/sample_data.csv")
 dc = DataCleaning(df)
-summary = dc.column_summary(10)
 
-# Drop columns of mising data
-# !=> No change ... 
-missing = dc.drop_cols_missing_data()
+# Generate summary
+summary_df = dc.column_summary(10)
+
+# Handle missing data
+df_cleaned = dc.imputing_vals_mean("value")
+df_cleaned = dc.imputing_vals_median("number_of_accounts")
+df_cleaned = dc.imputing_categorical_cols("state_2")
+
+# Apply forward and backward fill
+df_cleaned = dc.foward_fill()
+df_cleaned = dc.backward_fill()
+
+# Display the cleaned dataset
+import ace_tools as tools
+tools.display_dataframe_to_user(name="Cleaned DataFrame", dataframe=df_cleaned)
 
