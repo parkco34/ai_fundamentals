@@ -11,9 +11,13 @@ class DataCleaning(object):
         """
         Establish dataframe and obtain columns and rows
         """
+        if not isinstance(dataframe, pd.DataFrame):
+            raise ValueError("""Expected a pandas dataframe, but got something
+                             else""")
+
         self.dataframe = dataframe
-        self.rows = dataframe.shape[0]
-        self.columns = dataframe.shape[1]
+        self.num_rows = dataframe.shape[0]
+        self.num_columns = dataframe.shape[1]
 
     def column_summary(self, N):
         """
@@ -98,7 +102,7 @@ class DataCleaning(object):
         """
         self.dataframe = self.dataframe.loc[:, self.dataframe.isnull().mean() <= threshold]
 
-        return self.dataframe # Method chaining
+        return self # Method chaining
 
     def drop_rows_missing_data(self):
         """
@@ -117,9 +121,9 @@ class DataCleaning(object):
         """
         self.dataframe = self.dataframe.dropna(axis=0)
 
-        return self.dataframe
+        return self
 
-    def imputing_vals_mean(self, columns):
+    def imputing_vals_mean(self, column):
         """
         Imputes missing values in a numerical colum with the arithmetic mean.
 
@@ -138,7 +142,7 @@ class DataCleaning(object):
             column: (str) Name of column to impute
 
         OUTPUT:
-            self.dataframe: (pd.DataFrame) Dataframe with imputed values in
+            self: (pd.DataFrame) Dataframe with imputed values in
             specific column
         """
         # Validate column existence
@@ -146,7 +150,7 @@ class DataCleaning(object):
             raise ValueError(f"Column '{column}' not found in DataFrame")
 
         # Validate column type
-        if not pd.api.types.is_numeric.dtype(self.dataframe[column]):
+        if not pd.api.types.is_numeric_dtype(self.dataframe[column]):
             raise ValueError(f"""Column '{column}' must be numeric, got
                              {self.dataframe[column].dtype}""")
 
@@ -162,7 +166,7 @@ class DataCleaning(object):
         # update the instance dataframe
         self.dataframe = df_copy
 
-        return self.dataframe
+        return self
 
     def imputing_vals_median(self, column):
         """
@@ -174,12 +178,12 @@ class DataCleaning(object):
 
         OUTPUT:
         """
-        if (column in self.dataframe.columns and
-            pd.api.is_numeric.dtype(self.dataframe[column])) :
+        if (column in self.columns and
+            pd.api.is_numeric_dtype(self.dataframe[column])) :
             self.dataframe[column].fillna(self.dataframe[column].median(),
                                           inplace=True)
 
-        return self.dataframe
+        return self
 
     def imputing_group(self, group_via_col, target_col, avg=True):
         """
@@ -194,21 +198,21 @@ class DataCleaning(object):
 
         """
         # Ensure target column exists and is numerical
-        if (target_col in self.dataframe.columns and
-            pd.api.is_numeric.dtype(self.dataframe[target_col])):
+        if (target_col in self.columns and
+            pd.api.is_numeric_dtype(self[target_col])):
 
             # Determine whether group filled in via mean or median
             if avg:
                 # Mean
-                self.dataframe[target_col] = \
-                self.dataframe[target_col].fillna(self.dataframe.groupby(group_via_col)[target_col].transform("mean"))
+                self[target_col] = \
+                self[target_col].fillna(self.groupby(group_via_col)[target_col].transform("mean"))
 
             else:
                 # Median
-                self.dataframe[target_col] = \
-                self.dataframe[target_col].fillna(self.dataframe.groupby(group_via_col)[target_col].transform("median"))
+                self[target_col] = \
+                self[target_col].fillna(self.groupby(group_via_col)[target_col].transform("median"))
 
-            return self.dataframe
+            return self
 
     def imputing_categorical_cols(self, column):
         """
@@ -221,13 +225,13 @@ class DataCleaning(object):
         OUTPUT:
         """
         if (column in self.dataframe.columns and not
-            pd.api.is_numeric.dtype(self.dataframe[column])):
+            pd.api.types.is_numeric_dtype(self.dataframe[column])):
             # Most frequent value
             mode_value = self.dataframe[column].mode()[0]
 
             self.dataframe[column].fillna(mode_value, inplace=True)
 
-        return self.dataframe
+        return self
 
     def foward_fill(self):
         """
@@ -240,9 +244,9 @@ class DataCleaning(object):
 
         OUTPUT:
         """
-        self.dataframe.fillna(method="ffill", inplace=True)
+        self = self.fillna(method="ffill")
 
-        return self.dataframe
+        return self
 
     def backward_fill(self):
         """
@@ -253,9 +257,17 @@ class DataCleaning(object):
 
         OUTPUT:
         """
-        self.dataframe.fillna(method="bfill", inplace=True)
+        self = self.fillna(method="bfill")
 
-        return self.dataframe
+        return self
+
+    def reset_dataframe(sef, original_dataframe):
+        """
+        Resets dataframe to its original state.
+        """
+        self.dataframe = original_dataframe.copy()
+
+        return self
 
 
 # Example usage
@@ -266,13 +278,14 @@ dc = DataCleaning(df)
 summary_df = dc.column_summary(10)
 
 # Handle missing data
-df_cleaned = dc.imputing_vals_mean("value")
-df_cleaned = dc.imputing_vals_median("number_of_accounts")
-df_cleaned = dc.imputing_categorical_cols("state_2")
-
-# Apply forward and backward fill
-df_cleaned = dc.foward_fill()
-df_cleaned = dc.backward_fill()
+df_cleaned = (
+    dc.drop_cols_missing_data()
+    .drop_rows_missing_data()
+    .imputing_vals_mean("value")
+    .imputing_categorical_cols("state_2")
+    .forward_fill()
+    .backward_fill()
+)
 
 # Display the cleaned dataset
 import ace_tools as tools
