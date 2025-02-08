@@ -233,7 +233,7 @@ class DataCleaning(object):
 
         return self
 
-    def foward_fill(self):
+    def forward_fill(self):
         """
         Method to fill missing values by carrying forward the last observed
         non-missing value (ffil).
@@ -244,7 +244,7 @@ class DataCleaning(object):
 
         OUTPUT:
         """
-        self = self.fillna(method="ffill")
+        self.dataframe = self.dataframe.fillna("ffill")
 
         return self
 
@@ -257,7 +257,7 @@ class DataCleaning(object):
 
         OUTPUT:
         """
-        self = self.fillna(method="bfill")
+        self.dataframe = self.dataframe.fillna("bfill")
 
         return self
 
@@ -270,8 +270,9 @@ class DataCleaning(object):
         return self
 
 
-# Example usage
-df = pd.read_csv("data/raw/sample_data.csv")
+# Example usage ==========================================================================================
+df = pd.read_csv("data/raw/Utility_Energy_Registry_Monthly_County_Energy_Use__Beginning_2021_20241208.csv")
+#df = pd.read_csv("data/raw/sample_data.csv")
 dc = DataCleaning(df)
 
 # Generate summary
@@ -282,12 +283,7 @@ df_cleaned = (
     dc.drop_cols_missing_data()
     .drop_rows_missing_data()
     .imputing_vals_mean("value")
-    .imputing_categorical_cols("state_2")
     .forward_fill()
     .backward_fill()
 )
-
-# Display the cleaned dataset
-import ace_tools as tools
-tools.display_dataframe_to_user(name="Cleaned DataFrame", dataframe=df_cleaned)
 
