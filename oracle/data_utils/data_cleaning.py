@@ -269,21 +269,45 @@ class DataCleaning(object):
 
         return self
 
+    def eda(self):
+        """
+        Prints dataset overview including:
+            - Shape, missing values, column types
+            - Summary statistics
+        """
+        print(f"Dataset Shape: {self.dataframe.shape}")
+        print("\nColumn Data Types:")
+        print(self.dataframe.dtypes)
 
-# Example usage ==========================================================================================
-df = pd.read_csv("data/raw/Utility_Energy_Registry_Monthly_County_Energy_Use__Beginning_2021_20241208.csv")
-#df = pd.read_csv("data/raw/sample_data.csv")
-dc = DataCleaning(df)
+        print("\nMissing Values Per Column:")
+        print(self.dataframe.isnull().sum())
 
-# Generate summary
-summary_df = dc.column_summary(10)
+        print("\nSummary Statistics:")
+        print(self.dataframe.describe())
 
-# Handle missing data
-df_cleaned = (
-    dc.drop_cols_missing_data()
-    .drop_rows_missing_data()
-    .imputing_vals_mean("value")
-    .forward_fill()
-    .backward_fill()
-)
+    def detect_outliers(self, column):
+        """
+        Identifies potential outliers using the IQR method
+        """
+        q1 = self.dataframe[column].quantile(0.25)
+        q3 = self.dataframe[column].quantile(0.75)
+        iqr = q3 - q1
+        lower_bound = q1 - 1.5 * iqr
+        upper_bound = q3 + 1.5 * iqr
 
+        outliers = self.dataframe[(self.dataframe[column] < lower_bound) | (self.dataframe[column] > upper_bound)]
+
+        return outliers
+
+    def plot_time_series(self, date_col, value_col):
+        """
+        Plots time series of energy consumption
+        """
+        plt.figure(figsize=(12, 5))
+        plt.plot(self.dataframe[date_col], self.dataframe[value_col],
+                 marker="o", linestyle="-")
+        plt.xlabel("Date")
+        plt.ylabel("Energy Consumption")
+        plt.title("Monthly Energy Consumption Over Time")
+        plt.xticks(rotation=45)
+        plt.show()
