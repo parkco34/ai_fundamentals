@@ -140,6 +140,7 @@ def main():
     solar_radiation_df = pd.DataFrame(list(solar_radiation.items()),
                                       columns=["date", ""])
 
+    # Concatenate dataframes in to one, master dataframe
 
 #    if weather_data:
 #        print(f"Keys: {weather_data.keys()}")
