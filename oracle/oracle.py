@@ -132,10 +132,13 @@ def main():
 
     # Converting dictionaries into DataFrames 
     # ? Fix the column names, pandas Series, etc.
-    humidity_df = pd.DataFrame(list(humidity.items()))
-    temp_df = pd.DataFrame(list(temp.items()))
-    wind_speed_df = pd.DataFrame(list(wind_speed.items()))
-    solar_radiation_df = pd.DataFrame(list(solar_radiation.items()))
+    humidity_df = pd.DataFrame(list(humidity.items()), columns=["date",
+                                                                "humidity%"])
+    temp_df = pd.DataFrame(list(temp.items()), columns=["date", "temp (°C)"])
+    wind_speed_df = pd.DataFrame(list(wind_speed.items()), columns=["date",
+                                                                    "speed (m/s)"])
+    solar_radiation_df = pd.DataFrame(list(solar_radiation.items()),
+                                      columns=["date", ""])
 
 
 #    if weather_data:
