@@ -140,7 +140,14 @@ def main():
     solar_radiation_df = pd.DataFrame(list(solar_radiation.items()),
                                       columns=["date", ""])
 
-    # Concatenate dataframes in to one, master dataframe
+    # List of dataframes
+    dfs = [humidity_df, temp_df, solar_radiation_df, wind_speed_df]
+
+    # Initialize with same columns as source DataFrames
+    the_df = pd.DataFrame(columns=['date'] + ['humidity%', 'temp (°C)', '', 'speed (m/s)'])
+
+    # Merge all DataFrames on date
+    the_df = pd.concat(dfs, axis=1)
 
 #    if weather_data:
 #        print(f"Keys: {weather_data.keys()}")
