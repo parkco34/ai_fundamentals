@@ -147,7 +147,9 @@ def main():
     the_df = pd.DataFrame(columns=['date'] + ['humidity%', 'temp (°C)', '', 'speed (m/s)'])
 
     # Merge all DataFrames on date
-    the_df = pd.concat(dfs, axis=1)
+    the_df = pd.concat(dfs, axis=0)
+    # ? need to fix the official dataframe
+    
 
 #    if weather_data:
 #        print(f"Keys: {weather_data.keys()}")
