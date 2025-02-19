@@ -202,6 +202,40 @@ def energy_date_column(df):
 
     return new_df
 
+def aggregate_weather_monthly(weather_df):
+    """
+    Groups daily NASA weather data to monthnly averages (or sum)
+    ------------------------------------------------------------
+    INPUT:
+        weather_df: (pd.DataFrame) Weather dataframe
+
+    OUTPUT:
+        monthly_weather: (pd.DataFrame) Matches the energy dataframe by
+        incluing the first day of each month
+    """
+    # Extract year/month
+    weather_df["year"] = weather_df["date"].dt.year
+    weather_df["month"] = weather_df["date"].dt.month
+
+    # Group by year, month: Groupby DataFrame using a mapper or by a Series of columns
+    # .agg() Aggregates using one or more operations over the specified axis
+    monthly_weather = weather_df.groupby(["year", "month"], as_index=False).agg({
+        "humidity%": "mean",
+        "temp (°C)": "mean",
+        "speed (m/s)": "mean",
+        "W/m²": "sum"   # or "mean
+    })
+
+    # Create monthly date, first day of each month matching energy
+    monthly_weather["date"] = pd.to_datetime(
+        monthly_weather["year"].astype(str)
+        + monthly_weather["month"].astype(str)
+        + "01",
+        format="%Y%m%d"
+    )
+
+    return monthly_weather
+
 def main():
     # Read Energy dataset
     df = read_data("data/raw/Utility_Energy_Registry_Monthly_County_Energy_Use__Beginning_2021_20241208.csv")
@@ -219,7 +253,9 @@ def main():
     # Weather dataframe
     weather_df = get_weather_df(weather_data)
 
-    # Merge the two dataframes: energy and weather
+    # Create datetime column for the dataframes
+    energy_df = energy_date_cols(filtered_df)
+    weather_df = convert_weather_date_col(weather_df)
 
     breakpoint()
 
