@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Oracle project:
-
+    ? ->> Include error handling!
 
 *--> It is important to note that the data are subject to privacy screening and fields that fail the privacy screen are withheld
 """
@@ -56,13 +56,13 @@ def read_data(file_path):
     """
     return pd.read_csv(file_path)
 
-def export_county_fips(df_cleaned):
+def export_county_fips(dataframe):
     """
     Exports the county FIPS codes to be selectable via the Java GUI 
     in a JSON file.
     -----------------------------------------------------------
     INPUT:
-        df_cleaned: (pd.DataFrame)
+        dataframe: (pd.DataFrame)
 
     OUTPUT:
         None
@@ -114,9 +114,9 @@ def get_fips(df, target_fips):
         else:
             print("No data found for this county")
 
-        return filtered_df
+    return filtered_df
 
-def weather_data(latitude, longitude, start_year, end_year):
+def gets_weather_data(latitude, longitude, start_year, end_year):
     """
     Call to NASA POWER API for weather data
     ------------------------------------------
@@ -127,15 +127,15 @@ def weather_data(latitude, longitude, start_year, end_year):
         end_year: (str)
 
     OUTPUT:
-        None
+        data: (dict) Dictionary of the raw weather data
     """
     # Call API
     nasa_api = NASAPowerAPI()
     # Get weather data
-    weather_data = nasa_api.get_weather_data(latitude, longitude, start_year,
+    data = nasa_api.get_weather_data(latitude, longitude, start_year,
                                              end_year)
     
-    return weather_data
+    return data
 
 def get_weather_df(weather_data):
     """
@@ -174,10 +174,54 @@ def get_weather_df(weather_data):
 
     return proper_weather_df
 
+def energy_date_column(df):
+    """
+    Creates a "date" column from "year" and "month" columns for mothly data
+    ---------------------------------------------------------------
+    INPUT:
+        df: (pd.DataFrame) Energy dataframe
+
+    OUTPUT:
+        new_df: (pd.DataFrame) New dataframe
+    """
+    # Copy dataframe
+    new_df = df.copy()
+
+    # Check required columns
+    if "year" not in df.columns or "month" not in df.columns:
+        raise ValueError("Energy dataframe must have 'year' and 'month' columns")
+
+    # Convert to datetime (YYYY-MM-01)
+    try:
+        # zfill(N) used to insert a N-1 number of zeros in front of string
+        new_df["date"] = pd.to_datetime(new_df["year"].astype(str) +
+                                    new_df["month"].astype(str).str.zfill(2) + "01", format="%Y%m%d")
+
+    except Exception as e:
+        raise ValueError(f"Error converting year/month to datetime: {e}")
+
+    return new_df
+
 def main():
     # Read Energy dataset
     df = read_data("data/raw/Utility_Energy_Registry_Monthly_County_Energy_Use__Beginning_2021_20241208.csv")
+    
+    # Filter dataframe via FIPS
+    target_fips = [36051, 36053, 36055]
+    # Energy dataframe
+    filtered_df = get_fips(df, target_fips)
 
+    # Get weather dataframe
+    lat, lon = 43.1566, -77.6088  # Rochester, NY
+    start_year = "2021"
+    end_year = "2024"
+    weather_data = gets_weather_data(lat, lon, start_year, end_year)
+    # Weather dataframe
+    weather_df = get_weather_df(weather_data)
+
+    # Merge the two dataframes: energy and weather
+
+    breakpoint()
 
 # Example Usage
 if __name__ == "__main__":
