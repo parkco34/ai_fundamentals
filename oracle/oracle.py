@@ -303,15 +303,13 @@ def main():
     # Weather dataframe
     weather_df = get_weather_df(weather_data)
 
-    # Create datetime column for the dataframes
-    energy_df = energy_date_column(filtered_df)
-    weather_df = convert_weather_date_col(weather_df)
+    """
+    THE FIX:
+        Convert your daily weather to monthly by extracting year and month, then grouping by both.
+        Leave those year and month columns intact in the aggregated weather.
+        Merge the aggregated weather with your energy data on ["year", "month"].
+    """
 
-    # Ensure weather dataframe matches form of energy dataframe
-    weather_df = aggregate_weather_monthly(weather_df)
-
-    # Merge energy and weather dataframes
-    combined_df = merge_energy_weather(energy_df, weather_df) 
 
     breakpoint()
 
