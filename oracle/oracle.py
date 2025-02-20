@@ -6,6 +6,7 @@ Oracle project:
 *--> It is important to note that the data are subject to privacy screening and fields that fail the privacy screen are withheld
 """
 from data_utils.data_cleaning import DataCleaning # Import certain class
+from textwrap import dedent
 import pandas as pd
 import numpy as np
 import json
@@ -174,117 +175,6 @@ def get_weather_df(weather_data):
 
     return proper_weather_df
 
-def energy_date_column(df):
-    """
-    Creates a "date" column from "year" and "month" columns for mothly data
-    ---------------------------------------------------------------
-    INPUT:
-        df: (pd.DataFrame) Energy dataframe
-
-    OUTPUT:
-        new_df: (pd.DataFrame) New dataframe
-    """
-    # Copy dataframe
-    new_df = df.copy()
-
-    # Check required columns
-    if "year" not in df.columns or "month" not in df.columns:
-        raise ValueError("Energy dataframe must have 'year' and 'month' columns")
-
-    # Convert to datetime (YYYY-MM-01)
-    try:
-        # zfill(N) used to insert a N-1 number of zeros in front of string
-        new_df["date"] = pd.to_datetime(new_df["year"].astype(str) +
-                                    new_df["month"].astype(str).str.zfill(2) + "01", format="%Y%m%d")
-
-    except Exception as e:
-        raise ValueError(f"Error converting year/month to datetime: {e}")
-
-    return new_df
-
-def convert_weather_date_col(weather_df):
-    """
-    Convert NASA POWER'S string date (YYYYMMDD) to datetime
-    -----------------------------------------------------------------
-    INPUT:
-        weather_df: (pd.DataFrame) Weather dataframe
-
-    OUTPUT:
-        new_weather_df: (pd.DataFrame) Updated weather dataframe
-    """
-    # Copy dataframe
-    new_weather_df = weather_df.copy()
-
-    try:
-        new_weather_df["date"] = pd.to_datetime(new_weather_df["date"], format="%Y%m%d")
-
-    except Exception as e:
-        raise ValueError(f"Error converting weather date column: {e}")
-
-    return new_weather_df
-
-def aggregate_weather_monthly(weather_df):
-    """
-    Groups daily NASA weather data to monthnly averages (or sum)
-    in order to match the energy dataframe for merging appropriately
-    ------------------------------------------------------------
-    INPUT:
-        weather_df: (pd.DataFrame) Weather dataframe
-
-    OUTPUT:
-        monthly_weather: (pd.DataFrame) Matches the energy dataframe by
-        incluing the first day of each month
-    """
-    # Extract year/month
-    weather_df["year"] = weather_df["date"].dt.year
-    weather_df["month"] = weather_df["date"].dt.month
-
-    # Group by year, month: Groupby DataFrame using a mapper or by a Series of columns
-    # .agg() Aggregates using one or more operations over the specified axis
-    monthly_weather = weather_df.groupby(["year", "month"], as_index=False).agg({
-        "humidity%": "mean",
-        "temp (°C)": "mean",
-        "speed (m/s)": "mean",
-        "W/m²": "sum"   # or "mean
-    })
-
-    # Create monthly date, first day of each month matching energy
-    monthly_weather["date"] = pd.to_datetime(
-        monthly_weather["year"].astype(str)
-        + monthly_weather["month"].astype(str)
-        + "01",
-        format="%Y%m%d"
-    )
-
-    return monthly_weather
-
-def merge_energy_weather(energy_df, weather_df):
-    """
-    Merges the monthly energy dataframe with aggregated monthly weather
-    --------------------------------------------------
-    INPUT:
-        energy_df: (pd.DataFrame) Energy dataframe
-        weather_df: (pd.DataFrame) Weather dataframe
-
-    OUTPUT:
-        combined_df: (pd.DataFrame) energy_weather dataframe
-    """
-    # Esnure "data" is an actual column
-    if "date" not in energy_df.columns:
-        raise ValueError("Energy dataframe has no 'date' column; call energy_date_column first!")
-
-    if "date" not in weather_df.columns:
-        raise ValueError("Weather dataframe has no 'date' column; ensure convert_weather_date_col + aggregation ran")
-
-    # merge dataframes
-    combined_df = pd.merge(
-        energy_df,
-        weather_df,
-        on="date",
-        how="left" # or "inner", "right", "outer" as needed
-    )
-
-    return combined_df
 
 def main():
     # Read Energy dataset
@@ -303,12 +193,6 @@ def main():
     # Weather dataframe
     weather_df = get_weather_df(weather_data)
 
-    """
-    THE FIX:
-        Convert your daily weather to monthly by extracting year and month, then grouping by both.
-        Leave those year and month columns intact in the aggregated weather.
-        Merge the aggregated weather with your energy data on ["year", "month"].
-    """
 
 
     breakpoint()
