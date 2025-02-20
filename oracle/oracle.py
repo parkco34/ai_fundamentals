@@ -202,9 +202,31 @@ def energy_date_column(df):
 
     return new_df
 
+def convert_weather_date_col(weather_df):
+    """
+    Convert NASA POWER'S string date (YYYYMMDD) to datetime
+    -----------------------------------------------------------------
+    INPUT:
+        weather_df: (pd.DataFrame) Weather dataframe
+
+    OUTPUT:
+        new_weather_df: (pd.DataFrame) Updated weather dataframe
+    """
+    # Copy dataframe
+    new_weather_df = weather_df.copy()
+
+    try:
+        new_weather_df["date"] = pd.to_datetime(new_weather_df["date"], format="%Y%m%d")
+
+    except Exception as e:
+        raise ValueError(f"Error converting weather date column: {e}")
+
+    return new_weather_df
+
 def aggregate_weather_monthly(weather_df):
     """
     Groups daily NASA weather data to monthnly averages (or sum)
+    in order to match the energy dataframe for merging appropriately
     ------------------------------------------------------------
     INPUT:
         weather_df: (pd.DataFrame) Weather dataframe
@@ -236,6 +258,34 @@ def aggregate_weather_monthly(weather_df):
 
     return monthly_weather
 
+def merge_energy_weather(energy_df, weather_df):
+    """
+    Merges the monthly energy dataframe with aggregated monthly weather
+    --------------------------------------------------
+    INPUT:
+        energy_df: (pd.DataFrame) Energy dataframe
+        weather_df: (pd.DataFrame) Weather dataframe
+
+    OUTPUT:
+        combined_df: (pd.DataFrame) energy_weather dataframe
+    """
+    # Esnure "data" is an actual column
+    if "date" not in energy_df.columns:
+        raise ValueError("Energy dataframe has no 'date' column; call energy_date_column first!")
+
+    if "date" not in weather_df.columns:
+        raise ValueError("Weather dataframe has no 'date' column; ensure convert_weather_date_col + aggregation ran")
+
+    # merge dataframes
+    combined_df = pd.merge(
+        energy_df,
+        weather_df,
+        on="date",
+        how="left" # or "inner", "right", "outer" as needed
+    )
+
+    return combined_df
+
 def main():
     # Read Energy dataset
     df = read_data("data/raw/Utility_Energy_Registry_Monthly_County_Energy_Use__Beginning_2021_20241208.csv")
@@ -254,8 +304,14 @@ def main():
     weather_df = get_weather_df(weather_data)
 
     # Create datetime column for the dataframes
-    energy_df = energy_date_cols(filtered_df)
+    energy_df = energy_date_column(filtered_df)
     weather_df = convert_weather_date_col(weather_df)
+
+    # Ensure weather dataframe matches form of energy dataframe
+    weather_df = aggregate_weather_monthly(weather_df)
+
+    # Merge energy and weather dataframes
+    combined_df = merge_energy_weather(energy_df, weather_df) 
 
     breakpoint()
 
