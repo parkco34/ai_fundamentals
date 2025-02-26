@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
@@ -53,7 +54,8 @@ class DataCleaning(object):
             # Initialize default values
             min_val, max_val, median_val, avg_val, non_zero_num, top_N_unique = None, None, None, None, None, None
 
-            # Calculate only for numerical columns
+            # Calculate only for numerical columns, using
+            # pd.api.types.is_numeric_dtype -> Check if type is numeric
             if pd.api.types.is_numeric_dtype(self.dataframe[col]):
                 min_val = self.dataframe[col].min()
                 max_val = self.dataframe[col].max()
@@ -61,7 +63,7 @@ class DataCleaning(object):
                 avg_val = self.dataframe[col].mean()
                 non_zero_num = (self.dataframe[col] != 0).sum()
 
-            # Calculate TOP N unique values
+            # Calculate TOP N unique, nono-na values
             distinct_values = self.dataframe[col].dropna().value_counts()
             num_distinct_vals = len(distinct_values)
             top_N_unique = distinct_values.head(N).index.tolist()
@@ -98,7 +100,7 @@ class DataCleaning(object):
             column, (0.5 = 50% missing)
 
         OUTPUT:
-            None
+            self: Method chaining
         """
         self.dataframe = self.dataframe.loc[:, self.dataframe.isnull().mean() <= threshold]
 
@@ -117,7 +119,7 @@ class DataCleaning(object):
             None
 
         OUTPUT:
-            None
+            self: method chaining
         """
         self.dataframe = self.dataframe.dropna(axis=0)
 
@@ -142,8 +144,7 @@ class DataCleaning(object):
             column: (str) Name of column to impute
 
         OUTPUT:
-            self: (pd.DataFrame) Dataframe with imputed values in
-            specific column
+            self: (pd.DataFrame) Method chaining
         """
         # Validate column existence
         if column not in self.dataframe.columns:
@@ -178,39 +179,39 @@ class DataCleaning(object):
 
         OUTPUT:
         """
-        if (column in self.columns and
+        if (column in self.dataframe.columns and
             pd.api.is_numeric_dtype(self.dataframe[column])) :
             self.dataframe[column].fillna(self.dataframe[column].median(),
                                           inplace=True)
 
         return self
 
-    def imputing_group(self, group_via_col, target_col, avg=True):
+    def imputing_group(self, group_via_col, target_col, average=True):
         """
         Imputes missing values in a target column by group
         --------------------------------------------------------
         INPUT:
             group_via_col: (str) Column to group by
             target_col: (str) Column with missing values
-            method: (str) "Mean" or "Median"
+            average: (str) "Mean" or "Median"
 
         OUTPUT:
 
         """
         # Ensure target column exists and is numerical
-        if (target_col in self.columns and
-            pd.api.is_numeric_dtype(self[target_col])):
+        if (target_col in self.dataframe.columns and
+            pd.api.is_numeric_dtype(self.dataframe[target_col])):
 
             # Determine whether group filled in via mean or median
-            if avg:
+            if average:
                 # Mean
-                self[target_col] = \
-                self[target_col].fillna(self.groupby(group_via_col)[target_col].transform("mean"))
+                self.dataframe[target_col] = \
+                self.dataframe[target_col].fillna(self.dataframe.groupby(group_via_col)[target_col].transform("mean"))
 
             else:
                 # Median
-                self[target_col] = \
-                self[target_col].fillna(self.groupby(group_via_col)[target_col].transform("median"))
+                self.dataframe[target_col] = \
+                self.dataframe[target_col].fillna(self.dataframe.groupby(group_via_col)[target_col].transform("median"))
 
             return self
 
@@ -261,7 +262,7 @@ class DataCleaning(object):
 
         return self
 
-    def reset_dataframe(sef, original_dataframe):
+    def reset_dataframe(self, original_dataframe):
         """
         Resets dataframe to its original state.
         """

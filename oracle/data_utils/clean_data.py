@@ -23,7 +23,7 @@ class CleanData:
         self.num_rows = dataframe.shape[0]
         self.num_columns = dataframe.shape[1]
 
-    def column_sumarray(self, top_N_values):
+    def column_summary(self, top_N_values):
         """
         Basic check on column datatype, null counts, distinct values, etc.
         Loops thru each column, using a dataframe to store these:
@@ -59,44 +59,34 @@ class CleanData:
             sorted_indices = np.argsort(counts)[::-1]
             top_N_indices = sorted_indices[:top_N_values]
 
-            return unique_vales[top_N_values]
+            return unique_vals[top_N_values]
+        
+        # List to store each column's summary
+        summary_list = []
 
-        # Initialize summary columns and dataframe
-        summary_dict = {
-            "column_name": None,
-            "column_dtype": None,
-            "null_num": None,
-            "non_null_num": None,
-            "distinct_values": None,
-            "min_value": None,
-            "max_value": None,
-            "median_value": None,
-            "avg_value": None,
-            "non_zero_num": None,
-            "top_N_distinct_values": None
-        }
-
-        # Iterate thru dataframe columns, collecting information
+        # Iterate thru each column, accumulating summary information
         for col in self.dataframe.columns:
-            summary_dict["column_name"] = col
-            summary_dict["column_dtype"] = self.dataframe[col].dtype
-            summary_dict["null_num"] = self.dataframe[col].isnull().sum()
-            summary_dict["non_null_num"] = self.dataframe[col].notnull().sum()
-            summary_dict["distinct_values"] = \
-                self.dataframe[col].unqiue()
-            summary_dict["min_value"] = self.dataframe[col].min()
-            summary_dict["max_value"] = self.dataframe[col].max()
-            summary_dict["median_value"] = self.dataframe[col].median()
-            summary_dict["avg_value"] = self.dataframe[col].mean()
-            summary_dict["non_zero_num"] = len(self.dataframe[
-                self.dataframe[col] != 0
-            ][col])
-            # Use nested function
-            summary_dict["top_N_distinct_values"] = \
-                get_top_N_distinct(summar_dict["distinct_values"], top_N_values)
+            column_data = self.dataframe[col]
+            
+            summary_dict = {
+                "column_name": col,
+                "column_dtype": column_data.dtype,
+                "null_num": column_data.isnull().sum(),
+                "non_null_num": column_data.notnull().sum(),
+                "distinct_values": column_data.unique(),
+                "min_value": column_data.min(),
+                "max_value": column_data.max(),
+                "median_value": column_data.median(),
+                "avg_value": column_data.mean(),
+                "non_zero_num": len(column_data[column_data != 0]),
+                "top_N_distinct_values": get_top_N_distinct(column_data.unique(), top_N_values)
+            }
+
+            # Append dictionary to list
+            summary_list.append(summary_dict)
 
         # Convert dictionary to DataFrame
-        summary_df = pd.DataFrame(summary_dict)
+        summary_df = pd.DataFrame(summary_list)
         breakpoint()
         return summary_df
 
