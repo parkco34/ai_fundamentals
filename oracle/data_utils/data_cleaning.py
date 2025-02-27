@@ -78,7 +78,7 @@ class DataCleaning(object):
                 "max_val": max_val,
                 "median_val": median_val,
                 "avg_val": avg_val,
-                "distinct_values": distinct_values.index.tolist(),
+                "distinct_values": distinct_values,
                 "num_distinct_vals": num_distinct_vals,
                 "non_zero_num": non_zero_num,
                 "top_N_unique": top_N_unique
@@ -155,7 +155,7 @@ class DataCleaning(object):
             raise ValueError(f"""Column '{column}' must be numeric, got
                              {self.dataframe[column].dtype}""")
 
-        # Create a copy to esnure we're working with original data
+        # Create a copy to ensure we're working with original data
         df_copy = self.dataframe.copy()
 
         # Calculate mean of non-missing data
@@ -163,8 +163,8 @@ class DataCleaning(object):
 
         # Impute missing values
         df_copy[column] = df_copy[column].fillna(column_mean)
-
-        # update the instance dataframe
+        
+        # Copy of dataframe so as not to change the original
         self.dataframe = df_copy
 
         return self
@@ -198,6 +198,12 @@ class DataCleaning(object):
         OUTPUT:
 
         """
+        # Validate existence of group_via_col
+        if group_via_col not in self.dataframe.columns:
+            raise ValueError(
+                f"""Grouping column '{group_via_col}' not found in dataframe"""
+                            )
+
         # Ensure target column exists and is numerical
         if (target_col in self.dataframe.columns and
             pd.api.is_numeric_dtype(self.dataframe[target_col])):
@@ -245,7 +251,7 @@ class DataCleaning(object):
 
         OUTPUT:
         """
-        self.dataframe = self.dataframe.fillna("ffill")
+        self.dataframe = self.dataframe.fillna(method="ffill")
 
         return self
 
@@ -258,7 +264,7 @@ class DataCleaning(object):
 
         OUTPUT:
         """
-        self.dataframe = self.dataframe.fillna("bfill")
+        self.dataframe = self.dataframe.fillna(method="bfill")
 
         return self
 

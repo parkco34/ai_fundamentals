@@ -47,7 +47,7 @@ def display_cleaned_dataset(dataframe, step_name):
 
     if "value" in dataframe.columns:
         print(f"Vlaue column stats:")
-        print(f"    - Negative values: {(dataframe['value'] < 0)}.sum()")
+        print(f"    - Negative values: {(dataframe['value'] < 0).sum()}")
         print(f"    - Zero values: {(dataframe['value'] == 0).sum()}")
         print(f"    - Positive values: {(dataframe['value'] > 0).sum()}")
 
@@ -68,7 +68,7 @@ def export_county_fips(dataframe):
     OUTPUT:
         None
     """
-    county_fips_dict = df_cleaned[["county_name",
+    county_fips_dict = dataframe[["county_name",
                                    "full_fips"]].drop_duplicates().to_dict(orient="records")
 
     # Write to json file
@@ -107,7 +107,7 @@ def fips_df(df, filter_by_fips):
         print(f"\nCounty FIPS: {fips}")
         print(f"Total Records: {len(county_data)}")
 
-        if len(county_data) > 0:
+        if not county_data.empty:
             print(f"""Date range:
                   {county_data['year'].min()}-{county_data['month'].min()} to
                   {county_data['year'].max()}-{county_data['month'].max()}""")
@@ -120,7 +120,7 @@ def fips_df(df, filter_by_fips):
 
     return dataframe
 
-def gets_weather_data(latitude, longitude, start_year, end_year):
+def get_weather_data(latitude, longitude, start_year, end_year):
     """
     Call to NASA POWER API for weather data
     ------------------------------------------
@@ -149,7 +149,7 @@ def get_weather_df(weather_data):
         weather_data: (dict) Dictionary of information from the NASA Power API
 
     OUTPUT:
-        weather_df: (pd.DataFrame) Weather dataframe
+        (pd.DataFrame) Datetime converted dataframe merged with weather dataframe
     """
     # Getting the appropriate dictionaries
     humidity = weather_data["properties"]["parameter"]["RH2M"]
@@ -175,10 +175,9 @@ def get_weather_df(weather_data):
     # Using merge_weather_dataframes function for combining dataframes
     proper_weather_df = merge_weather_dataframes(dfs)
 
-    # Convert any date-related columns to datetime
-    df = datetime_conversion(proper_weather_df)
+    # Convert any date-related columns to datetime 
 
-    return df
+    return datetime_conversion(proper_weather_df)
 
 def datetime_conversion(dataframe):
     """
@@ -256,7 +255,7 @@ def datetime_conversion(dataframe):
         if any(keyword in col_lower for keyword in date_keywords):
             
             try:
-                # Get a sample of non-null values to determine the format
+                # Get a sample of non-null values o determine the format
                 sample_values = df[col].dropna().astype(str).head().tolist()
                 
                 # Make user aware that there are no non-null values for the
@@ -276,7 +275,7 @@ def datetime_conversion(dataframe):
 
                 elif all(len(str(val)) == 6 and str(val).isdigit() for val in
                          sample_values):
-                    print(f"\n{'='*7} WHAT THE FUCK?! {'='*7}")
+
                     # Format like "202568," converting it to "20250608"
                     df[col] = pd.to_datetime(df[col].astype(str).zfill(2),
                                              format="%Y%m%d", yearfirst=True, errors="coerce")
@@ -319,10 +318,10 @@ def datetime_conversion(dataframe):
         date_keywords.remove("date")
 
     # Eliminate redundant date-related columns after establish 'date'
-    # Inefficient ?
-    for col in df.columns:
-        if col in date_keywords:
-            df.drop(col, axis=1, inplace=True)
+    if "date" in df.columns:
+        redundant_cols = [col for col in df.columns if col in ["year", "month",
+                                                              "day"]]
+        df.drop(columns=redundant_cols, inplace=True)
 
     # Ensure the 'date' column is the first column of dataframe
     date_column = df.pop("date")
@@ -331,7 +330,8 @@ def datetime_conversion(dataframe):
     df.insert(0, "date", date_column)
 
     # Sort the dataframe by "date", ascending
-    df = df.sort_values(by="date")
+    if "date" in df.columns:
+        df = df.sort_values(by="date").reset_index(drop=True)
 
     # Reset index
     df.reset_index(drop=True, inplace=True)
@@ -340,6 +340,7 @@ def datetime_conversion(dataframe):
 
 def main():
     # Read Energy dataset
+    # ? --> Replace this with a C++ GUI for user to make selection
     df = read_data("data/raw/Utility_Energy_Registry_Monthly_County_Energy_Use__Beginning_2021_20241208.csv")
     
     # Filter dataframe via FIPS
