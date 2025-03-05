@@ -88,6 +88,52 @@ class DataCleaning(object):
         summary_df = pd.DataFrame(summary_rows)
         return summary_df
 
+    def replace_invalid_values(
+        self, 
+        column, 
+        invalid_values,
+        replacement=np.nan):
+        """
+        Replaces invalid values in a column with a given replacment value.
+        ------------------------------------------------------------
+        INPUT:
+            column: (str) Name of column to modify (pd.Series)
+            invalid_values: (list) Values to be replaced
+            replacement: (default: np.nan) Value to replace invalid entries with.
+
+        OUTPUT:
+            self: method chaining support
+        """
+        if column not in self.dataframe.columns:
+            raise ValueError(f"Column, '{column}' not found in dataframe!")
+
+        self.dataframe[column] = self.dataframe[column].replace(invalid_values, replacement)
+
+        return self
+
+    def replace_negative_values(self):
+        """
+        Replaces arbitrary negative values, for numeric values, outputting the percentage in case
+        column must be scheduled for execution (inplace=True).
+        ----------------------------------------------------------------------
+        INPUT:
+            None
+
+        OUTPUT:
+            None
+        """
+        # Iterate thru columns, only working on numeric Series
+        for col in self.dataframe.columns:
+            # Check for proper numeric dtype and if there's values below zero,
+            # set equal to zero
+            if (pd.api.types.is_numeric_dtype(self.dataframe[col]) 
+               and (self.dataframe[col] <= 0).sum() > 0):
+                # Find negative values and replace with zeros
+                self.dataframe.loc[self.dataframe[col] < 0, col] = \
+                    0.0
+
+        return self
+
     def drop_cols_missing_data(self, threshold=0.5):
         """
         Drop columns where proportion of missing data exceeds threshold.
@@ -103,6 +149,8 @@ class DataCleaning(object):
             self: Method chaining
         """
         self.dataframe = self.dataframe.loc[:, self.dataframe.isnull().mean() <= threshold]
+        # Output what was done ... ?
+        print(f"Dropped the following values: {self.dataframe.loc[:, self.dataframe.isnull().mean() > threshold]}")
 
         return self # Method chaining
 

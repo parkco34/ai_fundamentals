@@ -338,6 +338,59 @@ def datetime_conversion(dataframe):
 
     return df
 
+def preprocess_data(dataframe):
+    """
+    Handles missing values and outliers via DataCleaning class
+    ------------------------------------------------------------
+    INPUT:
+        dataframe: (pd.DataFrame) Dataframe to be preprocessed
+
+    OUTPUT:
+        proper_df: (pd.DataFrame) Preprocessed dataframe.
+    """
+    # Initialize DataCleaning class
+    dc = DataCleaning(dataframe)
+    # Output dataframe info prior to preprocessing
+    print("=== Before Preprocessing ===")
+    print(f"""Rows: {dc.dataframe.shape[0]}\n
+          Columns: {dc.dataframe.shape[1]}\n
+          Missing: {dc.dataframe.isnull().sum()}
+          """)
+
+    # Drop missing columns via threshold
+    dc.drop_cols_missing_data(threshold=0.5)
+    
+    # Display cleaned data
+    display_cleaned_dataset(dc.dataframe,
+                            "Drop columns with >50% Missing data"
+                           )
+    # Get numeric columns
+    numeric_cols = [col for col in dc.dataframe.columns if
+                    pd.api.types.is_numeric_dtype(dc.dataframe[col])]
+
+    # Iterate thru numeric columns and impute missing data
+    for col in numeric_cols:
+
+        # Remove invalid values like -999 or -999.0 (inplace)
+        dc.replace_negative_values()
+
+        # Check that the column doesn't have null values
+        if dc.dataframe[col].isnull().sum() > 0:
+            # Mean imputation lolz
+            dc.imputing_vals_mean(col)
+
+    # Forward fill that shit
+    dc.forward_fill()
+    # Drop missing data
+    dc.drop_rows_missing_data()
+    # Display the cleaned dataset
+    display_cleaned_dataset(dc.dataframe, "After preprocessing")
+
+    # Output percentage of zero values
+
+
+    return dc.dataframe
+
 def main():
     # Read Energy dataset
     # ? --> Replace this with a C++ GUI for user to make selection
@@ -352,11 +405,22 @@ def main():
     lat, lon = 43.1566, -77.6088  # Rochester, NY
     start_year = "2021"
     end_year = "2024"
-    weather_data = gets_weather_data(lat, lon, start_year, end_year)
+    weather_data = get_weather_data(lat, lon, start_year, end_year)
 
     # Weather dataframe
     weather_df = get_weather_df(weather_data)
+    
+    # Output Summary Dataframe using DataCleaning class
+    dc = DataCleaning(filtered_df)
+    # Summary with the top 10 
 
+    # Preprocess dataframe
+    proper_df = preprocess_data(dc.dataframe)
+#    for col in proper_df.columns:
+    summary = dc.column_summary(10)
+    print(f"\nSummary DataFrame:\n {summary}")
+    # Summary about dataframe
+#        print(f"Column: '{col}'\n{proper_df[col].value_counts().unique()}")
     breakpoint()
 
 if __name__ == "__main__":
