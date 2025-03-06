@@ -359,25 +359,26 @@ def preprocess_data(dataframe):
 
     # Drop missing columns via threshold
     dc.drop_cols_missing_data(threshold=0.5)
+
+    # Remove invalid values like -999 or -999.0 (inplace)
+    dc.replace_negative_values()
     
     # Display cleaned data
     display_cleaned_dataset(dc.dataframe,
                             "Drop columns with >50% Missing data"
                            )
-    # Get numeric columns
-    numeric_cols = [col for col in dc.dataframe.columns if
-                    pd.api.types.is_numeric_dtype(dc.dataframe[col])]
+    
+    # Impute missing values
+    for col in dc.dataframe.columns:
 
-    # Iterate thru numeric columns and impute missing data
-    for col in numeric_cols:
-
-        # Remove invalid values like -999 or -999.0 (inplace)
-        dc.replace_negative_values()
-
-        # Check that the column doesn't have null values
+        # For count of null values greater than zero
         if dc.dataframe[col].isnull().sum() > 0:
-            # Mean imputation lolz
-            dc.imputing_vals_mean(col)
+            # Check for numeric data types
+            if pd.api.types.is_numeric_dtype(dc.dataframe[col]):
+                dc.impute_vals_mean(col)
+
+            else:
+                dc.impute_vals_categorical_cols(col)
 
     # Forward fill that shit
     dc.forward_fill()
@@ -386,8 +387,7 @@ def preprocess_data(dataframe):
     # Display the cleaned dataset
     display_cleaned_dataset(dc.dataframe, "After preprocessing")
 
-    # Output percentage of zero values
-
+    # Output percentage of zero values ?
 
     return dc.dataframe
 
