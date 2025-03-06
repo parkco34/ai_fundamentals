@@ -1,8 +1,14 @@
 #!/usr/bin/env python
+"""
+Time Series Analysis
+ACF: Quantifies similarity between observations of a RANDOM VARIABLE at
+different points in time, in order to understand the behavior over time.
+"""
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
+from statsmodels.tsa.stattools import adfuller, acf, pacf # ?
+from statsmodels.tsa.seasonal import seasonal_decompose # ?
 
 
 class TimeSeries:
@@ -330,6 +336,28 @@ class TimeSeries:
 
         return fig
 
+    def custom_arima(
+        self,
+        p=1,
+        d=1,
+        q=1,
+        exog=None,
+        transform_back=True
+    ):
+        """
+        Custom implementation of ARIMA model from scratch.
+        Simplified version that uses statsmodels for parameter estimation but implements the forecasting logic manually.
+        --------------------------------------------------
+        INPUT:
+            p: (int) Order of the AR term (default: 1).
+            d: (int) Order of differencing (default: 1).
+            q: (int) Order of the MA term (default: None)
+            exog: (pd.DataFrame) Exogenou variables (default: None).
+            transform_back: (bool) Whether to transform predictions back to original scale (default: True).
 
+        OUTPUT:
+            model_result: (dict) Dictionary containing the model and its results.
+        """
+        pass
 
 
