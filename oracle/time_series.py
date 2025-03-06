@@ -272,7 +272,7 @@ class TimeSeries:
             None
         """
         plt.figure(figsize=(14, 7))
-        plt.plot(self.time_series[self.date_column], self.time_series[self.target_column])
+        plt.plot(self.time_series.index, self.time_series.values)
         plt.title("Energy Consumption Over Time")
         plt.xlabel("Date")
         plt.ylabel("Energy Usage")
