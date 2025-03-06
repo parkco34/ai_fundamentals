@@ -410,16 +410,17 @@ def main():
     # Weather dataframe
     weather_df = get_weather_df(weather_data)
     
-    # Output Summary Dataframe using DataCleaning class
+    # Instantiate DataCleaning Object (dc)
     dc = DataCleaning(filtered_df)
-    # Summary with the top 10 
 
     # Preprocess dataframe
     proper_df = preprocess_data(dc.dataframe)
-#    for col in proper_df.columns:
+    # Summary with the top 10 
     summary = dc.column_summary(10)
     print(f"\nSummary DataFrame:\n {summary}")
+
     # Summary about dataframe
+#    for col in proper_df.columns:
 #        print(f"Column: '{col}'\n{proper_df[col].value_counts().unique()}")
     breakpoint()
 

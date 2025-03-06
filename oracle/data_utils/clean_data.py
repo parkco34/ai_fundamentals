@@ -87,7 +87,7 @@ class CleanData:
 
         # Convert dictionary to DataFrame
         summary_df = pd.DataFrame(summary_list)
-        breakpoint()
+
         return summary_df
 
 
