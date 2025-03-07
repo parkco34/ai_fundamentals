@@ -356,9 +356,9 @@ def preprocess_data(dataframe):
     # Output dataframe info prior to preprocessing
     print("=== Before Preprocessing ===")
     print(dedent(
-    f"""Rows: {dc.dataframe.shape[0]}\n
-        Columns: {dc.dataframe.shape[1]}\n
-        Missing: {dc.dataframe.isnull().sum()}
+    f"""Rows: {dc.dataframe.shape[0]}
+Columns: {dc.dataframe.shape[1]}\n
+Missing Values: \n{dc.dataframe.isnull().sum()}
           """))
 
     # Drop missing columns via threshold
@@ -424,20 +424,19 @@ def main():
     # Data preprocessing ( ͡° ͜ʖ ͡°)╭∩╮
     proper_df = preprocess_data(datetime_df)
 
-    # Inspect post-cleaning dataframes
-    print("\n\nPost-cleaning insepction of dataframes\n\n")
-    print(proper_df.describe())
-    print(proper_df.head())
-    print(proper_df.info())
-    # Basic visualization for insights
-    plt.figure(figsize=(14, 6))
-    plt.plot(proper_df["date"], proper_df["value"], marker="o")
-    plt.title("Energy Consumption After Cleaning")
-    plt.xlabel("Date")
-    plt.ylabel("Energy Consumption")
-    plt.grid(True)
-    plt.show()
-    
+    # Inspect post-cleaning dataframes if wanted
+#    print("\n\nPost-cleaning insepction of dataframes\n\n")
+#    print(proper_df.describe())
+#    print(proper_df.head())
+#    print(proper_df.info())
+#    # Basic visualization for insights
+#    plt.figure(figsize=(14, 6))
+#    plt.plot(proper_df["date"], proper_df["value"], marker="o")
+#    plt.title("Energy Consumption After Cleaning")
+#    plt.xlabel("Date")
+#    plt.ylabel("Energy Consumption")
+#    plt.grid(True)
+#    plt.show()
     
     # Summary with the top 10 
     summary = dc.column_summary(10)
