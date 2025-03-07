@@ -421,7 +421,7 @@ def main():
     
     # Summary with the top 10 
     summary = dc.column_summary(10)
-    print(f"\nSummary DataFrame:\n {summary}")
+    print(f"\nSummary DataFrame:\n {summary}"a
 
     breakpoint()
 
