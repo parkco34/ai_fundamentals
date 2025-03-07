@@ -5,6 +5,7 @@ Oracle project:
 
 *--> It is important to note that the data are subject to privacy screening and fields that fail the privacy screen are withheld
 """
+from textwrap import dedent
 from data_utils.data_cleaning import DataCleaning # Import certain class
 from textwrap import dedent
 import pandas as pd
@@ -46,7 +47,7 @@ def display_cleaned_dataset(dataframe, step_name):
     print(f"Missing values: {dataframe.isnull().sum().sum()}")
 
     if "value" in dataframe.columns:
-        print(f"Vlaue column stats:")
+        print(f"Value column stats:")
         print(f"    - Negative values: {(dataframe['value'] < 0).sum()}")
         print(f"    - Zero values: {(dataframe['value'] == 0).sum()}")
         print(f"    - Positive values: {(dataframe['value'] > 0).sum()}")
@@ -172,6 +173,8 @@ def get_weather_df(weather_data):
 
     # Using merge_weather_dataframes function for combining dataframes
     proper_weather_df = merge_weather_dataframes(dfs)
+    # Merge validation
+    print(proper_weather_df.head())
 
     # Convert any date-related columns to datetime 
 
@@ -352,10 +355,11 @@ def preprocess_data(dataframe):
 
     # Output dataframe info prior to preprocessing
     print("=== Before Preprocessing ===")
-    print(f"""Rows: {dc.dataframe.shape[0]}\n
-          Columns: {dc.dataframe.shape[1]}\n
-          Missing: {dc.dataframe.isnull().sum()}
-          """)
+    print(dedent(
+    f"""Rows: {dc.dataframe.shape[0]}\n
+        Columns: {dc.dataframe.shape[1]}\n
+        Missing: {dc.dataframe.isnull().sum()}
+          """))
 
     # Drop missing columns via threshold
     dc.drop_cols_missing_data(threshold=0.5)
@@ -377,7 +381,7 @@ def preprocess_data(dataframe):
                 dc.imputing_vals_mean(col)
 
             else:
-                dc.imputing_vals_categorical_cols(col)
+                dc.imputing_categorical_cols(col)
 
     # Forward fill that shit
     dc.forward_fill()
@@ -405,6 +409,8 @@ def main():
     start_year = "2021"
     end_year = "2024"
     weather_data = get_weather_data(lat, lon, start_year, end_year)
+    # Confirm API call
+    assert weather_data, "NASA POWER API returned jack shit!"
 
     # Weather dataframe
     weather_df = get_weather_df(weather_data)
@@ -415,9 +421,23 @@ def main():
     # Instantiate DataCleaning Object (dc)
     dc = DataCleaning(datetime_df)
 
-    # ? data preprocessing ?
-#    proper_df1 = preprocess_data(df) # ?
-    proper_df2 = preprocess_data(datetime_df)
+    # Data preprocessing ( ͡° ͜ʖ ͡°)╭∩╮
+    proper_df = preprocess_data(datetime_df)
+
+    # Inspect post-cleaning dataframes
+    print("\n\nPost-cleaning insepction of dataframes\n\n")
+    print(proper_df.describe())
+    print(proper_df.head())
+    print(proper_df.info())
+    # Basic visualization for insights
+    plt.figure(figsize=(14, 6))
+    plt.plot(proper_df["date"], proper_df["value"], marker="o")
+    plt.title("Energy Consumption After Cleaning")
+    plt.xlabel("Date")
+    plt.ylabel("Energy Consumption")
+    plt.grid(True)
+    plt.show()
+    
     
     # Summary with the top 10 
     summary = dc.column_summary(10)
