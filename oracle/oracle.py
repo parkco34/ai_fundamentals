@@ -103,6 +103,7 @@ def fips_df(df, filter_by_fips):
     # Analyze filtered data
     print(f"=== Analysis fo Target Counties ===")
     for fips in filter_by_fips:
+        # Get county data via relevant FIPS codes
         county_data = filtered_df[filtered_df[fips_column] == fips]
         print(f"\nCounty FIPS: {fips}")
         print(f"Total Records: {len(county_data)}")
@@ -115,10 +116,7 @@ def fips_df(df, filter_by_fips):
         else:
             print("No data found for this county")
 
-    # Check for date-like columns and convert to datetime
-    dataframe = datetime_conversion(filtered_df)
-
-    return dataframe
+    return filtered_df
 
 def get_weather_data(latitude, longitude, start_year, end_year):
     """
@@ -179,7 +177,7 @@ def get_weather_df(weather_data):
 
     return datetime_conversion(proper_weather_df)
 
-def datetime_conversion(dataframe):
+def datetime_conversion(dataframe, sort_by_date=True):
     """
     Looks for a 'date' type column and converts it to datetime.
     If there's separate month, year columns, it properly combines them into one
@@ -187,6 +185,7 @@ def datetime_conversion(dataframe):
     ------------------------------------------------------------
     INPUT:
         dataframe: (pd.DataFrame) Original dataframe
+        sort_by_date: (bool) Whether to sort the dataframe by date or leave it as it is.
 
     OUTPUT:
         dataframe: (pd.DataFrame) Datetime converted dataframe
@@ -330,7 +329,7 @@ def datetime_conversion(dataframe):
     df.insert(0, "date", date_column)
 
     # Sort the dataframe by "date", ascending
-    if "date" in df.columns:
+    if sort_by_date and "date" in df.columns:
         df = df.sort_values(by="date").reset_index(drop=True)
 
     # Reset index
@@ -350,6 +349,7 @@ def preprocess_data(dataframe):
     """
     # Initialize DataCleaning class
     dc = DataCleaning(dataframe)
+
     # Output dataframe info prior to preprocessing
     print("=== Before Preprocessing ===")
     print(f"""Rows: {dc.dataframe.shape[0]}\n
@@ -365,8 +365,7 @@ def preprocess_data(dataframe):
     
     # Display cleaned data
     display_cleaned_dataset(dc.dataframe,
-                            "Drop columns with >50% Missing data"
-                           )
+                            "Drop columns with >50% Missing data")
     
     # Impute missing values
     for col in dc.dataframe.columns:
@@ -375,10 +374,10 @@ def preprocess_data(dataframe):
         if dc.dataframe[col].isnull().sum() > 0:
             # Check for numeric data types
             if pd.api.types.is_numeric_dtype(dc.dataframe[col]):
-                dc.impute_vals_mean(col)
+                dc.imputing_vals_mean(col)
 
             else:
-                dc.impute_vals_categorical_cols(col)
+                dc.imputing_vals_categorical_cols(col)
 
     # Forward fill that shit
     dc.forward_fill()
@@ -387,19 +386,19 @@ def preprocess_data(dataframe):
     # Display the cleaned dataset
     display_cleaned_dataset(dc.dataframe, "After preprocessing")
 
-    # Output percentage of zero values ?
-
     return dc.dataframe
 
 def main():
     # Read Energy dataset
-    # ? --> Replace this with a C++ GUI for user to make selection
-    df = read_data("data/raw/Utility_Energy_Registry_Monthly_County_Energy_Use__Beginning_2021_20241208.csv")
+    # ? --> Replace this with a C++ GUI for user to make selection ?
+    df = \
+    read_data("data/raw/Utility_Energy_Registry_Monthly_County_Energy_Use__Beginning_2021_20241208.csv")
     
     # Filter dataframe via FIPS
     filter_by_fips = [36051, 36053, 36055]
-    # Energy dataframe
-    filtered_df = fips_df(df, filter_by_fips)
+
+    # Energy dataframe for specific region
+#    filtered_df = fips_df(df, filter_by_fips)
 
     # Get weather dataframe
     lat, lon = 43.1566, -77.6088  # Rochester, NY
@@ -410,19 +409,25 @@ def main():
     # Weather dataframe
     weather_df = get_weather_df(weather_data)
     
-    # Instantiate DataCleaning Object (dc)
-    dc = DataCleaning(filtered_df)
+    # Consolidate "date-like" columns into one, converting it to pd.datetime
+    datetime_df = datetime_conversion(df)
 
-    # Preprocess dataframe
-    proper_df = preprocess_data(dc.dataframe)
+    # Instantiate DataCleaning Object (dc)
+    dc = DataCleaning(datetime_df)
+
+    # ? data preprocessing ?
+#    proper_df = preprocess_data(df)
+    proper_df = preprocess_data(datetime_df)
+    
     # Summary with the top 10 
     summary = dc.column_summary(10)
     print(f"\nSummary DataFrame:\n {summary}")
+    breakpoint()
 
     # Summary about dataframe
 #    for col in proper_df.columns:
-#        print(f"Column: '{col}'\n{proper_df[col].value_counts().unique()}")
-    breakpoint()
+#        print(f"Column: '{col}'\n{proper_df[col].value_counts().unique()}") 
+
 
 if __name__ == "__main__":
     main()
