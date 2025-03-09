@@ -13,6 +13,7 @@ import numpy as np
 import json
 import matplotlib.pyplot as plt
 from nasa_power_api import NASAPowerAPI
+from time_series import datetime_conversion
 
 def merge_weather_dataframes(dfs):
     """
@@ -423,6 +424,8 @@ def main():
 
     # Data preprocessing ( ͡° ͜ʖ ͡°)╭∩╮
     proper_df = preprocess_data(datetime_df)
+    # Time Series Analysis
+
 
     # Inspect post-cleaning dataframes if wanted
 #    print("\n\nPost-cleaning insepction of dataframes\n\n")
@@ -441,6 +444,10 @@ def main():
     # Summary with the top 10 
     summary = dc.column_summary(10)
     print(f"\nSummary DataFrame:\n {summary}")
+
+    # Produce a simple_timeseris_plot
+    ts = TimeSeries(proper_df)
+    plot_shit = ts.simple_time
 
     breakpoint()
 
