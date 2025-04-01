@@ -13,7 +13,6 @@ import numpy as np
 import json
 import matplotlib.pyplot as plt
 from nasa_power_api import NASAPowerAPI
-from time_series import datetime_conversion
 
 def merge_weather_dataframes(dfs):
     """
@@ -419,37 +418,28 @@ def main():
     # Consolidate "date-like" columns into one, converting it to pd.datetime
     datetime_df = datetime_conversion(df)
 
-    # Instantiate DataCleaning Object (dc)
-    dc = DataCleaning(datetime_df)
-
     # Data preprocessing ( ͡° ͜ʖ ͡°)╭∩╮
     proper_df = preprocess_data(datetime_df)
     # Time Series Analysis
-
+    breakpoint()
 
     # Inspect post-cleaning dataframes if wanted
-#    print("\n\nPost-cleaning insepction of dataframes\n\n")
-#    print(proper_df.describe())
-#    print(proper_df.head())
-#    print(proper_df.info())
-#    # Basic visualization for insights
-#    plt.figure(figsize=(14, 6))
-#    plt.plot(proper_df["date"], proper_df["value"], marker="o")
-#    plt.title("Energy Consumption After Cleaning")
-#    plt.xlabel("Date")
-#    plt.ylabel("Energy Consumption")
-#    plt.grid(True)
-#    plt.show()
+    print("\n\nPost-cleaning insepction of dataframes\n\n")
+    print(proper_df.describe())
+    print(proper_df.head())
+    print(proper_df.info())
+    # Basic visualization for insights
+    plt.figure(figsize=(14, 6))
+    plt.plot(proper_df["date"], proper_df["value"], marker="o")
+    plt.title("Energy Consumption After Cleaning")
+    plt.xlabel("Date")
+    plt.ylabel("Energy Consumption")
+    plt.grid(True)
+    plt.show()
     
     # Summary with the top 10 
-    summary = dc.column_summary(10)
-    print(f"\nSummary DataFrame:\n {summary}")
-
-    # Produce a simple_timeseris_plot
-    ts = TimeSeries(proper_df)
-    plot_shit = ts.simple_time
-
-    breakpoint()
+#    summary = dc.column_summary(10)
+#    print(f"\nSummary DataFrame:\n {summary}")
 
     # Summary about dataframe
 #    for col in proper_df.columns:
