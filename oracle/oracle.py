@@ -14,6 +14,37 @@ import json
 import matplotlib.pyplot as plt
 from nasa_power_api import NASAPowerAPI
 
+def merge_energy_weather_location(energy_df, weather_df):
+    """
+    Merges energy consumption data with weather data and ensures location info is preseved.
+    --------------------------------------------------------
+    INPUT:
+        energy_df: (pd.DataFrame) Energy consumption dataframe
+        weather_df: (pd.DataFrame) Weather dataframe
+
+    OUTPUT:
+        merged_df: (pd.DataFrame) Merged dataframe with energy weather and location data.
+    """
+    # Make sure both dataframes have "date" as datetime
+    if "date" not in energy_df.columns:
+        energy_df = datetime_conversion(energy_df)
+    
+    if "date" not in weather_df.columns:
+        weather_df = datetime_conversion(weather_df)
+
+    # Merge dataframes on date
+    merged_df = pd.merge(energy_df, weather_df, on="date", how=";eft")
+
+    # Ensure location columns are preserved
+    location_cols = ["county_name", "full_fips"]
+    if all(col in merged_df.columns for col in location_cols):
+        print(f"Location information preserved: {location_cols}")
+
+    else:
+        print("Warning: Some location columns are missing in the merged dataframe")
+
+    return merged_df
+
 def merge_weather_dataframes(dfs):
     """
     Merges weather dataframes on the date column
