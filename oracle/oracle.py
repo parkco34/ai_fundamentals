@@ -13,6 +13,8 @@ import numpy as np
 import json
 import matplotlib.pyplot as plt
 from nasa_power_api import NASAPowerAPI
+import os
+import matplotlib
 
 def merge_energy_weather_location(energy_df, weather_df):
     """
@@ -33,7 +35,7 @@ def merge_energy_weather_location(energy_df, weather_df):
         weather_df = datetime_conversion(weather_df)
 
     # Merge dataframes on date
-    merged_df = pd.merge(energy_df, weather_df, on="date", how=";eft")
+    merged_df = pd.merge(energy_df, weather_df, on="date", how="left")
 
     # Ensure location columns are preserved
     location_cols = ["county_name", "full_fips"]
@@ -44,6 +46,210 @@ def merge_energy_weather_location(energy_df, weather_df):
         print("Warning: Some location columns are missing in the merged dataframe")
 
     return merged_df
+
+def plot_energy_by_location(merged_df):
+    """
+    Visualization of energy consumption by iocation with weather overlay.
+    -------------------------------------------------------------
+    INPUT:
+        merged_df: (pd.DataFrame) merged dataframe
+
+    OUTPUT:
+        None
+    """
+    # Set backend once at beginning
+    matplotlib.use("TkAgg")
+
+    # Get unique locations
+    locations = merged_df["county_name"].unique()
+
+    # Create a figure with subplots
+    fig, axes = plt.subplots(len(locations), 1, figsize=(14, 6*len(locations)), sharex=True)
+
+    # Make sure axes is always a list
+    if len(locations) == 1:
+        axes = [axes]
+
+    for i, location in enumerate(locations):
+        location_data = merged_df[merged_df["county_name"] == location]
+
+        # Empty dataframe check
+        if location_data.empty:
+            print(f"No data for location: {location}")
+            continue
+        
+        # Sort by date
+        location_data = location_data.sort_values(by="date").copy()
+
+        # Check for value in column
+        if "value" not in location_data.columns:
+            print(f"Error: 'value' column not found in data for: {location}")
+            print(f"Available columns: {location_data.columns}")
+            continue
+
+        # Plot energy consumption
+        try:
+            axes[i].plot(location_data["date"], location_data["value"], marker="o", label="Energy Consumption")
+
+            # If we have temperature data, add it as a secondary y-axis
+            if "temp (°C)" in location_data.columns:
+                ax2 = axes[i].twinx()
+                ax2.plot(location_data["date"], location_data["temp (°C)"], "-r", label="Temperature (°C)")
+                ax2.set_ylabel("Temperature (°C)", color="r")
+                ax2.tick_params(axis="y", colors="r")
+
+            axes[i].set_title(f"Energy Consumption for {location}")
+            axes[i].set_ylabel("Energy Consumption")
+            axes[i].grid(True)
+
+            # Add legend
+            lines, labels = axes[i].get_legend_handles_labels()
+            if "temp (°C)" in location_data.columns:
+                lines2, labels2 = ax2.get_legend_handles_labels()
+                axes[i].legend(lines + lines2, labels + labels2, loc="upper left")
+            else:
+                axes[i].legend(loc="upper left")
+
+        except Exception as e:
+            print(f"Error plotting data for {location}: {str(e)}")
+
+    # X-axis label for the bottom subplot
+    plt.xlabel("Date", fontsize=12)
+
+    # Main title for the figure
+    fig.suptitle("Energy Consumption by County", fontsize=16, fontweight="bold")
+
+    # Adjust layout and save
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.95)
+    plt.savefig("energy_consumption_plot.png", dpi=300, bbox_inches="tight")
+
+    # Show the plot without trying to maximize the window
+    plt.show()
+
+def plot_energy_by_location(merged_df):
+    """
+    Visualization of energy consumption by iocation with weather overlay.
+    -------------------------------------------------------------
+    INPUT:
+        merged_df: (pd.DataFrame) merged dataframe
+
+    OUTPUT:
+        None
+    """
+    # Silence Tk deprecation warning
+    os.environ["TK_SILENCE_DEPRECATION"] = "1"
+    
+    # Get unique locations
+    locations = merged_df["county_name"].unique()
+
+    # Configure matplotlib for macos (backend)
+    matplotlib.use("TkAgg")
+
+    # Create a new fiure with a very large DPI for Retina Displays ??
+    plt.figure(figsize=(16, 10), dpi=150)
+
+    if len(locations) > 1:
+        # Create subplots for each location
+        fig, axes = plt.subplots(len(locations), 1, figsize=(14, 6*len(locations)), sharex=True)
+
+        # For a single location, axes won't be an array, so make it one
+        if len(locations) == 1:
+            axes = [axes]
+
+    else:
+        fig, ax = plt.subplots(figsize=(16, 10), dpi=150)
+        axes = [axes]
+
+    for i, location in enumerate(locations):
+        location_data =  merged_df[merged_df["county_name"] == location]
+        # Empty dataframe check
+        if location_data.empty:
+            print(f"No data for location: {location}")
+            continue
+
+        # Sort by date
+        location_data.sort_values(by="date", inplace=True)
+
+        # Check for value in column
+        if "value" not in location_data.columns:
+            print(f"Error: 'value' column not found in data for {location}")
+            print(f"Available columns: {location_data.columns.tolist()}")
+            continue
+
+        # Plot energy consumption
+        try:
+            axes[i].plot(location_data['date'], location_data["value"], marker="o", label="Energy Consumption")
+
+            # If we have temperature data, add it as a secondary y-axis
+            if "temp (°C)" in location_data.columns:
+                ax2 = axes[i].twinx()
+                ax2.plot(location_data["date"], location_data["temp (°C)"], "-r",
+                         label="Temperature (°C)")
+                ax2.set_ylabel("Temperature (°C)", color="r")
+                ax2.tick_params(axis="y", colors="r")
+                
+            axes[i].set_title(f"Energy Consumption for {location}")
+            axes[i].set_ylabel("Energy Consumption")
+            axes[i].grid(True)
+
+            # Add legend
+            lines, labels = axes[i].get_legend_handles_labels()
+            if "temp (°C)" in location_data.columns:
+                lines2, labels2 = ax2.get_legend_handles_labels()
+                axes[i].legend(lines + lines2, labels + labels2, loc="upper left")
+
+            else:
+                axes[i].legend(loc="upper left")
+
+        except Exception as e:
+            print(f"Error plotting data for {location}: {str(e)}")
+    
+    # X-axis label
+    plt.xlabel("Date", fontsize=12)
+    # Main title for figure
+    fig.suptitle("Energy Consumption by County", fontsize=16, fontweight="bold")
+    
+    # Adjust layout
+    plt.tight_layout()
+    # Make room for main title
+    plt.subplots_adjust(top=0.95)
+
+    # Save figure to file before showing it (as backup)
+    plt.savefig("energy_consumption_plot.png", dpi=300, bbox_inches="tight")
+
+    try:
+        matplotlib.use("Qt5Agg")
+
+        # Make the window appear in full-screen mode
+        manager = plt.get_current_fig_manager()
+
+        # Maximize window
+        if hasattr(manager, "window"):
+            
+            if hasattr(manager.window, "showMaximized"):
+                manager.window.showMaxmized()
+
+            elif hasattr(manager.window, "state"):
+                manager.window.state("zoomed")
+
+    except Exception as e:
+        try:
+            # Qt backends
+            manager.full_screen_toggle()
+
+        except:
+            try:
+                manager.resize(*manager.window.maxsize())
+
+            except:
+                pass # IF nothing works
+
+                print(f"Note: could not maximize window: {str(e)}")
+                print("The plot has been saved to 'energy_consumption_plot.png'")
+
+
+    plt.show()
 
 def merge_weather_dataframes(dfs):
     """
@@ -428,53 +634,69 @@ def main():
     # ? --> Replace this with a C++ GUI for user to make selection ?
     df = \
     read_data("data/raw/Utility_Energy_Registry_Monthly_County_Energy_Use__Beginning_2021_20241208.csv")
-    
-    # Filter dataframe via FIPS
-    filter_by_fips = [36051, 36053, 36055]
-
-    # Energy dataframe for specific region
-#    filtered_df = fips_df(df, filter_by_fips)
 
     # Get weather dataframe
     lat, lon = 43.1566, -77.6088  # Rochester, NY
     start_year = "2021"
     end_year = "2024"
     weather_data = get_weather_data(lat, lon, start_year, end_year)
+
     # Confirm API call
-    assert weather_data, "NASA POWER API returned jack shit!"
+#    assert weather_data, "NASA POWER API returned jack shit!"
 
     # Weather dataframe
     weather_df = get_weather_df(weather_data)
-    
+   
+    # Filter dataframe via FIPS (location: Rochester area)
+    filter_by_fips = [36051, 36053, 36055]
+
+    # Energy dataframe for specific region
+    filtered_df = fips_df(df, filter_by_fips)
+
     # Consolidate "date-like" columns into one, converting it to pd.datetime
-    datetime_df = datetime_conversion(df)
+    datetime_df = datetime_conversion(filtered_df)
 
     # Data preprocessing ( ͡° ͜ʖ ͡°)╭∩╮
-    proper_df = preprocess_data(datetime_df)
-    # Time Series Analysis
-    breakpoint()
+    cleaned_energy_df = preprocess_data(datetime_df)
+    cleaned_weather_df = preprocess_data(weather_df)
 
+    # Merge dataframes, preserving location info
+    merged_df = merge_energy_weather_location(cleaned_energy_df,
+                                              cleaned_weather_df)
+
+    # Plot energy by location with weather overlay
+    plot_energy_by_location(merged_df)
+
+    # Additional analysis as needed
+    print("\nLocation-based statistics: ")
+    location_stats = merged_df.groupby("county_name")["value"].agg(['mean', 'std', 'min', 'max'])
+    print(location_stats)
+
+    # Save the merged dataset if needed
+#    merged_df.to_csv("energy_weather_location_data.csv", index=False)
+    
+    breakpoint()
     # Inspect post-cleaning dataframes if wanted
-    print("\n\nPost-cleaning insepction of dataframes\n\n")
-    print(proper_df.describe())
-    print(proper_df.head())
-    print(proper_df.info())
-    # Basic visualization for insights
-    plt.figure(figsize=(14, 6))
-    plt.plot(proper_df["date"], proper_df["value"], marker="o")
-    plt.title("Energy Consumption After Cleaning")
-    plt.xlabel("Date")
-    plt.ylabel("Energy Consumption")
-    plt.grid(True)
-    plt.show()
+#    print("\n\nPost-cleaning insepction of dataframes\n\n")
+#    print(cleaned_energy_df.describe())
+#    print(cleaned_energy_df.head())
+#    print(cleaned_energy_df.info())
+#    # Basic visualization for insights
+#    plt.figure(figsize=(14, 6))
+#    plt.plot(cleaned_energy_df["date"], cleaned_energy_df["value"], marker="o")
+#    plt.title("Energy Consumption After Cleaning")
+#    plt.xlabel("Date")
+#    plt.ylabel("Energy Consumption")
+#    plt.grid(True)
+#    plt.show()
     
     # Summary with the top 10 
 #    summary = dc.column_summary(10)
 #    print(f"\nSummary DataFrame:\n {summary}")
 
     # Summary about dataframe
-#    for col in proper_df.columns:
-#        print(f"Column: '{col}'\n{proper_df[col].value_counts().unique()}") 
+#    for col in cleaned_energy_df.columns:
+#        print(f"Column: '{col}'\n{cleaned_energy_df[col].value_counts().unique()}") 
 
 
 if __name__ == "__main__":
