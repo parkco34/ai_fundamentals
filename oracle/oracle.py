@@ -77,7 +77,40 @@ def get_weather_dataframe(weather_data):
         (pd.DataFrame) Datetime converted dataframe merged with weather dataframe
     """
     # Initialize some parameters
-    pass
+    param_mapping = {
+        "RH2M": "humidity%",
+        "T2M": "temp (°C)",
+        "WS10M": "speed (m/s)",
+        "ALLSKY_SFC_SW_DWN": "W/m²"
+    }
+
+    # Initialize an empty DataFrame to store all values
+    result_df = None
+
+    # Extract parameters dictionary (only relevant info)
+    parameters = weather_data["propertiesd"]["parameter"]
+
+    # Loop thru each parameter, adding to dataframe
+    # api_param for ['T2M', 'RH2M', 'WS10M', 'ALLSKY_SFC_SW_DWN']
+    # and columns_name for the dataframe's column  names
+    for api_param, columns_name in param_mapping.items():
+        # Get the date-value dictionary for this parameter,
+        # .get(key, what to fill in with if key not available)
+        param_dict = parameters.get(api_param, {})
+
+        # Create temporary DataFrame from dictionary items
+        temp_df = pd.DataFrame(list(param_dict.items()), columns=["date", column_name])
+
+        if result_df is None:
+            # First parameter - create initial dataframe
+            result_df = temp_df
+
+        else:
+            # Merge with existing dataframe on date column
+            result_df = pd.merge(result_df, temp_df, on="date", how="outer")
+
+    # Convert date column to datetime and ensure proper sorting
+    return datetime_conversion(result_df)
 
 def datetime_conversion(dataframe, sort_by_date=True):
     """
@@ -102,7 +135,4 @@ start_year = "2021"
 end_year = "2024"
 weather_data = get_weather_data(lat, lon, start_year, end_year)
 breakpoint()
-
-
-
 
