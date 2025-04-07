@@ -50,118 +50,101 @@ def merge_energy_weather_location(energy_df, weather_df):
 
 def plot_energy_by_location(merged_df):
     """
-    Visualization of energy consumption by location with weather overlay.
+    Visualization of energy, weather, and location (filtered by FIPS codes)
+    ------------------------------------------------------------------
+    INPUT:
+
+    OUTPUT:
     """
-    # Diagnostic
-    print("\n=== Plot Diagnostics ===")
-    print(f"DataFrame shape: {merged_df.shape}")
-
-    # Force matplotlib to use a specific backend that works well on macOS
-    matplotlib.use('MacOSX')  # Try this backend specifically for Mac
-
     # Get unique locations
     locations = merged_df["county_name"].unique()
-    print(f"Found {len(locations)} unique locations: {locations}")
 
-    # Create a simple test plot first to verify plotting works
-    plt.figure(figsize=(8, 6))
-    plt.plot([1, 2, 3, 4], [1, 4, 9, 16], 'ro-')
-    plt.title("Test Plot")
-    plt.grid(True)
-    plt.savefig("test_plot.png")
-    plt.close()  # Close this figure before creating the main one
-    print("Created test plot - check test_plot.png exists")
+    # Create new figure for the main plot
+    fig, axs = plt.subplots(
+        len(locations), 
+        1, 
+        figsize=(16, 3*len(locations)-1), sharex=True)
 
-    # Create a new figure for the main plot
-    fig, axes = plt.subplots(len(locations), 1, figsize=(14, 3*len(locations)))
-    breakpoint()
-
-    # Make sure axes is always a list
+    # Ensure axs is always a list
     if len(locations) == 1:
-        axes = [axes]
+        axs = [axs]
 
-    # Loop through each location
+    # Iterate thru each location
     for i, location in enumerate(locations):
-        # Create a copy to avoid the SettingWithCopyWarning
+        # Create a copy to avoid SettingWithCopyWarning
         location_data = merged_df[merged_df["county_name"] == location].copy()
-
-        # Print diagnostic info
-        print(f"\nLocation: {location}")
+        
+        # Print Diagnostic information
+        print(f"\Location: {location}")
         print(f"Records: {len(location_data)}")
 
-        # Skip if no datlight   if location_data.empty:
-        print(f"Warning: No data for location {location}")
-        continue
-
-        # Sort by date WITHOUT using inplace
-        location_data = location_data.sort_values(by="date")
-
-        # Verify value column exists
-        if "value" not in location_data.columns:
-            print(f"Error: No 'value' column for {location}. Available columns:")
-            print(location_data.columns.tolist())
+        if location_data.empty:
+            print(f"There's' nothing in this bitch!")
             continue
 
-        # Print data range
-        print(f"Date range: {location_data['date'].min()} to {location_data['date'].max()}")
-        print(f"Value range: {location_data['value'].min()} to {location_data['value'].max()}")
+        # Sort the values for time series
+        location_data = location_data.sort_values(by="date")
 
-        # Plot the data
+        # Verify value in column for existence
+        if "value" not in location_data.columns:
+            print(f"Error: No 'value' column for the location: {location}")
+            continue
+
+        # Plot data
         try:
             # Use explicit x and y data
-            x_data = location_data['date'].tolist()
-            y_data = location_data['value'].tolist()
+            x_data = location_data["date"].tolist()
+            y_data = location_data["value"].tolist()
+            # Convert to numpy arrays
+            x, y = np.array(x_data), np.array(y_data)
 
-            print(f"Plotting {len(x_data)} points for {location}")
+            # Plot energy consumption data
+            axs[i].plot(x, y, "-b", marker="o", linewidth=1.5, label="Energy Consumption")
+            axs[i].set_ylabel("Energy Consumption", color="b")
+            axs[i].tick_params(axis="y", colors="b")
+            axs[i].set_title(f"Energy Consumption Data for location: {location}")
+            axs[i].grid(True)
 
-            # Create the actual plot
-            axes[i].plot(x_data, y_data, 'o-', color='blue', markersize=4, label="Energy Consumption")
-
-            # Add temperature if available
+            # Add temperature info if available
             if "temp (°C)" in location_data.columns:
                 temp_data = location_data["temp (°C)"].tolist()
-                ax2 = axes[i].twinx()
-                ax2.plot(x_data, temp_data, "-r", linewidth=1.5, label="Temperature (°C)")
-                ax2.set_ylabel("Temperature (°C)", color="r")
+                temp = np.array(temp_data)
+                # Creates twin axis sharing thje x-axis
+                ax2 = axs[i].twinx()
+                ax2.plot(x, temp, "-r", linewidth=1.5, label="Temperature (celsius)")
+                ax2.set_ylabel("Temperature (celsius)", color="r")
                 ax2.tick_params(axis="y", colors="r")
 
                 # Add combined legend
-                lines1, labels1 = axes[i].get_legend_handles_labels()
+                lines1, labels1 = axs[i].get_legend_handles_labels()
                 lines2, labels2 = ax2.get_legend_handles_labels()
-                ax2.legend(lines1 + lines2, labels1 + labels2, loc="upper right")
+                ax2.legend(lines1 + lines2, labels1+labels2, loc="upper right")
+
             else:
-                axes[i].legend(loc="upper left")
-
-            # Set titles and labels
-            axes[i].set_title(f"Energy Consumption for {location}")
-            axes[i].set_ylabel("Energy Consumption")
-            axes[i].grid(True, alpha=0.3)
-
-            # Format x-axis date ticks
-            axes[i].tick_params(axis='x', rotation=45)
+                axs[i].set_title(f"Energy Consumption for {location}")
+                axs[i].set_ylabel("Energy Consumption")
+                axs[i].grid(True)
+                # Formatting ticks
+                axs[i].tick_params(axis="x", rotation=45)
 
         except Exception as e:
-            print(f"Error plotting data for {location}: {str(e)}")
-            traceback.print_exc()
+            print(f"Error plotting data for location :{location} {str(e)}")
+            traceback.print_exec()
 
     # Add an overall x-axis label
-    fig.text(0.5, 0.04, "Date", ha='center', fontsize=12)
-
+    fig.text(0.5, 0.0, "Date", ha="center", fontsize=12)
     # Add overall title
-    fig.suptitle("Energy Consumption by County", fontsize=16, fontweight='bold')
-
+    fig.suptitle("Energy Consumption by County", fontsize=16, fontweight="bold")
     # Adjust layout
     plt.tight_layout()
-    plt.subplots_adjust(top=0.95, hspace=0.3)
+#    plt.subplots_adjust(top=0.95, hspace=0.3)
 
-    # Save the figure
+    # Save figure
     print("Saving figure to energy_consumption_plot.png")
     plt.savefig("energy_consumption_plot.png", dpi=150, bbox_inches="tight")
-
-    # Show the plot
-    print("Displaying plot...")
+    
+    # Show plot
     plt.show()
-    print("Plot display completed")
 
 def merge_weather_dataframes(dfs):
     """
@@ -569,37 +552,24 @@ def main():
     datetime_df = datetime_conversion(filtered_df)
 
     # Data preprocessing ( ͡° ͜ʖ ͡°)╭∩╮
+    print("Cleaned Energy data:")
     cleaned_energy_df = preprocess_data(datetime_df)
+    print("Cleaned Weather data:")
     cleaned_weather_df = preprocess_data(weather_df)
 
     # Merge dataframes, preserving location info
     merged_df = merge_energy_weather_location(cleaned_energy_df,
                                               cleaned_weather_df)
-
     # Plot energy by location with weather overlay
-    plot_energy_by_location(merged_df)
-
+#    plot_energy_by_location(merged_df)
+    breakpoint()
     # Additional analysis as needed
     print("\nLocation-based statistics: ")
     location_stats = merged_df.groupby("county_name")["value"].agg(['mean', 'std', 'min', 'max'])
     print(location_stats)
 
     # Save the merged dataset if needed
-#    merged_df.to_csv("energy_weather_location_data.csv", index=False)
-    
-    # Inspect post-cleaning dataframes if wanted
-#    print("\n\nPost-cleaning insepction of dataframes\n\n")
-#    print(cleaned_energy_df.describe())
-#    print(cleaned_energy_df.head())
-#    print(cleaned_energy_df.info())
-#    # Basic visualization for insights
-#    plt.figure(figsize=(14, 6))
-#    plt.plot(cleaned_energy_df["date"], cleaned_energy_df["value"], marker="o")
-#    plt.title("Energy Consumption After Cleaning")
-#    plt.xlabel("Date")
-#    plt.ylabel("Energy Consumption")
-#    plt.grid(True)
-#    plt.show()
+    merged_df.to_csv("energy_weather_location_data.csv", index=False)
     
     # Summary with the top 10 
 #    summary = dc.column_summary(10)
