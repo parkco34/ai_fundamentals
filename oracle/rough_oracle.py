@@ -341,7 +341,8 @@ def datetime_conversion(dataframe, sort_by_date=True):
     if has_year and has_month:
 
         try:
-            # Get correct column names
+            # Get correct column names via list comprehension, extracting first
+            # element from the list
             year_col = [col for col in df.columns if col == "year"][0]
             month_col = [col for col in df.columns if col == "month"][0]
             # Create new "date" column if none exists
@@ -560,7 +561,7 @@ def main():
     merged_df = merge_energy_weather_location(cleaned_energy_df,
                                               cleaned_weather_df)
     # Plot energy by location with weather overlay
-#    plot_energy_by_location(merged_df)
+    plot_energy_by_location(merged_df)
     
     # Additional analysis as needed
     print("\nLocation-based statistics: ")
