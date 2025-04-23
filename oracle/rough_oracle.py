@@ -399,7 +399,7 @@ def plot_energy_by_location(merged_df):
 
     # Save figure
     print("Saving figure to energy_consumption_plot.png")
-    plt.savefig("energy_consumption_plot.png", dpi=150, bbox_inches="tight")
+    plt.savefig("data/processed/energy_consumption_plot.png", dpi=150, bbox_inches="tight")
     
     # Show plot
     plt.show()
@@ -827,7 +827,7 @@ def main():
     print(location_stats)
 
     # Save the merged dataset if needed
-    merged_df.to_csv("energy_weather_location_data.csv", index=False)
+    merged_df.to_csv("data/processed/energy_weather_location_data.csv", index=False)
     
     # Summary with the top 10 
 #    summary = dc.column_summary(10)
